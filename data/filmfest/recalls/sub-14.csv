@@ -1,0 +1,105 @@
+movie,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
+11,"1,107",00:40,00:58,7.841999999999999,25.842,6,17,"Uh okay, so uh, well first of all, both sequences began with an ad for concessions with dancing popcorn, dancing candy bar, and an invitation to go to the lobby and get candy."
+1,1000,00:59,01:03,26.842,30.842,19,21,After that the first film that we saw was the opening to Catch me if you can.
+1,"5,6",01:04,01:15,31.842,42.842,22,29,It started with a uh game show um with uh three individuals all claiming to be William Abagnale.
+1,"8,9",01:17,01:23,44.842,50.842,31,34,"And then some questions were asked of them, and I guess the point of the show was to try to determine who was actually William Abagnale."
+1,10,01:23,01:35,50.842,62.842,35,42,"Then it went to a clip of a character played by Tom Hanks, whose name I forget, who was pursuing William Abagnale."
+1,10,01:36,01:42,63.842,69.842,44,47,"And it was at a prison in Marseilles, France."
+1,10,01:42,01:48,69.842,75.842,48,51,And William Abagnale was being held there.
+1,"16, 17",01:48,01:51,75.842,78.842,52,53,He was very sick and asked to see a doctor.
+1,20,01:52,01:56,79.842,83.842,54,56,"When he went to see the doctor, he escaped briefly."
+1,"23,25,26",01:57,02:12,84.842,99.842,58,67,"And uh Tom Hanks' character and the prison guards pursued him and eventually caught him, uh at which point William Abagnale said something like ""okay, Frank, let's go home."""
+2,2000,02:13,02:19,100.842,106.842,68,71,Um the next movie that I saw was called The Record.
+2,"28,32",02:20,02:29,107.842,116.842,73,78,"And it began with an animated character sitting at home, eating pizza, and she put on a record."
+2,"33,34",02:29,02:34,116.842,121.842,79,81,"And when the record skipped, she realized that a piece of the pizza was gone "
+2,35,02:34,02:50,121.842,137.84199999999998,82,92,"and eventually put it together that um the record was somehow locked to the progress of time so that she could travel through time by either skipping forward in the record or skipping backward in the record, or playing the record backwards, et cetera."
+2,35,02:52,03:04,139.84199999999998,151.84199999999998,94,101,"She then played around with this for a bit, playing the record forwards, backwards, observing time going forwards and backwards, and then skipped forward quite a bit, at which point she was pregnant."
+2,"37,40",03:08,03:22,155.84199999999998,169.84199999999998,105,113,"The sequence proceeded like this, she had a baby, it skipped forward quite a bit, and she was in a wheelchair, and kept skipping in a way that was annoying to her and comical."
+2,"40,41",03:24,03:41,171.84199999999998,188.84199999999998,116,126,"Then she was very old and she noticed that the record was about to play out, at which point she panicked and tried to stop it but it was too late, and then the next shot is her as an urn of her cremated ashes presumably."
+-1,-1,03:42,03:49,189.84199999999998,196.84199999999998,128,131,Um let's see I'm having trouble remembering what the next one is.
+5,5000,03:50,04:03,197.84199999999998,210.84199999999998,133,141,"Oh okay there was one about a character named Keith Reynolds who, so this is an animated 2-dimensional movie, about a character named Keith Reynolds,"
+5,85,04:03,04:12,210.84199999999998,219.84199999999998,142,147,who's showing up to work and expecting a promotion that day after having worked very hard for a long time towards this promotion.
+5,"86,87",04:13,04:28,220.84199999999998,235.84199999999998,148,157,"Um he goes into the elevator, goes up to a floor, maybe a floor that he works on, and there's a female employee who he's had a crush on for a while, "
+5,"86,87",04:29,04:45,236.84199999999998,252.84199999999998,159,169,"and uh there's some context given at this point, where um he makes her coffee every day, she's not really interested in the coffee, but he does this anyways, in an attempt to flirt with her."
+5,87,04:46,04:52,253.84199999999998,259.842,170,173,"So he does this as usual, she pours the coffee out the window, doesn't appear very interested in him."
+5,89,04:52,04:58,259.842,265.842,174,177,Then he proceeds to the top floor where he anticipates he'll be given a promotion.
+5,90,04:59,05:15,266.842,282.842,179,189,"And as he's getting off the elevator, another man, named Patrick Campbell I believe, is getting on the elevator, after having just received the promotion that Keith Reynolds expects to be getting."
+5,92,05:17,05:32,284.842,299.842,191,200,"Patrick Campbell then goes down the elevator to the floor where the female employee was, I forget her name, and he tells he got the promotion, they embrace in a kiss."
+5,91,05:32,05:40,299.842,307.842,201,205,Um at that point it goes back to Keith Reynolds who's receiving news that he didn't get the promotion.
+5,"92,93",05:43,06:03,310.842,330.842,208,221,"So he goes back to the elevator, goes back downstairs to perhaps to flirt with the female employee again, um, and at that point he sees her making out with Patrick Campbell."
+5,93,06:04,06:06,331.842,333.842,222,223,And he's obviously very upset about this.
+5,"94,95",06:08,06:16,335.842,343.842,225,229,"Patrick Campbell gets on the elevator with him, they're going up the elevator, Keith Reynolds says something to Patrick Campbell that offends him, "
+5,96,06:16,06:30,343.842,357.842,230,239,"Patrick Campbell punches Keith Reynolds in the face, at which point Keith Reynolds in an act of rage uh murders Patrick Campbell and he panics, he's trying to figure out what to do with the body."
+5,98,06:30,06:33 ,357.842,360.842,240,241,He decides it's best to go down the stairs.
+5,"97,99",06:33,06:53,360.842,380.842,242,254,"At that point, another employee is coming up the stairs, because it was her resolution to use the stairs more often, and she witnesses Keith Reynolds walking down with Patrick Campbell's dead body, uh she passes out and falls down the stairs and I believe dies."
+5,"103,104",06:56,07:08,383.842,395.842,257,264,"Then he continues down the stairs with Patrick Campbell's body, uh, I think he eventually sees the woman who he had a crush on, she faints."
+5,"101,105,106",07:09,07:25,396.842,412.842,266,275,"He tries to climb out the window with Patrick Campbell's body, um, and looks like drops Patrick Campbell's body, and then he's sort of suspended on a ladder for a while and the scene closes with him looking through the window at a janitor."
+4,70,07:28,07:44,415.842,431.842,278,288,"There's another movie that I didn't catch the title of the movie, but it begins with a man drinking a carton of milk, and he's leaning against a car."
+4,72,07:44,07:51,431.842,438.842,289,293,"Another man comes up and looks upset at him for leaning against the car, presumably it's the car of the man who just walked up."
+4,73,07:52,07:56 ,439.842,443.842,294,296,Then the man who's drinking the carton of milk starts to walk down the street.
+4,"73,71",07:57,08:09,444.842,456.842,298,305,"He notices, he trips over the curb, and at that point he notices that a woman who's walking on the opposite side of the street, pretends to trip, imitating or mocking him."
+4,75,08:11,08:21,458.842,468.842,307,313,"He notices that, so then an exchange unfolds where he makes a silly gesture, she imitates the silly gesture, and so on."
+4,77,08:22,08:28,469.842,475.842,314,317,"But I guess distracted by this, he doesn't notice that he's walking into the street."
+4,77,08:29,08:40,476.842,487.842,319,325,"She tries to stop him from walking into the street, but he still thinks it's part of the exchange they're having, so he imitates her motion that's intended for him to stop walking into the street."
+4,"78,79",08:40,08:50,487.842,497.842,326,332,He's hit by a car and the car somehow goes flying over a tow truck I think.
+4,79,08:52,08:54,499.842,501.842,334,335,And then it's not clear what happens but maybe he died.
+9,9000,08:56,09:05,503.842,512.842,337,342,"Umm let's see, there's a sequence called Post-it Love."
+9,"167,168",09:07,09:21,514.842,528.842,344,353,There are some employees in an office who are flirting by leaving uh images made out of post-it notes for each other.
+9,171,09:21,09:30,528.842,537.842,354,359,"So for instance, one of them leaves a folder that has, actually I don't remember, maybe a heart made out of post-it notes."
+9,176,09:32,09:42,539.842,549.842,361,367,Another one leaves a series of post-it notes arranged on a wall so that it portrays a bouquet of flowers.
+9,"174,175,176",09:44,09:54,551.842,561.842,369,375,I don't remember the exact sequence of events but the images themselves escalate into more and more elaborate artwork made out of post-it notes.
+9,177,09:55,10:06,562.842,573.842,376,383,"Until eventually one of the characters is coming out of what looks like a supply room with a bunch of post-it notes, presumably to presumably to make another image of this sort,"
+9,178,10:06,10:27,573.842,594.842,384,397,"and then she sees on a large wall, the male employee who she's been flirting with has made a very, very elaborate detailed image of both of their faces next to each other, I think surrounded by hearts, with the post-it notes."
+9,9000,10:28,10:30,595.842,597.842,398,399,And that's the end of the sequence.
+3,3000,10:31,10:34 ,598.842,601.842,400,401,There's a sequence called The Boyfriend.
+3,43,10:35,10:42,602.842,609.842,403,407,It begins with a couple sitting across the table from one another having dinner.
+3,43,10:43,10:45,610.842,612.842,408,409,Things appear a little tense.
+3,"44,45",10:46,10:59,613.842,626.842,410,418,"It turns out it's their anniversary, the woman tries to pour the man a glass of wine and he refuses and says he's on call, the implication that he's a doctor probably?"
+3,45,10:59,11:18,626.842,645.842,419,431,"Um and then she gets upset at him, she, it seems that there's some tension already in the relationship but she seems to think he's rather mechanical and he seems frustrated with her."
+3,47,11:18,11:22,645.842,649.842,432,433,"It turns out he's not actually a doctor, he's some sort of computer analyst."
+3,47,11:24,11:32,651.842,659.842,436,440,And so it seems kind of silly that he didn't want to have any wine while he was on call.
+3,46,11:33,11:51,660.842,678.842,442,453,"He mentions something about how the asparagus is tender and she says that's an aphrodisiac, or she says, they say it's an aphrodisiac, and his response is ""who says that,"" making it clear that he's not even really paying attention to the content of what she said."
+3,47,11:53,11:58,680.842,685.842,455,457,"And she's taking it very literally, and she looks very upset by this."
+3,48,11:59,12:08,686.842,695.842,459,464,"At one point she throws wine on him, he starts smoking a cigarette inside, she gets upset, she puts it out, he starts smoking a cigarette inside again, "
+3,49,12:09,12:35,696.842,722.842,466,482,"um, and uh she sort of pretends that she's trying to, oh right, she yells at him that she's upset about the relationship in general, that he's very mechanical and that the most she can hope for is that later they'll have some short mechanical sex, "
+3,50,12:35,12:47,722.842,734.842,483,490,"I think that's how she puts it, and then she says, sorry, or at least pretends to apologize, walks over to him, sits next to him, and at that point the camera cuts to the back of his neck, where you see there's an on-off switch, "
+3,51,12:47,12:51,734.842,738.842,491,493,"and while she's pretending to comfort him, she actually turns him off."
+3,51,12:51,12:53,738.842,740.842,494,494,So at that point it's obvious he's a robot of some sort.
+3,53,12:55,13:05,742.842,752.842,496,502,And um she is then looking on a website that appears to have a number of other similar robot models.
+3,54,13:05,13:20,752.842,767.842,503,512,"So she calls the company, she says she's dissatisfied by the product, and describes the way that she's dissatisfied, they say that those are common malfunctions for this model, um, she orders another one."
+3,55,13:21,13:27,768.842,774.842,514,517,She requests specifically a rock-climber who's also a masseuse with a 5-o'clock shadow.
+3,"57,58,59",13:29,13:51,776.842,798.842,519,533,"The next scene, there's a knock at the door, someone is delivering her new robot boyfriend model, they come in, they take the old one out, she kisses him goodbye, then they set up the new model, and it's back to the anniversary dinner scenario."
+3,62,13:52,14:00,799.842,807.842,534,539,"He still doesn't want to have a glass of wine because he has a big climb the next day, so that's a little, that's a bit of a red flag for her, "
+3,63,14:00,14:09,807.842,816.842,540,545,"but then, he mentions himself that asparagus is an aphrodisiac, so um then she seems excited by that, "
+3,"64,65,66",14:09,14:22,816.842,829.842,546,553,"he goes over, starts giving her a massage, and uh I don't remember the exact sequence of events but the twist is that he then actually turns her off, so it turns out that she was a robot as well, "
+3,67,14:22,14:29,829.842,836.842,554,558,"and then he goes over, lights a cigarette and starts watching TV, and I believe that's the end of the sequence."
+8,8000,14:29,14:37,836.842,844.842,559,563,Um there's another movie called the Black Hole.
+8,"155,156",14:38,14:54,845.842,861.842,565,575,"It starts out with a man using a photocopier in an office, and he tries to make a photocopy and what comes out is a piece of paper with a very large black circle filled in disc on it."
+8,157,14:55,15:08,862.842,875.842,576,584,"And he's puzzled by this, he takes it out, he sets it next to the copier, he tries to put his cup that he's drinking from down on the piece of paper, but instead of resting there, it falls through."
+8,158,15:08,15:11,875.842,878.842,585,586,"And so he's very confused by this, he starts to investigate."
+8,158,15:12,15:22,879.842,889.842,588,593,"He realizes he can put his hand through this, the black hole in the piece of paper, and reaches in there and actually pulls out his cup,"
+8,159,15:22,15:34,889.842,901.842,594,601,"but he realizes that essentially this piece of paper, the hole on the piece of paper, whichever surface he puts the paper on, it's as though there's now a hole in that surface."
+8,160,15:36,15:49,903.842,916.842,604,611,"So he goes first to the snack vending machine in the office, puts the piece of paper on the glass pane on the machine and reaches through and grabs a snack of some sort."
+8,161,15:50,16:04,917.842,931.842,613,621,"Then, he uh takes the piece of paper to a locked room in the office, puts the piece of paper on the door so he can now reach through the door, opens the door, goes into the room where there's a safe, "
+8,162,16:04,16:09,931.842,936.842,622,625,"puts the piece of paper on the front of the safe, reaches in, starts taking money out."
+8,"163,164",16:10,16:22,937.842,949.842,626,633,"Then he's reaching in, trying to reach further into this safe, and actually climbs into the safe, at which point the piece of paper actually falls off, so now he's trapped in the safe."
+8,8000,16:23,16:24,950.842,951.842,635,635,That's the end of that sequence.
+6,6000,16:25,16:31,952.842,958.842,636,639,Um there's another sequence uh called The Rock.
+6,6000,16:32,16:42,959.842,969.842,641,647,"And um in that one, it starts off with the history of a particular rock."
+6,"111,112,113",16:44,16:51,971.842,978.842,649,653,"So it starts off with some geological events, shifting around of mountains, glaciers, this sort of thing."
+6,113,16:51,16:57,978.842,984.842,654,657,"And then it's a rock on the property of what looks like, it looks like a farm."
+6,114,16:58,17:03,985.842,990.842,658,661,It starts off with a man cutting down a tree on top of the rock.
+6,"114,115",17:03,17:14,990.842,1001.842,662,668,"The rock seems annoyed by this and all of the busy activity going on it around it, so it gets up and walks away deeper into the forest where it can rest."
+6,116,17:17,17:46,1004.842,1033.842,671,689,"Then at one point it's pulled out of the dirt that it's lodged in by a horse with a rope tied to it, it's taken and um I guess turned into the uh wheel in a mill grinding grain down into flour, so it becomes the wheel in a mill."
+6,"117,118,119",17:47,18:05,1034.842,1052.842,691,702,"Then it seems like maybe northern soldiers in the civil war seize it from the mill and grind it down into a cannon ball, and it's fired off of a ship in a civil war battle."
+6,120,18:07,18:16,1054.842,1063.842,704,709,"And it seems like it breaks into pieces maybe, and is washed into the ocean."
+6,"121,122",18:17,18:26,1064.842,1073.842,711,716,"Then it is washed back on shore at one point, walks around for a bit, um it's gotten much smaller by this point, "
+6,"123,124",18:26,18:41,1073.842,1088.842,717,726,"then it's picked up by I guess an archeologist, uh paleontologist who sees it as a fossil inside of the rock and is very excited about this, puts the rock on display in a museum."
+6,125,18:42,18:51,1089.842,1098.842,728,733,Then a very excited child presses his face against the glass and that knocks the rock out of the display.
+6,"126,129",18:51,19:10,1098.842,1117.842,734,745,"It bounces around for a bit throughout the city, I don't remember the exact sequence, but eventually it's crushed by a steamroller, and so at that point it's basically a piece of sand, "
+6,"130,132,133",19:11,19:28,1118.842,1135.842,747,757,"um so it's swept onto the beach, then the sand is collected and turned, taken to a factory where they make glass, and I guess it becomes the lens for a telescope."
+6,135,19:28,19:46,1135.842,1153.842,758,769,"Um and then uh so it's the lens for a telescope, something goes haywire with the telescope, it's launched into space, um, then it crashes into I don't know maybe one of the moons of Saturn?"
+6,136,19:46,20:04,1153.842,1171.842,770,781,"Um and then uh it becomes a rock again on Saturn basically and it looks like life is starting to form there, there are some plants, and so I guess the implication is maybe uh the whole cycle starts over again."
+-1,-1,20:05,20:09,1172.842,1176.842,783,785,Um let's see.
+-1,-1,20:11,20:12,1178.842,1179.842,787,787,I feel like I'm forgetting an entire movie.
+-2,-2,20:41,20:45,1208.842,1212.842,807,809,"Yeah I know there is one more movie, but I just can't remember what it was right now."

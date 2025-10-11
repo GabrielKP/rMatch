@@ -1,0 +1,490 @@
+movie_num,seg_num,seg_start_time,subseg_num,subseg_start_time,text
+12,1,0.0,1,,not annotated
+12,2,0.34,1,,not annotated
+1,3,0.41,1,0.41,The title CATCH ME IF YOU CAN appears on screen.
+1,4,0.44,1,0.44,The words Inspired by a true story fade into the screen as the sound of an audience applauding begins.
+1,5,0.4700000000000001,1,0.47,"The scene opens to a game show where the words To Tell The Truth occupy the camera. The main game show host introduces the program with ""Thank you very much, and welcome to To Tell the Truth."""
+1,5,0.4700000000000001,2,0.52,"The doors on the back of the show set open as three men in pilot uniforms walk out onto stage. The host begins with ""Our first guest. He's made a career out of being the most outrageous imposter that we've ever come across on this show. And you're going to see what I mean."""
+1,6,0.59,1,0.59,"The game show introduces the contestants: ""Number one, what is your name please?"". The camera zooms in on contestant number one as he says ""My name is Frank William Abignail."" The camera moves to contestant number 2 as the host prompts him: ""Number two."" The middle guy responds: ""My name is Frank William Abignail."" Finally on the hosts words of  ""Number three"" the camera zooms in on contestant number 3 to which the contestant replies ""My name is Frank William Abignail."""
+1,7,1.11,1,1.11,"The host begins to describe the imposter as the camera zooms in on the first contestant. He says, ""From 1964 to 1967 I successfully impersonated an airline pilot for Pan Am Airways and I flew over two million miles for free..."""
+1,7,1.11,2,1.21,"The camera moves to the second contestant as the host continues: ""..During that time, I was also the chief resident pediatrician at a Georgia hospital..."""
+1,7,1.11,3,1.27,"The camera moves to the third contestant as the host adds ""..and an assistant attorney general for the State of Louisiana..."""
+1,7,1.11,4,1.32,"The camera zooms out to view all three contestants while the host says ""...By the time I was caught, I was considered the youngest and most daring con man in U.S. history. I had cashed almost $4 million in fraudulent checks in 26 foreign countries and all 50 states. And I did it all..."""
+1,7,1.11,5,1.43,"The contestants move over to their seats as the host finishes with ""...before my 19th birthday. My name is Frank William Abagnail."""
+1,8,1.4899999999999998,1,1.49,The audience applauses. The three contestants reach their seats and sit down.
+1,8,1.4899999999999998,2,1.55,"The camera cuts to the host. He explains ""So, for the first time he's going to have to tell the truth and we're going to start our questioning with Kitty."""
+1,8,1.4899999999999998,3,1.59,"The camera cuts to kitty as she begins speaking: ""Thank you. Number One, why, with all your talent, and you're obviously a very bright fellow, why didn't you go in for a..."""
+1,8,1.4899999999999998,4,2.04,"As Kitty continues the camera moves to cuts to contestant number one. She finishes ""...legitimate profession?"" Contestant number one responds with ""It was really a question of dollars and cents. When I was a young man, I needed the money and I thought this list of careers was the easiest way to get it."""
+1,9,2.14,1,2.14,"Kitty responds with ""I see."" The camera moves to the second contestant as she asks ""Number Two, I find this all very fascinating. Who was it that finally caught you?"" The second contestant leans into the mike and answers ""His name was Carl Hanratty."""
+1,10,2.23,1,2.23,"The scene cuts to one of men standing outside in the rain. In a French accent the man keep repeating ""Han-an-an-ratty. Ratty."" "
+1,10,2.23,2,2.27,"The camera moves to a view of all the men who are talking. In an American accent one man replies ""Han-ratty. Carl Hanratty."""
+1,10,2.23,3,2.31,"The camera cuts to a close up of one of the man's mouth as he enunciates ""Yes. -I... am... Carl Hanratty."""
+1,10,2.23,4,2.36,"Next, the camera shows a view of Hanratty's back as he continues to speak to the French men. He states, ""I represent the FBI from the United States of America. Yeah. I have orders to see the American prisoner, Abagnale."" The French men continue to speak during this time to each other in French."
+1,10,2.23,5,2.46,"The camera is now a wide shot of the men talking. The words Marseille, France Christmas Eve, 1969 appear on screen."
+1,11,2.49,1,2.49,Through a hole in the door three men can be seen. The first one opens the lock to the door.
+1,11,2.49,2,3.0,The men begin to walk through the open door and down a dark hallway. During the walk the first man grabs a chair and places down at the end of the hallway.
+1,12,3.12,1,3.12,"As Hanratty walks over to the first man, the french man explains ""You sit here. You do not open the door. You do not pass him..."""
+1,12,3.12,2,3.21,"The French officer opens a latch on the door and continues ""anything through the hole."" Then the French officer walks away to speak to his colleague as Hanratty sits on the stool. "
+1,13,3.31,1,3.31,"Through the gate of the window a close of Hanratty is shown. He says ""Aw... Jesus."", as loud coughing can be heard from the cell."
+1,13,3.31,2,3.37,The camera cuts to a view of the prisoner in the cell. He slowly sinks down to the floor all the while coughing.
+1,13,3.31,3,3.42,Another view of Hanratty is shown from his back. He gets up from the stool and turns around to see one of the prison guards standing there. He looks up to hear thunder and drips coming from the ceiling.
+1,13,3.31,4,3.48,Hanratty opens his umbrella before sitting down on the stool again.
+1,13,3.31,5,3.54,The camera cuts back to the prisoner inside the cell. His coughing gets worse as he gags.
+1,13,3.31,6,3.58,"Hanratty fills the screen as the camera cuts back to him. He tells the prisoner ""You know, I've got a little bit of a cold myself."""
+1,13,3.31,7,4.0,The camera cuts back to the prisoner as he wheezes and coughs more.
+1,14,4.02,1,4.02,"Hanratty is heard saying ""Frank...I'm here to read the articles of extradition..."""
+1,14,4.02,2,4.04,"The camera moves back to show Hanratty's back from a wide view of the hallway. He pulls something from his bag and begins to read ""according to the European Court for Human Rights. Article One: Extradition..."""
+1,14,4.02,3,4.09,"A cut to Hanratty's face the grated window appears as he continues ""...shall be granted in respect of offenses punishable under the laws..."""
+1,14,4.02,4,4.11,"The camera cuts to the prisoner. Weakly he mumbles ""Help me."" multiple times. Hanratty continues ""...for the maximum period of at least one year of a severe penalty..."""
+1,14,4.02,5,4.15,"The camera cuts to the view of Hanratty's face. He stops reading as Frank continues to mumble ""Help me."""
+1,15,4.19,1,4.19,"Hanratty says ""Frank... stop it."""
+1,15,4.19,2,4.22,"Frank's stare comes into view as he says ""Help me"" again."
+1,15,4.19,3,4.24,"Hanratty simply responds with ""You don't think actually you can fool me, do you?"""
+1,15,4.19,4,4.27,"Frank thumps back against the wall of the cell. Meanwhile, Hanratty says ""Sixteen pages to go, stay with me."""
+1,16,4.31,1,4.31,"The camera cuts back to Hanratty's face, he continues to read ""Article Two: If..."""
+1,16,4.31,2,4.33,"A shot of Hanratty with his umbrella outside cell appears. He reads ""... the request for extradition includes several separate offenses each of which is punishable under the laws..."""
+1,16,4.31,3,4.36,"The camera cuts back to Frank. He coughs some more then collapses. Hanratty reads ""...of the requesting party..."""""
+1,17,4.39,1,4.39,"The camera cuts to Hanratty as he looks up. He asks ""Frank?...Frank?"""
+1,17,4.39,2,4.46,"A wide shot of the hallway is show as Hanratty gets up from the stool. He kicks the stool over and the French guard walks over. The camera zooms to Hanratty's face as he speaks: ""Goddamn it! Get me a doctor in here! I need a doctor! Doctor! Now!"""
+1,18,4.53,1,4.53,"The scene changes to one of the French guards carrying a sunken Frank down another hallway. Hanratty tells him ""Don't sweat it, Frank. We're going to get you right to a doctor. Frank, if you can hear me, don't worry. I'm going to take you home in the morning. Home in the morning, Frank."" The group reaches the hospital room where they deposit Frank face down on the bed."
+1,19,5.05,1,5.05,"The men exit the room. All of the French guards begin to wash their hands. Hanratty asks the guards ""What are you doing?"" One replies, ""Washing off the lice."" Hanratty begins to explain ""This man has to be on a plane for America. He has to see a doctor."" The French guard ignores his comments and states ""The doctor comes in tomorrow."""
+1,19,5.05,2,5.16,"Hanratty walks closer to the French man speaking and says ""I have worked too long, too hard for you to take this away from me. If he dies, I'm holding you responsible."
+1,20,5.24,1,5.24,The men turn to see a metal door begin to shut. One of the French guards walks over to it. He then walks over to the hospital curtain surrounding the bed.
+1,20,5.24,2,5.3,"The guard quickly opens the curtain to find that Frank is no longer on the bed. The guard yells to another ""Monsieur!"". All of the guards quickly run out of the room Hanratty remains and says ""Ah Frank"" to himself."
+1,21,5.38,1,5.38,The scene opens to prisoners banging metal objects against a wire fence and yelling. Frank comes running slowly down the hallway while bending over and coughing.
+1,22,5.45,1,5.45,Frank slows down and begins to fall. He quickly tries to recover and get on his feet.
+1,23,5.5,1,5.5,Frank is unable to get up and slowly starts crawling forward. Guards appear in the background walking.
+1,23,5.5,2,5.54,The camera cuts to the back of Frank. He glances back and notices the guards behind him. He tries to quicken his pace.
+1,23,5.5,3,5.56,The camera cuts back to the guards. It follows them as they begin to approach Frank.
+1,24,6.03,1,6.03,"One official pulls out a gun and puts it to Frank's head. He get up onto his knees and looks up. Meanwhile, the guards yell at the other prisoners to keep quiet."
+1,25,6.11,1,6.11,Frank throws his hands up and leans back giving up his escape.
+1,26,6.16,1,6.16,Hanratty walks closer to Frank lying on the ground.
+1,26,6.16,2,6.22,"The camera cuts to Frank as he says ""Okay, Carl...let's go home."" The camera zooms out, and Frank turns to lay in his side. Sound from a man's voice overlaps the clips saying ""The New Rochelle Rotary Club has a history that goes back to 1919."""
+2,39,6.31,1,6.31,THE RECORD title appears on screen
+2,40,6.37,1,6.37,The camera zooms in from outside of a yellow house to see a girl by the window. Sounds of city traffic play.
+2,40,6.37,2,6.39,"A girl with red hair and a purple dress is sitting on a couch with a pizza box in her lap. She opens the pizza box, pulls out a slice, and raises it to her mouth about to take a bite. "
+2,41,6.43,1,6.43,"Just about to eat the pizza, the girl hears a knock at the door. She then gets a puzzled look on her face."
+2,41,6.43,2,6.45,"The girl opens the door, looks around, and she sees no one there. Suddenly, she gets a surprised look on her face as she looks down."
+2,42,6.48,1,6.48,We are shown a close up of the brown package at her feet.
+2,42,6.48,2,6.5,"She brings the package inside, and sits back down on her couch with the package on her lap. Then, she proceeds to open the package."
+2,43,6.58,1,6.58,Within the package is a record titled A SINGLE LIFE. She takes it out of the sleeve.
+2,44,7.010000000000001,1,7.01,The girl gets up from the couch and places the record on the record player.
+2,44,7.010000000000001,2,7.04,"The camera shows a close up of the record player. The girl places the arm on the disk, and the music starts to play."
+2,44,7.010000000000001,3,7.06,The girl goes back to sitting on the couch where she proceeds to bop her head to the music. She picks up a slice of pizza from the box.
+2,45,7.11,1,7.11,"The record then skips. The girl looks at the record player suspiciously. It can be noticed that part of the pizza slice that she was eating has disappeared. She is about to take a bite of the pizza having decided to ignore the skipping of the record. Suddenly, her face becomes shocked as she looks down at the pizza slice."
+2,46,7.17,1,7.17,"There is a close up of the pizza which has bite marks in it, and it is halfway gone. The girl looks back at the record player with suspicion."
+2,46,7.17,2,7.2,There is a close up of the record player spinning.
+2,46,7.17,3,7.22,"The girl has an idea, and begins to stop the record."
+2,47,7.24,1,7.24,We are shown a close up of her hand on the record stopping the music.
+2,47,7.24,2,7.27,"The girl spins the record back and forth causing the music to skip around. As this occurs, her pizza slice reappears and disappears continuously. She then pauses for a second, and spins the record forward."
+2,47,7.24,3,7.35,"From the girls perspective, there is a close up of the couch, the pizza box, the clock, a carton of milk, and the candle. As the sound of the record being turned is heard, the handles of the clock move. Meanwhile, the pizza slices disappear, and the candle melts all rather quickly. Then as the record is being spun in the opposite direction, the pizza slices reappear, the handles of the clock move in the opposite direction, and the candle forms back together."
+2,47,7.24,4,7.38,The girl spins the record one more time.
+2,48,7.4,1,7.4,"There is a close up of the girl's face with her mouth open and her eyes shut. All of a sudden, her eyes pop open, and she smiles. "
+2,48,7.4,2,7.42,"She jumps off of the couch as the song plays, and she moves over to the record player."
+2,48,7.4,3,7.43,"We see another close up of the record player. She moves the arm more towards the middle the record, to a new position, and sets it down."
+2,48,7.4,4,7.45,"The same girl appears in a different room. She has aged, and is now wearing a black/white blazer with a black shirt. On the back wall of the apartment is what appears to be a wedding photo of her older self. She comes to the realization of where she is, and her face becomes surprised as she looks down at her belly."
+2,48,7.4,5,7.51,There is a close up of her pregnant belly.
+2,48,7.4,6,7.53,She has a realization of the record and her pregnancy.
+2,49,7.5600000000000005,1,7.56,"She begins to thinks, and turns the record back and forth. As this occurs the size of her belly shrinks and grows. After a couple of spins back and forth, she spins the record quickly forward."
+2,49,7.5600000000000005,2,8.0,"A baby in a blue blanket appears in her arms, and it begins to cry."
+2,49,7.5600000000000005,3,8.03,We come back to the close up of the record player. She moves the arm out on the record to a new position and sets it down.
+2,50,8.05,1,8.05,"The girl is now a child in a new room. She is wearing a red dress, and carrying a doll. Nursery music begins to play. She looks down at herself, frowns, and then drops the doll. Next, she moves over to the record player."
+2,50,8.05,2,8.1,"When we see the close up of the record player, it is shows that the girl is not tall enough to reach the arm on the record player. Her hand fumbles around until it knocks the arm over to a different spot."
+2,51,8.12,1,8.12,"The girl now finds herself as a middle aged women. She glances around to find herself with grey hair, a broken leg, and she is sitting in the wheelchair of a new room.."
+2,51,8.12,2,8.16,We see the close up of the girl's face as she sighs.
+2,51,8.12,3,8.18,"She tries to wheel herself over to the record player; however, each time she does this the record skips and she lands right back where she started. As this occurs, her movements become more feverish and insistent on reaching the record player."
+2,51,8.12,4,8.27,We see a close up of her face as she frowns and her eyes narrow.
+2,51,8.12,5,8.3,"She is about to try once again to wheel herself over as the record skips. However, she accidentally tips her wheelchair backwards and falls."
+2,51,8.12,6,8.32,We see a close up of the record player as the music skips.
+2,52,8.34,1,8.34,"The girl is now an old woman who is lying on the ground with a walker in front of her. She is in the room of her older self while wearing a blue floral dress and she has white hair. She picks herself up, examines herself/her surroundings, and shuffles over to the record player with the assistance of the walker."
+2,52,8.34,2,8.41,There is a close up of the record player as the arm moves in on the record reaching the end of the song.
+2,53,8.45,1,8.45,"The scene skips time to the same room. However; this time the girl is not there. Instead, the walker she had carried falls over just as a lid falls on top of an urn to close it shut."
+2,53,8.45,2,8.46,"We are once again shown a close up of the record player. This time the arm moves itself off of the record, and lays itself to the resting position. The screen fades to black."
+3,54,8.49,1,8.49,THE BOYFRIEND title appears on screen.
+3,54,8.49,2,8.54,The title fades as words HIGH MAINTENANCE appear. Soft music begins to play.
+3,55,9.0,1,9.0,The scene opens to a dining room where a man and woman are silently eating. The sounds of their chewing and utensils moving can be heard. The camera moves around the room starting from a close up of back of the man's head to show the woman he is heating with from across the table.
+3,55,9.0,2,9.09,The camera turns to show the man eating.
+3,55,9.0,3,9.11,The camera is a close up of the woman's face as she eats.
+3,55,9.0,4,9.14,"Again, the camera turns to show the man eating. This time, the view is even closer: one of just his face."
+3,55,9.0,5,9.16,We are brought back to the view of the woman eating.
+3,55,9.0,6,9.19,"Once again, we are shown a close up of the man eating."
+3,56,9.23,1,9.23,The camera widens to show a view of both the man and the woman. The woman puts her napkin down on the table and gets up. She grabs a bottle of wine off of the table and is about to pour it in the man's empty glass.
+3,56,9.23,2,9.26,"We see a close up of the wine glass as the man puts his hand over it. Then the camera cuts back to his face as he says ""Not for me dear,"" and he proceeds to continue eating."
+3,56,9.23,3,9.29,"The camera shows just the woman as she sits back down in her seat. She sighs, looks at the man, and says ""You know it's our anniversary."""
+3,57,9.35,1,9.35,"The scene is now occupied by a view of the man from over the woman's shoulder. He pauses eating to say ""You know I can't drink when I'm on call."" Then he continues to take another bite of his food."
+3,57,9.35,2,9.4,We see another close up of the front of the woman's face. She grabs her glass of wine and chugs what was left of it. She sighs loudly.
+3,57,9.35,3,9.51,The woman places her glass back on the table. Then she grabs the wine bottle and pours herself some more.
+3,57,9.35,4,9.59,"The camera moves back to a view of the man from over the woman's shoulder. He is eating, but stops to say ""The asparagus is very tender."""
+3,58,10.02,1,10.02,"The is another close up of the front of the woman's face. She responds to the man: ""Oh yeah."""
+3,58,10.02,2,10.04,The camera cuts back to the front of the man's face as he puts another bite of food in his mouth.
+3,58,10.02,3,10.06,"We see the woman's face in profile as a close up when she says ""They say it's an aphrodisiac."""
+3,58,10.02,4,10.09,"During another close up of the man's face in profile he asks ""Who does?"""
+3,58,10.02,5,10.11,"As we once again see a close up of the profile of the woman's face, she replies ""Oh, I don't know. People"". She eats another piece of food. While chewing she elaborates: ""That's just what people say."""
+3,58,10.02,6,10.18,The camera cuts back and forth between closes up of the couple eating.
+3,59,10.23,1,10.22,"The man asks, ""so dear, how was your day?"""
+3,59,10.23,2,10.25,"The camera shows a view of the woman from over the man's shoulder. She scowls, pushes her chair back, and grabs her wine. As she stands, she yells ""Oh geez..."""
+3,59,10.23,3,10.26,"The woman throws the wine from her glass across the table, so that it hits the man, as she continues to yell""...shut up and have a drink..."""
+3,59,10.23,4,10.28,"The man's face is seen up close with droplets of wine trailing down it. The woman can be heard saying ""You're a computer analyst..."""
+3,59,10.23,5,10.3,"The woman continues with ""not a fucking surgeon"" as the camera shows her sitting back down in her chair."
+3,59,10.23,6,10.32,"The camera briefly moves back to the man who doesn't respond. Next, the woman continues to speak: ""Can't you just, I don't know, relax for once in your life."" As she is speaking her folding her napkin back over her lap can be seen."
+3,60,10.37,1,10.37,"The woman looks up with an appalled face. She begins to admonish the man  ""Oh don't you dare..."""
+3,60,10.37,2,10.39,We see the man bring a cigarette between his lips. The sound of the lighter can be heard.
+3,60,10.37,3,10.41,"The camera moves back to a shot of the woman as she continues speaking ""...smoke in my house."" She can be seen getting up from her chair."
+3,60,10.37,4,10.43,A close up of the man is show with the now lit cigarette in his mouth. The woman's shoes can be heard walking over to him. Her hand appears as she takes the cigarette out of his mouth.
+3,60,10.37,5,10.45,The woman's retreating form is shown as she walks back to her seat with the cigarette in hand.
+3,60,10.37,6,10.47,"The woman puts out the cigarette on an ash tray, which the camera zooms in on. She looks up from the cigarette to a sound of the man's lighter."
+3,60,10.37,7,10.49,There is a close up of the man as he inhales a new lit cigarette and exhales the smoke.
+3,61,10.51,1,10.51,"The woman looks back at the man and begins to complain. As she returns to her seat she states, ""Yeah, that's right. Pass the smoke. That's entirely what I wanted for my anniversary..."" "
+3,61,10.51,2,11.01,"The woman continues to complain as there is a close up of her face. All while resuming to eat again, she says ""Followed by some stilted conversation. And if I'm really lucky by some short mechanical sex."""
+3,61,10.51,3,11.08,"The man looks up at her, and says nothing. The woman remains silent as she chews her food."
+3,62,11.18,1,11.18,"The woman places her fork down. She begins to apologize: ""I'm sorry."""
+3,62,11.18,2,11.21,"The camera shows her back as she gets up an moves towards the man. She says ""Come here,"" sits on his lap and continues to speak."
+3,62,11.18,3,11.3,"There is a close up of the faces of the man and the woman. The man has a blank expression as the woman speaks: ""There. There. I didn't mean what I said."""
+3,63,11.38,1,11.38,The woman strokes the man's hair. We can see the back of his head as her fingers trail down to his neck. She pushes down his shirt collar to reveal a robot switch.
+3,63,11.38,2,11.44,A close up of the woman's face portrays her sad face as she looks over the mans shoulder.
+3,63,11.38,3,11.46,The camera shifts back to the close up of the man's neck. The woman's finger turns the switch off.
+3,63,11.38,4,11.5,The man's face is blank as his chin falls onto the woman's shoulder bearing no weight of its own.
+3,64,11.53,1,11.53,"The woman sighs, and she pushes the man off of her. She gets up and returns to her side of the table. All the while the man's head sags and he lies motionless in the chair."
+3,64,11.53,2,12.02,"The woman sits back in her chair. She takes her shoes off and puts her feet on the table. She snidely looks at the man and says ""Happy Anniversary"""
+3,65,12.089999999999998,1,12.09,We start the scene with the logo of a mac computer. The camera moves up to show the woman typing on the computer as piano music begins to play.
+3,65,12.089999999999998,2,12.14,The screen of the computer is show. It reads PROMETEUS ROBOTICS CHOOSE EVERLASTING LOVE. The woman clicks on the website and pictures of men appear below their name and number.
+3,65,12.089999999999998,3,12.17,The woman raises her eyebrow and resumes typing. She pauses and glances back into the dining room where the man still sits. She shifts back to the computer and smiles.
+3,65,12.089999999999998,4,12.16,The screen shows one guy in particular named Paul with several photos of him.
+3,66,12.29,1,12.29,The woman puts on an earphone and calls the number to the business. The soft music the was playing beings to fade.
+3,66,12.29,2,12.33,The sound of a phone dialing begins. On the screen appears ...DIALING: 0800 800 800..
+3,66,12.29,3,12.35,"There is a woman on the other end of the line who speaks: ""Hello you've reached Rache-line technical support. How can I help you?"" The woman responds with ""Hi, I'm unsatisfied with my current unit."" The soft music resumes."
+3,66,12.29,4,12.44,"The lady on the line then asks ""Okay, what model do you currently have?"" As the woman responds with ""It's the one-hundred series,"" her eyes trail over to her wedding photo. The lady on the line responds with ""And what seems to be the problem?"""
+3,66,12.29,5,12.49,"The camera cuts back to the woman on the phone. She tells the lady on the line ""He lacks ambition. He has no sense of adventure."" The lady on the line agrees: ""Yes, that is a common malfunction with the one-hundred series. Would it help if we upgraded you to a higher model?"""
+3,67,12.59,1,12.59,"The woman nods and answers ""Yeah would you be able to give me something a bit sportier?"" He gaze shifts back to the dinning room."
+3,67,12.59,2,13.08,"The lady on the line responds: ""Certainly. Do you have any preferences?"" The woman is quick to answer ""Oh..um.. how about..."""
+3,67,12.59,3,13.13,"There is a close up of the screen. Which shows pictures of Paul again. She continues to speak, saying ""...a rock climber."" She click on one of the photos of Paul and says ""Oh, no. A masseuse."""
+3,67,12.59,4,13.19,"The camera widens to show the woman sitting at her desk. She hastens to say ""Oh wait. A rock climbing masseuse?"" She pauses, and then answers the lady on the line to say ""Yeah, like the picture."" There is another short pause before the woman says ""Yeah, but no beard. Maybe just a 5 o'clock shadow."""
+3,67,12.59,5,13.3,"The camera zooms out to show the woman further and further away. She continues to speak on the phone: ""Yeah and could he have shorter hair?"" He words begin to fade as the camera zooms to black."
+3,68,13.41,1,13.41,There is a knock on the door the ends the music. A close up of the woman looking into her peephole appears.
+3,69,13.44,1,13.44,"The woman opens the door to see a delivery woman and a large package being lowered from a dolly. The package says PROMETEUS ROBOTICS CHOOSE EVERLASTING LOVE. A second delivery woman, who lowered the package, moves in front of the door."
+3,69,13.44,2,13.51,"The delivery woman bring the package indoors, and they begin to rustle with the plastic that contains the package."
+3,69,13.44,3,13.57,The woman stands with her mouth slightly open as she sees the plastic being unwrapped from the new man's face. A different music begins to play.
+3,70,14.12,1,14.12,The woman turns to see the old boyfriend being moved out of the house strapped to a dolly by the two delivery women.
+3,70,14.12,2,14.23,"The woman moves forwards and says ""Uh wait. Please."" The delivery women stop wheeling out the old boyfriend."
+3,70,14.12,3,14.28,There is a close up of the man's lifeless face as the woman kisses him.
+3,71,14.31,1,14.31,The camera shows a close up the man's hand as the woman removes the ring from his finger.
+3,72,14.34,1,14.34,"The woman put the ring on the new man's finger, and places his hand back down on the dining room table."
+3,73,14.430000000000001,1,14.43,There is a close up of the back of the new man's neck as the woman turns on the switch. The sound of the man powering on occurs. As the woman moves back to her chair to watch it occur.
+3,73,14.430000000000001,2,14.51,The man's eyes blink and he looks around him. He grabs the napkin off of the table and places it on his lap.
+3,74,15.01,1,15.01,"The woman asks him ""Glass of wine?"" He responds: ""No thanks, I've got a big client tomorrow"". Then he takes a bite of his food."
+3,75,15.1,1,15.1,"The woman is silent. Soon the man comments ""The asparagus is very tender."" The woman smiles as she says ""Yes dear."" The man replies ""They say it's an aphrodisiac, you know"" before taking a bite of the asparagus."
+3,75,15.1,2,15.21,"The woman smiles again. She asks the man ""Who does?"". To which he tilts his head and responds ""I don't know, just what people say."""
+3,77,15.29,1,15.29,The man rises from his seat and walks behind the woman.
+3,78,15.37,1,15.37,"He begins to massage her shoulders and says to her ""So tell me about your day dear."" She blinks a little, surprised. Then she replies ""Oh, I went into town this morning to pick up some stuff for tonight..."""
+3,78,15.37,2,15.48,"The camera cuts to a close up of the man's face as he looks down at the woman, listening."
+3,78,15.37,3,15.51,"The woman sighs enjoying the massage and continues: ""...And um, I went for a light lunch with Anna""."
+3,78,15.37,4,15.56,"The camera cuts to a close up of the man's hands as he massages the woman's shoulders. He says, ""and then what?"""
+3,78,15.37,5,15.59,"The woman closes her eyes and moans. She laughs a little before saying ""And um then I decided since..."""
+3,78,15.37,6,16.04,"The is another close up of the back of the woman's shoulders as he massages her. She continues to speak ""...it's our anniversary, I decided to treat myself. And I"""
+3,79,16.07,1,16.07,"We see a close up of the woman's face as she abruptly stops talking. The click of a switch can be heard, as the man shuts her off. Her head falls forward."
+3,79,16.07,2,16.11,The man remains calm as he walks away. The woman's blank face is focused on as his footsteps retreat. The sound of a lighter can be heard.
+3,80,16.17,1,16.17,"The camera starts from the back of the woman, where a switch can be seen on her neck. It moves up to show the man sitting on the couch with a cigarette between his lips. He grabs the remote, puts his feet up and turns on the television."
+3,80,16.17,2,16.28,The sound of cheering on the TV can be heard as he takes a puff of his cigarette.
+3,80,16.17,3,16.32,"A close up of his face is shown as he removes the cigarette from his lips and exhales smoke. His eyes look empty as he stares into the TV, and the scene fades to black."
+4,81,16.39,1,16.39,The title THE SHOE appears on screen.
+4,82,16.45,1,16.45,The screen opens to a close up of a shoe lying sideways on a sidewalk. The words HOW THEY GET THERE fade onto the corner of the screen. Music begins to play.
+4,82,16.45,2,16.45,"The shoe begins to move up from its side so that it is planted on the ground. As the music continues to play, the shoe begins to tap in time to the beat."
+4,82,16.45,3,17.01,The camera shifts to a side ankle of the shoe. For a second it stops taping. A chips ahoy cookie wrapper comes into view as it falls to the ground.
+4,83,17.04,1,17.04,The camera shifts to a close up of a milk carton. A hand slowly and deliberately opens the milk carton.
+4,83,17.04,2,17.13,Focus shifts to a man's face. He is looking down and licks his lips.
+4,83,17.04,3,17.15,The camera moves to a close up of the milk carton as the man peers into its opening. He then proceeds to take a drink from the milk.
+4,84,17.24,1,17.24,"The man pauses then takes another drink of his milk. He looks across the street, from where is his perched on his car, to see a woman walking down the sidewalk."
+4,85,17.28,1,17.28,"An older man walk outside from a house nearby. He approaches the guy leaning on his car before getting in the vehicle. No words are said, but the music continues to play."
+4,86,17.34,1,17.34,"The younger man walks away from the car. As he steps on the sidewalk from the street he trips, but soon recovers."
+4,87,17.38,1,17.38,"As the man is walking, he looks over at the woman. The camera cuts to her as she feigns tripping."
+4,87,17.38,2,17.43,The camera cuts back to the man as he looks at the woman puzzled. He appears to slow down slightly.
+4,88,17.47,1,17.47,The man puts down his milk carton at the top of a fence only for the woman to pretend to do the same on the other side of the street.
+4,89,17.51,1,17.51,The camera cuts to the woman walking down the street after setting her fake milk carton down.
+4,89,17.51,2,17.54,"Moving back to the man, he begins to hunch over and swing his arms out in front of him."
+4,89,17.51,3,17.56,"The woman, glancing back over at the man, mimics his arm movements."
+4,89,17.51,4,17.59,The man continues to look over at the woman as he does the same motion with his arms.
+4,89,17.51,5,18.02,"Cutting back to the woman, she slowly disappears from view (behind a metal box on the street). Emerging from this obstacle she acts out another movement."
+4,89,17.51,6,18.05,"The man, still swinging his arms, changes what he's doing to follow her."
+4,89,17.51,7,18.07,The camera cuts back to the woman laughing and now hunched over holding her stomach.
+4,89,17.51,8,18.1,The man now follows this motion as he approaches the end of the sidewalk at an intersection.
+4,90,18.13,1,18.13,"The woman suddenly stops and covers her mouth. The camera cuts to show a car approaching the intersection. The man, still looking at the woman, is oblivious. The woman tries to warn him about the car; however, he continues to mimic her."
+4,91,18.18,1,18.18,"The man walks right out into the intersection, and the car hits him."
+4,92,18.22,1,18.22,The woman looks with her head slightly turned away at the scene. The car the has just hit the man goes airborne before it finally comes to a loud halt.
+4,93,18.33,1,18.33,The woman looks up as the man's shoe comes flying through the sky. It hits the pavement on its side.
+4,93,18.33,2,18.41,"The camera moves up the side of the pavement, away from the first shoe. It soon comes across another type of shoe than the first."
+4,93,18.33,3,18.51,The camera pauses on this second shoe as the music ends and the screen fades to black.
+5,94,18.54,1,18.54,The title KEITH REYNOLDS fades on to the black screen.
+5,1,19.01,2,19.01,The scene opens to a cartoon car approaching a tall building in the distance. Only the sound of the car's motor can be heard.
+5,2,19.12,2,19.12,The scene cuts to write writing on a brown background. It says Keith Reynolds can't make it tonight
+5,3,19.15,2,19.15,Camera cuts back to a close up of the car. A blue cartoon man gets out of the vehicle and slams the door shut.
+5,3,19.15,3,19.24,"Moving over to the building the man stops before the first step. He rubs his hand over his face and turns back around to the car. Having forgotten his hat, he goes back to retrieve it and once again slams the door shut."
+5,4,19.33,2,19.33,"As the man begins to walk towards the building music starts to play. A voice starts to introduce him: ""This is Keith Reynolds, and today is promotion day."""
+5,4,19.33,3,19.41,"Keith has reached the building. The camera view is one from the side of the building as if there was a wall missing. Four other people are talking inside on the ground floor The elevator reaches the bottom, as the music and introduction of the narrator continues: ""Having worked at the company eight years, he's the most senior, junior analyst in the building. He's been waiting for this day, for a very long time."" The elevator is held for Keith by another person as he enters, the doors shut, and the elevator begins its ascent."
+5,5,19.51,3,19.51,"The camera shows multiple floors as the elevator rises. The narrator continues: ""When he gets his promotion, he will finally be a successful business man."" The elevator stops on a floor with another woman. Keith gets off of the elevator."
+5,5,19.51,4,19.55,"The narrator says, ""This is important because it means Sarah will like him."" Keith walks towards Sarah who is bent over a filing cabinet. The elevator leaves the floor with another man in it. The narrator says, ""That's her bending over now on the fourth floor..."""
+5,6,20.04,2,20.04,"Keith grabs a cup from the stack by the fridge. The narrator adds, ""...In an attempt to trigger the beginnings of her maybe wanting to spend the rest of her life with him. Keith Reynolds sometimes offers to make her a coffee."" Keith presents the coffee to Sarah and she rejects it. The narrator describes ""She never wants one."""
+5,6,20.04,3,20.13,"Kieth walks away from Sarah and goes to pick up his briefcase. He walks towards the elevator, and the narrator finishes ""...But Keith Reynolds always makes her a cup anyway."""
+5,7,20.17,6,20.17,"The scene shifts moving down two floors. A man is sitting at his desk when suddenly someone outside falls down the ladder. The narrator shifts focus: ""Meanwhile on the second floor, Bill from human resources has just seen something, or someone..."""
+5,7,20.17,7,20.21,"The narrator continues with "" fall past the window. A quick check confirms that it was someone, and he phones an ambulance."" Bill gets up from his desk, looks out the window, and grabs his phone calling the ambulance."
+5,8,20.28,5,20.28,"Back on the fourth floor, Keith gets on the elevator and heads upstairs. The narrator describes, ""Keith Reynold's reflection is looking confidently back at him from the shinny surface of the inside of the elevator"" The elevator stops at a floor with a secretary and two other people shaking hands by the open door."
+5,8,20.28,6,20.36,"Keith exits the elevator, and walks over to the secretary. Meanwhile, the green man who had just been shaking hands with the red man, leaves the floor and heads for the elevator. The narrator describes Keith's thoughts: ""He pictures the handshake in his head. The sound that the fat gold nib pen makes as he signs his name on the line"""
+5,9,20.44,2,20.44,"The scene follows the green man's descent in the elevator, know revealed to be Patrick: ""Patrick Campbell is slicking back his hair and straightening his tie. He just received some good news and is on his way to tell a special someone."" Patrick has reached the fourth floor and exits walking towards Sarah."
+5,10,20.52,6,20.52,"The camera moves back up to the top floor where Keith has moved into the office of the boss. They shake hands, and the boss sits down. The narrator explains ""The handshake was weaker than expected. The pen is nowhere in sight. The promotion: given to someone else."""
+5,11,21.0,3,21.0,"Moving back down to the fourth floor, Patrick Campbell is hugging Sarah. The narrator begins, ""That's him telling his good news to Sarah now on the fourth floor..."" "
+5,11,21.0,4,21.04,"The camera moves back up to the top floor where Keith has left the office and is moving towards the elevator. The narrator continues to speak as he gets on the elevator and heads towards the fourth floor: ""The same floor Keith Reynolds is heading toward. Perhaps Sarah would like another cup of coffee, maybe tea, hot chocolate, anything Keith Reynolds could do to take-"""
+5,12,21.15,3,21.15,"Keith has reached the fourth floor, and the elevator doors open. In front of him he sees Patrick and Sarah kissing. The narrator pauses as Keith Reynolds drops his briefcase. ""They were kissing"" Another pause. Then ""The elevator door seemed to be staying open for an unusually long time. Their mouths were open. "
+5,13,21.27,8,21.27,"The narrator describes Keith's thoughts as Patrick stops kissing Sarah and heads towards Keith: ""Keith Reynold's fantasy of what he would do to Patrick Campbell if he were trapped in a small room with him was interrupted by the same Patrick Campbell asking him to hold the elevator door."""
+5,13,21.27,9,21.38,"Patrick enters the elevator and they begin their ascent: ""He felt himself take a deep breath. Keith Reynolds could see Patrick Campbell's reflection staring confidently back at him from the shiny surface of the inside of the elevator"""
+5,14,21.47,6,21.47,"The elevator stops, having reached Patrick's stop. Patrick exits and the narrator continues: ""He exhales his deep breath and as he does three words slip out..."" "
+5,14,21.47,7,21.52,"Patrick turns around and heads back towards the elevator to confront Keith. The narrator continues""...Keith Reynolds had never told anyone to do that to themselves before, and almost instantly wished he still hadn't. His apology was obviously insufficient"""
+5,15,22.03,5,22.03,"Keith and Patrick begin to fight: ""Some quick thinking was needed. Keith Reynolds wonders whether the punch to his face will result in bruising. He wonders if he's quick enough he can wash the blood out of his shirt before it stains."""
+5,15,22.03,6,22.14,"Patrick is now lying limp on the floor. Keith continues to hit him until he is dead. The narrator describes the scene: ""...whether Sarah likes a weatherman- a man's man. He just realized that he has killed Patrick Campbell. Some more quick thinking was needed"""
+5,16,22.25,4,22.25,"The camera moves down a couple of floors. A woman appears by a filing cabinet. She is described as such: ""Ruth Charles from accounts needs the toilet. Her favorite one in the building is on the seventh floor because it has a nicer soap dispenser. On account of her New Year's resolution, she takes the stairs."""
+5,17,22.36,3,22.36,"The camera moves back up to Keith and Patrick, where Keith is dragging Patrick's body out of the elevator. The narrator adds, ""Keith Reynolds decides to take Patrick home until he has time to dispose of him properly. He heads for the stairs. If someone calls the elevator on his way down, he'd be caught red-handed, and no one like a murderer."""
+5,18,22.48,2,22.48,"The camera cuts back to Ruth walking up the stairs. ""Ruth Charles has reached the sixth floor, and is also thinking about going home. Right up until she sees Keith Reynolds on the stairs..."""
+5,18,22.48,3,22.57,"Keith continues to walk down the stairs until he sees Ruth. Ruth has paused, as the narrator describes Keith: ""Keith Reynolds covered in blood and carrying a mutilated Patrick Campbell, sees Ruth's eyes roll in the back of her head."
+5,18,22.48,4,23.06,"Ruth falls down the stairs as she faints. A loud crack sounds before the narrator continues: ""That was a genuine accident and Keith is sorry, but also careful to not step in her blood on his way past."""
+5,19,23.13,3,23.13,"The camera cuts down to the fourth floor. Sarah grabs some files and heads towards the elevator. The narrator describes her thoughts, ""It already feels like hours since Sarah last saw Patrick. So she's decided to take some files up to his office. As an excuse to see him again."""
+5,20,23.23,3,23.23,"The camera moves up to where Keith is dragging Patrick's body: ""After a quick rethink, Kieth Reynolds has decided to climb down the rather convenient ladder he has spotted outside the fifth floor window. That way he doesn't have to worry about passing security on the ground floor."""
+5,21,23.34,2,23.34,"The camera cuts to the ground floor where security is talking. No narration, only music is heard."
+5,22,23.4,2,23.4,"The camera moves up to the fifth floor. Keith stops dragging Patrick's body as he reaches the window. The narrator begins to speak: ""Sarah sees Keith. He thought about saying something but decided against it..."""
+5,22,23.4,3,23.46,"As everyone stands there, the narrator continues with Keith's thoughts: ""Maybe she liked the silent type. She looked at him in a way no woman had ever done before. He wished she would run into his arms. Kiss him and tell him she liked him just the way she was."""
+5,23,23.57,4,23.57,"The narrator describes Sarah as she falls over: ""She fainted. He guessed dead bodies had that effect on women"""
+5,23,23.57,5,24.02,"Keith turns back towards the window, looks over the side, and the narrator continues: ""Fortunately she was just clear of the stairs and would live to die another day. Keith Reynolds didn't know what he would do without her."""
+5,24,24.099999999999998,2,24.1,"Keith is now on the ladder. He leans over to grab Patrick's body. ""And as Keith tugged Patrick out onto the ladder, he suddenly realizes-"" Patrick slips from Keith's grasp and falls."
+5,24,24.099999999999998,3,24.15,"Keith, balancing on the ladder continues to reflect ""- that a lot of people probably want the same things he does: a great job, a beautiful wife, happiness. """
+5,24,24.099999999999998,4,24.26,"Keith continues to balance on the ladder, while inside the building a janitor is mopping the floor in front of him. ""And if you're even lucky enough to get some of it, like Patrick down there, it only takes a moment and it can all be taken away from you."""
+5,25,24.33,2,24.33,"Keith looks up at the window to see the janitor: ""He takes one last look at the building, that has been his life for the last eight years, and sees a man he has never seen before."""
+5,25,24.33,3,24.42,"The janitor stops mopping for a second, and looks up to see Keith outside of the window: ""It was a rather surreal moment for Barry, whose job it was to mop the floors. Keith Reynolds balanced there."""
+11,26,0.0,3,24.42,not annotated
+11,27,0.34,1,24.42,not annotated
+6,53,0.41,3,0.41,The title THE ROCK appears on a black screen.
+6,54,0.45,3,0.45,An animated underwater landscape appears. Sounds of the ocean can be heard as the scene moves up through the ocean.
+6,55,0.51,7,0.51,"Above ground the sound changes to that of crickets.  There is a pond with grass surrounding it, and a giant mountain in the middle."
+6,55,0.51,8,0.55,The scene cuts to a close up of a dragonfly on a leaf. It then changes to an amphibious animal coming out of the pond.
+6,55,0.51,9,1.0,The mountain appears on screen again as it zooms to its face.
+6,56,1.06,4,1.06,"The eyes of the mountain droop as it closes them, and the mountain drifts off to sleep."
+6,56,1.06,5,1.1,"As the mountain is asleep, the scene around it changes. The ground shifts, and two dinosaurs appear on the screen."
+6,56,1.06,6,1.14,The ground continues to shift as it becomes sand. The size of the mountain is reduced by the large sand dunes.
+6,57,1.16,5,1.16,The seasons begin to change to winter as a large block of ice pushes through the scene. The mountain gets rolled into a smaller boulder as it is moved to the right.
+6,57,1.16,6,1.21,"Soon the grass grows around the mountain, who is now a boulder. The seasons change to spring as trees grow from the ground."
+6,58,1.26,7,1.26,The boulder becomes startled from sleep by the sound of a crunching and chopping. The boulder opens its eyes to a leaf falling in front of its face.
+6,58,1.26,8,1.31,The scene cuts out to show a lumberjack chopping at the tree on top of the boulder. The lumberjack gives up and walks away from the boulder.
+6,58,1.26,9,1.41,The boulder is fully awake now as more lumberjacks appear behind him chopping trees.
+6,59,1.44,7,1.44,The boulder sticks its arms out and pushes itself out of the ground. Then it starts walking away from the hole in the ground.
+6,59,1.44,8,1.5,The boulder moves into the forest where it comes across a leaf on the base of a rock. It decides to lay down on the leaf.
+6,60,1.58,8,1.58,The boulder wakes to a rope tied around its nose. A horse pulls the boulder away from the rock and a man helps leverage it out.
+6,60,1.58,9,2.05,A couple of men pull the boulder on a cart back to their village.
+6,60,1.58,10,2.07,"Back at their village, two men work to hammer and sand the boulder into a smooth finish."
+6,60,1.58,11,2.09,The scene cuts to the boulder spinning around as workers walk by.
+6,60,1.58,12,2.14,"The boulder has been made into a wheel for a waterwheel house, and it begins to spin very quickly. The scene as a whole now spins rapidly."
+6,61,2.2,4,2.2,Soldiers enter the building and take the wheel with them.
+6,62,2.27,4,2.27,"Having brought the wheel to a new location, the soldiers smash the wheel into pieces. They then take a smaller piece and sand it down, effectively making it a cannonball."
+6,63,2.37,5,2.37,The soldiers put the cannonball into the cannon. Around them soldiers prepare to fight.
+6,63,2.37,6,2.43,"The cannonball is launched into a ship, where the men on board fight each other."
+6,64,2.49,3,2.49,"The cannonball falls into the water below where it had been broken by the mass of the ship. The cannonball tries to hold on to the floor of the ocean, but is taken away by the current."
+6,65,3.0,5,3.0,The broken cannonball is washed up shore in a small stream where it is now a small rock.
+6,66,3.0400000000000005,6,3.04,The scene cuts to the rock wandering on shore. It is a rural area with a tractor moving through the grass and a retro airplane flying above.
+6,66,3.0400000000000005,7,3.13,The rock finds a glove laying in the grass. It folds up the glove and lays down on it to take a nap.
+6,67,3.19,6,3.19,A scientist picks up the rock and dusts off its surface.
+6,67,3.19,7,3.25,The rock is turned upside down during its examination by the scientist. On the back of the rock is the imprint of a bug. The scientist becomes excited and puts the rock in his toolbox.
+6,68,3.31,2,3.31,A new scene begins with someone taking a photo of a bunch of rocks on display. The rock is now a fossil in a museum.
+6,68,3.31,3,3.37,"The scene cuts to many people exploring the museum. As it moves over to the fossil, the fossil looks sad as it notices it is now amongst other fossils."
+6,69,3.45,4,3.45,"A lot of the people in the museum explore the fossil. One child in particular, presses his face to the glass. The force with which he does it causes the fossil to fall backwards off of the display."
+6,69,3.45,5,3.51,"The fossil tumbles out of the back of the display into the trash can of a janitor. The janitor hearing the thump of the noise looks behind him to see what's there. However, he doesn't notice the fossil."
+6,70,3.5500000000000003,4,3.55,The janitor throws the fossil out onto the street with all of the other garbage. A man walking by begins to lightly kick the fossil forward.
+6,71,4.02,2,4.02,The man picks up the fossil from the ground and throws it through a window above.
+6,72,4.06,2,4.06,"The fossil hits a man, and knocks him over. It rolls down the piano in the apartment and out and back window. It continues to get battered in the street where in lands in the middle of one road."
+6,72,4.06,3,4.12,"The fossil gets hit by a semi truck causing the whole scene to spin. Then it gets hit by another car, where it can fit through the front panel of the car and moves into its engine. The engine of the car grinds the fossil up into a small pebble. Upon begin ejected from the car, the pebble grabs a piece of trash of the street and tries to go to sleep."
+6,73,4.23,3,4.23,A large paving machine rolls down the street where it crushes the pebble and turns it into a small piece of dust.
+6,74,4.3,2,4.3,The piece of dust becomes a part of small pile of dirt on the street. A maintenance worker sweeps the pile off of a ledge and into a large pile of sand.
+6,74,4.3,3,4.39,The piece of sand crawls out from underneath the pile. It grabs another piece of sand to lay on to try and fall asleep. Sad music plays.
+6,75,4.5,3,4.5,The sand is excavated from the beach and loaded onto a truck.
+6,75,4.5,4,4.47,The sand is brought to a warehouse where it is unloaded onto a conveyer belt.
+6,76,5.01,1,5.01,"At the end of the line, is a pot of molten lava. The sand is poured into it, and the screen goes white."
+6,77,5.08,2,5.08,The sand is pressed into a mold and becomes a lens. Workers in biohazard suits put the lens into a box.
+6,78,5.16,7,5.16,The scene changes to a shuttle being launched into outer space.
+6,78,5.16,8,5.24,"Once in outer space, the rockets of the shuttle are kicked off the machine. This reveals the lens of the shuttle. The scene cuts to mission control men laughing and clapping."
+6,79,5.3,3,5.3,The mission control men press a button causing the shuttle to propel through space. The shuttle hits and asteroid before heading toward a planet.
+6,79,5.3,4,5.41,"The shuttle heads towards the planet and begins to deconstruct as it gains speed. It hits the planet, and for a moment nothing happens."
+6,80,5.47,4,5.47,The planet begins to change and the ground shifts. Mountains grow and the original large mountain is returned.
+6,80,5.47,5,5.57,The big mountain looks around him and notices that it has returned to his original place. The mountain's eyes droop as it becomes sleepy again.
+6,80,5.47,6,6.06,The mountain sighs and begins to fall asleep. The screen fades to black.
+7,81,6.1000000000000005,2,6.1,THE PRISONER title appears on a black screen.
+7,82,6.15,4,6.15,Camera opens to a far shot of a small courtyard area. The sounds of water and birds can be heard. A man dressed in a black suit walks up towards a woman standing by a table.
+7,82,6.15,5,6.2,"The woman says to the man ""We'll be open in a minute"" as he approaches. The camera cuts to a close up of the two speaking. The man replies with a question: ""What's the name of this place?"""
+7,82,6.15,6,6.22,"The woman returns to straightening chairs as she replies: ""You're new here aren't you?"". The man answers ""Where"", and he begins to follow her as she works. The woman ignores this to ask ""Do you want breakfast?"" The man continues to ask questions: ""Where is this?"" The woman acknowledges the question with ""The village?"" The man answers: ""Yes."" The woman ignores this and tells the man ""I'll see if coffee's ready."""
+7,83,6.28,4,6.28,"The woman starts to walk away as the man grabs her arm. He asks  ""Where's the police station?"" to which the woman turns around to face him. She replies ""There isn't one."" The man becomes more insistent as he asks ""Can I use your phone?"". The woman states ""We haven't got one."" The man quickly asks ""Well where can I make a call?"" The woman look away from him and answers ""Well there's a phone box around the corner"" as she gestures towards it. The man quickly mutters ""Thank you."""
+7,84,6.36,2,6.36,The man is shown walking down an empty street. He looks around for the phone booth. The sounds of his shoes along with dark music.
+7,84,6.36,3,6.45,The man pauses for a second. Then he turns a corner seeing the phone booth up ahead.
+7,84,6.36,4,6.49,"He approaches the phone, looks up at the sign, and begins to reach for the phone."
+7,85,6.51,2,6.51,The is a close up of the man's hand as he grabs the phone.
+7,85,6.51,3,6.53,The man holds the phone and examines it. Suddenly there is a beep.
+7,85,6.51,4,6.57,"A woman's voice answers: ""Number please."" The man asks her ""What exchange is this?"" The woman repeats herself: ""Number please."" The man continues by saying: ""I want to make a call to-"". He is interrupted when the woman says ""Local calls only. What is your number sir?"" The man answers her by saying ""I haven't got a number"". The woman only states ""No number, no call"""
+7,86,7.11,2,7.08,The phone line goes dead. The man examines it for a second and places the phone back down.
+7,86,7.11,3,7.11,The man walks away from the phone and begins walking down the street while looking around.
+7,86,7.11,4,7.22,The man pauses and stops in his tracks. He quickly swivels his head around him.
+7,86,7.11,5,7.25,The camera cuts to the man walking down another street. He stops in front of a map with the words your village written in the corner.
+7,87,7.31,3,7.31,The man examines both the map and the items adjacent to it.
+7,87,7.31,4,7.33,The camera shows a close up of a panel by the map. It is an interactive board with the words PUSH AND FIND OUT written on it. The man scrolls through the options.
+7,87,7.31,5,7.35,The man presses a button on the map. The camera cuts to a close up of all of the buttons as the sound of a car approaching is heard.
+7,88,7.38,2,7.38,Another woman pulls up in a car. The camera quickly cuts back and forth between them as the man is startled to see her appear.
+7,88,7.38,3,7.4,"A close up of the woman, as she asks: ""Where to sir?"""
+7,88,7.38,4,7.42,The camera goes back to the surprised man as he says nothing. It cuts to the woman as she repeats the same question but this time in French
+7,88,7.38,5,7.44,"The man walks towards the car and commands: ""Take me to the nearest town."" The woman simply replies ""Oh, we're only the local service."" "
+7,88,7.38,6,7.48,"The man gets in the car and tells the woman ""Take me as far as you can"""
+7,89,7.500000000000001,9,7.5,The car begins to drive away as the camera cuts to a view of the village from the front of the car.
+7,89,7.500000000000001,10,7.52,"The man begins to ask ""Why did you speak to me in French?""  The woman replies ""French is international."" Soft music begins to play and the man continues speaking: ""I suppose it's a waste of time asking the name of this place."" The woman ignores him and continues to speak: ""As a matter of fact, I thought you might be Polish or perhaps Czech."" The man asks ""What would Poles or Czechs be doing here?"""
+7,89,7.500000000000001,11,8.02,"The scene outside the car becomes filled with someone on a bike and a fountain which the car turns around .The woman continues to speak, saying ""It's very cosmopolitan. You never know who you'll meet next."""
+7,89,7.500000000000001,12,8.05,"The is a close up of the man's face, then the woman's, then back to the man's and they don't speak"
+7,89,7.500000000000001,13,8.08,The camera cuts back to the view of the village before once again returning to the man and the woman as they remain silent.
+7,89,7.500000000000001,14,8.12,A far shot is shown of the car a driving before returning to close ups of the man scowling and the woman smiling for a third time.
+7,89,7.500000000000001,15,8.16,The camera angle changes back to look out the front of the car. Another man on a bike is shown riding toward them. This causes the main character to look back at the bikes retreating for as the car passes it.
+7,89,7.500000000000001,16,8.19,The car pulls up to the man's destination. He looks at her saying nothing.
+7,90,8.22,2,8.22,"As the man gest out of the car the woman says ""I did tell you were are only local."" After a short pause she speaks again: ""The charge is two units."""
+7,90,8.22,3,8.26,"The man having gotten out of the car looks at her. He asks  ""Units?"" She clarifies ""Credit units."" Then she tells him ""Oh well, pay me next time."" Followed by the words ""Be seeing you."" This is accompanied by a specific hand gesture."
+7,90,8.22,4,8.32,A shot of the man standing on the sidewalk is shown as the woman drives the car away. He slowly backs up towards a store.
+7,91,8.4,2,8.4,The man looks in the window of a general store before walking inside.
+7,91,8.4,3,8.45,The man opens the door to a store filled with assorted items. He slowly enters the store. A man speaking in foreign languages can be heard off screen.
+7,91,8.4,4,8.56,"A woman customer is shown standing next to the store owner who is speaking. He asks the customer ""Would you help yourself a pineapple madam?"" "
+7,91,8.4,5,9.01,"The woman briefly leaves the screen to retrieve the pineapple. She returns and the shop keeper puts it in her bag. He tells her ""Thank you. Good day"" as she takes her groceries and exits the store."
+7,91,8.4,6,9.08,"The is a close up of the store owner as he says ""Be seeing you"" accompanied by the same hand gesture as the driver earlier."
+7,92,9.1,2,9.1,"The store owner acknowledges the main man. He greets him: ""Good morning sir. And what can I do for you then?"" The man says ""I'd like a map of this area."" The store owners asks him the following: ""Map? Color or black and white?"" to which the man curtly replies ""Just a map."" "
+7,92,9.1,3,9.2,"The camera follows the store owner as he shifts around searching for the map. He mumbles thinking to himself: ""A map"" ""Ah. Black and white."""
+7,92,9.1,4,9.28,"The store owner returns with the map. He tells the man ""There we are sir. I think you'll find that shows everything"" The camera zooms in as it is presented. The booklet says map of your village. "
+7,93,9.3,4,9.3,The man quickly examines the map. It is very plain and lacks much detail. Descriptors like The Mountains are shown on screen with the map.
+7,94,9.39,2,9.39,"The man stumbles as he tells the store owner ""I...I.. I meant... A larger map."" The store owner tells him ""Only in color sir. Much more expensive-"". The man is quick to cut him off saying ""That's fine."""
+7,94,9.39,3,9.44,Off in search of the color map the store owner turns around to retrieve it from the cabinet. Before placing it down on the counter for the man.
+7,94,9.39,4,9.54,The store owner walks away slightly after giving the man the map. There is a close up of the map as the man examines it. He finds it to be as vague as the other black and white map. Dark music plays.
+7,95,10.02,1,10.02,"The man looks up to find the shop owner straightening up the cabinet. He says ""Oh uh. That's not what I meant. I meant, uh, a larger area."" The store owner, without turning around, responds ""No we only have local maps sir. There's no demand for any others."""
+7,95,10.02,2,10.12,"A close up shot of the shop owner is shown as he asks the man ""You're new here aren't you?"" "
+7,96,10.15,1,10.15,"The man doesn't reply but instead asks ""Where can I get a the car? Self drive?"" The store owner answers ""No self drive. Only taxis"" to which the man says ""I've tried those."""
+7,96,10.15,2,10.21,The ringing of a bell appears as another man enters the shop
+7,97,10.23,1,10.23,"The store owner walks away saying ""Well I look forward to the pleasure of your custom, sir"" "
+7,97,10.23,2,10.28,"The store owner tells the man ""Be seeing you"" while making the same hand gesture as the ones shown previously. He then turns towards the new man in the shop and addresses him with the words ""Yes sir"". The puzzled look of the main character is shown as he leaves the shop and the screen fades to black."
+8,98,10.36,1,10.36,THE BLACK HOLE title appears on black screen.
+8,99,10.4,1,10.4,The middle of the title screen opens up to a dim and boring office. A man can be heard making copies off screen. The camera pans over to the man.
+8,99,10.4,2,10.47,The man becomes the center of the screen as he sighs.
+8,99,10.4,3,10.5,"The camera cuts to a close up of the buttons on the copier. The man tries to press the button, but nothing happens. He sighs again before his face scrunches in annoyance."
+8,99,10.4,4,10.53,"The camera cuts back to the copier as the man tries feverously to press the button. Again, nothing works."
+8,99,10.4,5,10.55,The camera pans out to the man again. It then zooms into his foot as he kicks the copy machine. A buzzing sound is heard as the machine begins to print a piece of paper.
+8,100,10.57,1,10.57,The screen shows the side of the copier as a piece of paper prints out. It has a giant black circle printed on it.
+8,100,10.57,2,10.59,The camera cuts back to the man as he grabs the piece of paper an begins to examine it.
+8,100,10.57,3,11.02,The man stares at the paper puzzled. The sound of the copier printing more paper can be heard. He then places it down next to the copier.
+8,100,10.57,4,11.06,"The camera cuts to a side view of the man and the copier. The man lifts the top of the machine and watches as it makes a copy. Finally, he shuts the lid still puzzled."
+8,101,11.12,1,11.12,The man checks his watch and grabs his cup of coffee from where it was sitting by the copy machine.
+8,101,11.12,2,11.14,"The camera cuts to an angle from the black circle in the paper. It shows the man drinking his coffee. Also, dark music begins to play. Having finished his sip, the man goes to put the cup down on top of the black circle only to have the cup go right through the paper."
+8,102,11.17,1,11.17,The man is slightly thrown off of balance by the cup moving through the hole. He looks down at the paper questioningly.
+8,102,11.17,2,11.21,"The man squats down so that he is eye level with the paper on the copier. He reaches his hand forward toward the black hole, and dark music plays. He quickly removes his hand from the paper."
+8,102,11.17,3,11.26,The man continues to stare at the hole before checking behind him to see if anything is there.
+8,102,11.17,4,11.3,"Gathering up the courage, the man brings his hand back towards the hole as the dark music begins again. He is able to reach his hand through the circle on the paper and he digs around for the cup."
+8,102,11.17,5,11.36,The camera cuts to a view of the man standing with the retrieved cup in his hand. He gasps places the cup down in front of him.
+8,103,11.4,1,11.4,The man picks up the paper with the black circle and examines it. He quickly sticks his arm in the hole and becomes more surprised when it goes through the paper not appearing on the other side. He removes his arm.
+8,104,11.49,1,11.49,"Having an idea, the man walks over to the vending machine. He places the paper on the window and glances behind him to make sure no one is looking."
+8,104,11.49,2,11.56,The man reaches his arm in and grabs a piece of candy.
+8,104,11.49,3,12.02,There is a cut to the man eating a chocolate bar. He holds up the paper as he looks at it again. Then he smiles having come up with another idea.
+8,105,12.07,1,12.07,The screen is filled with the view of a wooden door.
+8,105,12.07,2,12.1,The camera returns back to the man eating the snickers. He smirks as he comes up with his plan.
+8,105,12.07,3,12.12,The camera cuts to a view of the shadow of the man from the other side of the door.
+8,105,12.07,4,12.14,"The man puts the paper up by the handle of the door, sticks his hand through, and he unlocks the door. The dark music returns when his hand enters the black hole."
+8,105,12.07,5,12.16,The man opens the door and turns on the light switch. The lights flicker on and off.
+8,106,12.200000000000001,1,12.2,The man pauses in the entryway of the room for a second before walking over to a safe. He puts the piece of paper up to the front of the safe. Then he looks behind him to make sure no one is there.
+8,106,12.200000000000001,2,12.26,"The man reaches his arm in, the music plays, and he grabs some cash. He pulls his arm out gasping in delight and put the money on the floor next to him."
+8,106,12.200000000000001,3,12.33,Frantic the man continues to reach in for more money. He adds it to an ever growing pile on the floor next to him.
+8,106,12.200000000000001,4,12.43,All of a sudden the man reaches further into the safe and realizes he is no longer able to reach any more cash. He reaches his arm in further with determination.
+8,107,12.46,1,12.46,"Having given up trying to reach the cash with his arm, the man crawls into the safe."
+8,107,12.46,2,12.5,The camera cuts back to a view of the outside of the safe. The piece of paper that was taped to the front of the safe slowly falls down.
+8,108,12.54,1,12.54,The camera pans out as the man is stuck inside of the safe. All that can be heard is knocking from the man on the wall of the safe. The scene fades to black.
+9,109,13.03,1,13.03,The title POST-IT LOVE appears on screen.
+9,110,13.07,1,13.07,"The scene opens to a framed photo of a building on a purple wall. The words Post-it Love, written in pink, cover the upper corner of the frame before they fade out. Drums begin to play."
+9,111,13.1,1,13.1,"The music continues, this time adding the sound of a whistle as the camera cuts to a woman. She is facing a copier and the light of the machine shines over her face."
+9,111,13.1,2,13.16,The camera cuts to a view of the copier from over the woman's shoulder. She changes out the sheets as the copier scans and prints them. The camera moves over to a wall separating her from another cubicle.
+9,112,13.21,1,13.21,The camera pans over to a man making copies at his workstation.
+9,112,13.21,2,13.25,"The scene cuts to a view of both the man and the woman making copies simultaneously. There work stations are nearly identical. The music changes slightly, but it is still upbeat."
+9,112,13.21,3,12.33,They both reach down to grab a stack of paper. In unison they add more paper to their copy machines.
+9,113,13.389999999999999,1,13.39,The camera cuts to a view of the man and woman from the woman's workstation. The two look over each other from the top of the cubicle-like wall. The only glance for a moment before returning to their work.
+9,114,13.46,1,13.46,The man returns to his desk and sits down.
+9,115,13.52,1,13.52,He opens his folder to see that someone has made a smiley face out of post-it notes.
+9,116,13.56,1,13.56,"The man looks to his left and right. He then kicks his chair back to look between the cubicle walls. The woman looks to see if he has noticed the post-it notes. When the man looks at her, she quickly glances away."
+9,117,14.03,1,14.03,The man looks back down at the folder. He rolls his chair back to his desk and thinks of an idea.
+9,118,14.11,1,14.11,"The woman returns to her desk, puts down her stuff, and begins to pull up the blinds on the window."
+9,118,14.11,2,14.18,On the woman's window is a sun made out of post-it notes.  She looks around to see if the person who had put it there is watching.
+9,118,14.11,3,14.25,The camera cuts to a view of the woman sitting down in her chair. She once again looks over her shoulder while thinking.
+9,119,14.319999999999999,1,14.32,The scene changes to the man in the bathroom fixing his tie. Another man walks in and heads for one of the stalls.
+9,119,14.319999999999999,2,14.38,"As the stall door closes, the original man can see a heart in a thought bubble made out of post-it notes on the stall door. Only seeing the image through its reflection in the mirror, the man turns around to look at it. He returns his gaze to the mirror and smiles. The scene cuts to a black screen."
+9,120,14.48,1,14.48,The woman walks into a dark supply closet.
+9,120,14.48,2,14.53,The camera cuts to a close up of her eyes as she turns on the closet's lights. She smiles.
+9,120,14.48,3,14.57,On the wall in front of her are three flowers made out of post-it notes.
+9,121,15.0,1,15.0,The woman exits the supply closet with a load of post it notes in her hand.
+9,121,15.0,2,15.11,She tries to sneak back to her desk with the post-its as she looks over her shoulder to see if anyone is watching.
+9,122,15.18,1,15.18,The woman stops walking as she notices something on the wall in front of her. The camera pans out to get a wider view of the scene.
+9,122,15.18,2,15.23,The camera cuts to the wall where the man is making a mural out of him and her with post-it notes.
+9,123,15.32,1,15.32,The man looks back and sees the woman walking towards him. He stops working on the mural and stares at her.
+9,124,15.4,1,15.4,The camera cuts back to the woman as she stares at the man and the wall. Slowly she smiles before the scene ends.
+10,125,15.48,1,15.48,Title BUS STOP appears on a black screen.
+10,126,15.56,1,15.56,The scene opens to a view of a blue sky and the sun centered on the screen. Music begins to play.
+10,126,15.56,2,16.0,Music continues to play as the view cuts to one of an empty road with abandoned buildings on the sides.
+10,126,15.56,3,16.04,The camera shifts to a man standing on a street corner. The music that is playing is coming from the headphones he is wearing. A train can be heard in the distance.
+10,126,15.56,4,16.09,A close up of the man's face is shown. He is quite sweaty and has a blank stare as he listens to his music and waits on the corner.
+10,126,15.56,5,16.13,The screen changes to the bag the man is carrying. Droplets of condensation from his strawberry ice cream hang from the bottom of the plastic bag.
+10,126,15.56,6,16.16,The camera moves back to show a farther view of the man standing on the corner. Above him in the distance is a highway where cars drive past.
+10,127,16.2,1,16.2,"Suddenly, a black car drives past the man. It quickly stops slightly beyond where the man is standing."
+10,127,16.2,2,16.25,A woman throws her car door open and exits the vehicle. She walks over to a payphone trying to use it.
+10,127,16.2,3,16.35,The camera cuts back to the man as he stands and watches the woman. Still listening to his music.
+10,128,16.38,1,16.38,The woman tries to get the pay phone to work and ends up hitting the buttons as they don't process any calls.
+10,128,16.38,2,16.41,As she grows tired of the payphone not working her car slowly rolls out of the frame.
+10,129,16.46,1,16.46,The woman gives up using the phone booth and begins to walk towards the man
+10,130,16.55,1,16.55,"The woman yells ""Hey. Excuse me"". He turns his head towards her. She says ""Excuse me. Can I borrow your phone?"""
+10,130,16.55,2,17.0,"He takes off his headphones and asks ""What?"" She continues to speak: ""It's an emergency. Can I borrow your phone. It's an emergency."" He hesitates, looks down as she says ""I'm not going to take it."" He then pulls out his phone and hands it to her."
+10,131,17.1,1,17.1,"The woman grabs the phone and walks away from the man to make her call. She speaks on the phone: ""I'm here. I said I'm here."""
+10,131,17.1,2,17.19,"The camera cuts back to the man as he watches the woman. She can be heard asking ""What? Where? Ugh. I swear to god. I will tell everyone I know. I will tell everyone."" He stands there still sweating under the heat."
+10,132,17.3,1,17.3,"The camera shifts back to the woman on the phone. She says ""I will go. I will go to the police. Excuse me, I will go to the police. Okay? Hello? Hello?"" As the other person on the line hangs up the woman becomes frustrated. She throws the phone down on the ground and it shatters."
+10,133,17.37,1,17.37,"We move back to the man as he stands there look at the woman. He says nothing, and his face is blank as he starts to walk over to his phone."
+10,133,17.37,2,17.4,The woman is shown crying.
+10,134,17.45,1,17.45,"The man picks up his broken phone. He says to the woman ""Miss. Miss this phone is broken. Do you think I could get like 60 bucks for it or something. Miss"""
+10,134,17.45,2,17.56,The woman doesn't respond to his question. The vroom of a car is heard.
+10,135,17.58,1,17.58,"Instead the woman says ""He's here"" to herself. The man can be heard off screen asking ""Are you okay?"""
+10,136,18.0,1,18.0,The camera cuts to the back of a man driving up in a car. The music shifts to a dark tone.
+10,136,18.0,2,18.1,"He parks the car, but remains inside the vehicle."
+10,137,18.13,1,18.13,"The man and woman outside walk over to see where the vehicle is parked under the bridge. The  man asks the woman ""Who's that?"""
+10,138,18.21,1,18.21,The camera focuses on the woman as she walks over to the car.
+10,138,18.21,2,18.25,"The camera cuts to the man as he says ""Miss?"" He begins to follow the woman over to the car while saying ""Could I just get some money for this?"""
+10,138,18.21,3,18.31,"As the camera zooms to include the woman and man walking towards the car, the woman mumbles to herself while shaking her head."
+10,139,18.36,1,18.36,"The back of the 2nd man in the car is shown. He abruptly turns off the music, unbuckles his seatbelt and exits the car."
+10,140,18.42,1,18.42,"The back of the woman is shown as she walks closer to the man swinging his harms lightly. She mumbles ""This time you've gone to far. You've gone way to far. I'm not..."" She trails off."
+10,141,18.5,1,18.5,"He is the first to speak to her: ""What the heck Cheryl?. She simply replies ""Fuck you Bob."" He continues: ""You better start behaving I told you everything is going to be okay. And everything will be-"" She interrupts ""Where is she?"" As he finishes ""-okay."" Then he shifts the conversation to ask ""Who's this?"""
+10,141,18.5,2,19.0,"The scene becomes a close up of the first man standing staring at the other two. The woman can be heard off screen replying ""Just a friend."""
+10,142,19.02,1,19.02,"The camera moves to the second man in the suit as he questions ""A friend?"" He pushes himself up off the car he was leaning on and walks toward the other two. The first man can be heard clarifying ""No. I don't know her. I was just waiting for the bus and she used my phone, and she broke it so I'm just trying to get the money from her for another one. And I'm really..."" He trails off."
+10,142,19.02,2,19.13,"The man in the suit gets in the face of the first man. He asks ""Do you know who I am?"" The woman who had previously walked towards the car comes back and says ""No one knows who you are you paranoid cunt."" The second man addresses the woman ""Did you tell him who I am?"""
+10,143,19.21,1,19.21,The man in the suit points at the woman and starts to walk towards her as she backs up.
+10,143,19.21,2,19.23,"Camera cuts to the first man. He says ""Oh shit. You're. ""You're Aldini the Great. You do the magic show at the casino"" as he recognizes the first man. The magician bows."
+10,144,19.28,1,19.28,"All three appear on the screen as the first man continues ""And you're his assistant"" as he points towards the woman. The woman reaches for a gun and pulls in out of her pocket."
+10,144,19.28,2,19.3,"A close up of her face is shown as she screams ""Shut up. Shut up. Where is she?"" and points the gun at the magician. The magician says  her name then ""Take it easy. Is that thing loaded?"" as he holds up his hands."
+10,145,19.35,1,19.35,"He continues ""Well guess what? I've got one of my own."" He pulls draws a gun out of thin air and aims it towards the woman. He waves the gun around saying ""Well look at this beauty. Once owned by Professor Pad Used in a duel to the death against Vlad Prince of the Roman East."""
+10,146,19.44,1,19.44,The woman points her gun up in the air and takes a shot to prove its loaded. Then she points it back at the magician. Dark music begins to play again.
+10,147,19.51,1,19.51,The camera cuts to the car where a whine can be heard. The woman looks frightened as the camera zooms back to her.
+10,148,19.58,1,19.58,"The magician says repeats her name a couple of times, as the first man turns to walk away."
+10,148,19.58,2,20.0,"The woman frantically runs towards the car as the magician continues ""She's going to be okay. Look I'm going to. Let me show you. Wait. Wait."""
+10,148,19.58,3,20.03,"The man continues to walk away as the magician runs to catch up with him. He says ""Woah. Woah. Woah. Woah. I've got something to show you."" He puts the gun in his pants. Then he repeats ""I've got something to show you"" while pulling something else out of his pocket and holding it up to the first man."
+10,149,20.11,1,20.11,The woman reaches the car and begins to open the trunk while crying.
+10,150,20.14,1,20.14,A close up of what the magician is holding occupies the screen. Inside a small coffin with a cross on the front is a small relic. The magician begins to chant his spell.
+10,150,20.14,2,20.21,The first man's face is show as he becomes hypnotized by the magician's speech when the magician continues.
+10,151,20.28,1,20.28,The woman finally gets the trunk open and steps away from the car as she is shocked by what she sees.
+10,152,20.36,1,20.36,As the magician continues to chant a shot of the sun is shown still bright in the sky.
+10,152,20.36,2,20.38,The man begins to let his bag fall as the melting ice cream drips out of it. His eyes roll towards the back of his head.
+10,152,20.36,3,20.49,The man drops his bag and becomes limp as he falls towards the pavement.
+10,152,20.36,4,20.57,The bridge and sky or shown on camera from the side view of the man who has collapsed on the pavement.
+10,153,21.03,1,21.03,The man is laying on his side and begins to cough as the melted ice cream lays beside him.
+10,154,21.09,1,21.09,"The magician says ""Son of a Bitch."" He then pulls the spell out of his pocket and double checks what was written. He mutters what is on the paper."
+10,155,21.17,1,21.17,The woman approaches from the vehicle with her gun aimed. She shoots the magician.
+10,156,21.28,1,21.28,The magician shoots back and the woman and dies. All the while the first man is on all fours above the ice cream tub barking.
+10,157,21.32,1,21.32,The man begins to lick the ice cream off of the ground and barks again at the sky.
+10,157,21.32,2,21.43,The man crawls over to the dead woman and begins to sniff her leg.
+10,157,21.32,3,21.47,Suddenly the man hears barking from someone else. He begins to crawl towards the barking while barking himself.
+10,157,21.32,4,21.58,The man stops as he sees something in front of him.
+10,158,22.04,1,22.04,The woman from the trunk appears on all fours in front of the man an is barking.
+10,159,22.12,1,22.12,While still barking at each other they move closer in order to sniff each other.
+10,159,22.12,2,22.21,The pair stop sniffing each other and continue barking at one another. They slowly crawl a little bit more.
+10,159,22.12,3,22.32,The pair continue to act like dogs by play fighting in the street.
+10,160,22.37,1,22.37,The two begin to crawl away from the vehicle as they bark as the scene ends.
+10,160,22.37,2,22.48,The camera fades to black.
