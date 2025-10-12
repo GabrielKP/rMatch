@@ -1,17 +1,17 @@
-movie,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
+movie_num,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
 10,10000,01:40,01:44,9.597999999999999,13.597999999999999,7,9,Okay the last movie that I saw was kind of a weird one.
 10,10000,01:44,01:49,13.597999999999999,18.598,10,12,"That was, it almost reminded me of a Stephen King kind of thing."
 10,"182, 185",01:50,01:58,19.598,27.598,14,18,"Like this guy, he was standing on the street waiting for a bus, and this frantic woman came up to him and approached him, you know something's obviously wrong."
 10,185,01:58,02:09,27.598,38.598,19,26,"I thought you know maybe some kind of domestic violence situation or something because she was really frantic, and she was so frantic she didn't even put her truck in parking, it's like rolling away."
-10,186,02:09,02:11,38.598,40.598,27,27,"She runs up to him and she's got to use his phone, "
-10,"187, 188",02:12,02:16,41.598,45.598,29,30,"and she takes his phone and she's screaming at somebody and she's all pissed off, "
-10,"189, 190",02:16,02:26,45.598,55.598,31,37,"then drops the phone on the ground and breaks it, and the guy's mad and he's approaching her saying you know you need to give me back money for the phone and then "
+10,186,02:09,02:11,38.598,40.598,27,27,"She runs up to him and she's got to use his phone,"
+10,"187, 188",02:12,02:16,41.598,45.598,29,30,"and she takes his phone and she's screaming at somebody and she's all pissed off,"
+10,"189, 190",02:16,02:26,45.598,55.598,31,37,"then drops the phone on the ground and breaks it, and the guy's mad and he's approaching her saying you know you need to give me back money for the phone and then"
 10,191,02:26,02:29,55.598,58.598,38,39,the guy she was screaming on the phone comes.
 10,192,02:29,02:36,58.598,65.598,40,44,"And he's been sitting there in the car watching them the whole time, like blasting classical music really loud and it seems weird."
 10,193,02:36,02:42,65.598,71.598,45,48,"And then, and then he's like who's this guy, how do you know him?"
 10,198,02:42,02:48,71.598,77.598,49,52,"And then, and then he's some kind of famous person, he's like do you know who I am?"
 10,199,02:51,03:03,80.598,92.598,55,62,"And the guy realizes who he was, turned out he was some famous magician from some casino and that woman was his assistant and they're having, and he's a really bad person and they're having some kind of problems."
-10,-1,03:04,03:05,93.598,94.598,63,63,"And then, "
+10,-1,03:04,03:05,93.598,94.598,63,63,"And then,"
 10,206,03:08,03:15,97.598,104.598,66,70,and then it turns out the guy is some kind of evil demon or something and he's got like demonic powers and he starts hypnotizing the guy.
 10,"206, 207",03:16,03:19,105.598,108.598,71,72,"It makes his eyes roll back in his head, then he passes out."
 10,213,03:20,03:21,109.598,110.598,74,74,He then turns into a dog.
@@ -19,11 +19,11 @@ movie,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
 -1,-1,03:37,03:40,126.598,129.598,85,86,And then there were a couple animated ones that I remember.
 2,28,03:40,03:50,129.598,139.598,87,93,"That one, my favorite one was the one with the, the second one, there was a woman sitting in an apartment, it's animated, it's digitally animated."
 2,"32, 33, 36",03:52,04:06,141.598,155.598,95,104,"And she puts a record on the record player and then it skips, and she gets all annoyed, and she fixes it, and then she notices whenever she does something to the record player, it sends her to a different place, a different part of her life."
-2,36,04:07,04:11,156.598,160.598,105,107,"She puts it on a different song and then like all of a sudden she's in a different apartment, "
-2,37,04:11,04:21,160.598,170.598,108,114,"and then she's pregnant, and she notices like the more, the more she fools around with the record, and adjust it, it just makes her like more and more pregnant, and she makes it go backwards to make herself less pregnant, "
+2,36,04:07,04:11,156.598,160.598,105,107,"She puts it on a different song and then like all of a sudden she's in a different apartment,"
+2,37,04:11,04:21,160.598,170.598,108,114,"and then she's pregnant, and she notices like the more, the more she fools around with the record, and adjust it, it just makes her like more and more pregnant, and she makes it go backwards to make herself less pregnant,"
 2,37,04:21,04:27,170.598,176.598,115,118,"and then she makes herself more pregnant by fooling around with it even more, then all of a sudden she's holding a baby."
 2,"38, 39",04:29,04:32,178.598,181.598,120,121,"You know, then she fools around with the record player some more."
-2,"38, 39",04:32,04:46,181.598,195.598,122,130,"It makes her get old, then makes her get younger again, then makes her you know switches her to a different apartment, and then a wheelchair, she broke her leg and then she can't do anything with the record player again,  "
+2,"38, 39",04:32,04:46,181.598,195.598,122,130,"It makes her get old, then makes her get younger again, then makes her you know switches her to a different apartment, and then a wheelchair, she broke her leg and then she can't do anything with the record player again,"
 2,"40, 41",04:46,05:01,195.598,210.598,131,140,"and then she just keeps fiddling with the record player and adjusting it, and then she keeps doing that, it keeps taking her through more stages of life until at the end she's dead and she's cremated in an urn."
 5,5000,05:02,05:09,211.598,218.598,142,146,"And then there was another really weird animated one, which is like basically just a bunch of different colored stick figures."
 5,85,05:10,05:15,219.598,224.598,147,150,"And this real matter-of-fact narrator, he's like ""this guy went to work today."""
@@ -31,13 +31,13 @@ movie,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
 5,"86,  90, 91, 92",05:23,05:35,232.598,244.598,156,163,"And there's this girl at the office that he likes and he wants to be with her, and then he didn't get the promotion and he's all pissed off and then some other guy is going to be with the girl, and he got the promotion."
 5,96,05:35,05:39,244.598,248.598,164,166,"So the narrator's like ""so he decides to kill the guy."""
 5,98,05:41,05:46,250.598,255.598,168,170,And then he can't take his body in the elevator because he's going to get blood all over the place.
-5,"98, 99",05:47,05:52,256.598,261.598,172,174,"So he takes him up the stairs, and then he runs into this other person who's going up the stairs, and then,  "
-5,"101, 105",05:54,06:01,263.598,270.598,177,180,"I think he has to kill that person too, and then, and then he realizes what he's done and he's got to jump out the window and kill himself "
+5,"98, 99",05:47,05:52,256.598,261.598,172,174,"So he takes him up the stairs, and then he runs into this other person who's going up the stairs, and then,"
+5,"101, 105",05:54,06:01,263.598,270.598,177,180,"I think he has to kill that person too, and then, and then he realizes what he's done and he's got to jump out the window and kill himself"
 5,5000,06:01,06:11,270.598,280.598,181,187,"and this like matter-of-fact narrator just like saying all this stuff that's happening and it's really, that was one of the weirder ones, it was just stick figures."
 6,6000,06:13,06:18,282.598,287.598,189,192,And then the other animated one was about a rock that starts out as a big mountain.
 6,6000,06:18,06:23,287.598,292.598,193,195,It almost reminded me of something that could have been on a show like Sesame Street or something.
 6,"111, 112, 113",06:24,06:31,293.598,300.598,197,200,"It starts out like a couple hundred years ago as a big mountain and then like over all the years, you know you see its lifespan."
-6,116,06:31,06:41,300.598,310.598,201,207,"People keep doing stuff to it; first, they took it down, they made it into a, they ground it down and made it into a gristmill "
+6,116,06:31,06:41,300.598,310.598,201,207,"People keep doing stuff to it; first, they took it down, they made it into a, they ground it down and made it into a gristmill"
 6,118,06:44,06:52,313.598,321.598,210,214,"and after that, it got ground down more, and then it ended up getting made into a cannon ball for this, to be used in the Civil War."
 6,"119, 120",06:52,06:56,321.598,325.598,215,217,And they shot it out of a cannon and then it ended up in the ocean.
 6,"121, 124",06:59,07:06,328.598,335.598,220,224,"And then it washed up on the beach and it became a fossil, and then it ended up in New York probably, what looked like in the 30's."
@@ -49,7 +49,7 @@ movie,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
 3,3000,07:35,07:39,364.598,368.598,244,246,"And then there was another movie, about a bunch of robots."
 3,3000,07:40,07:43,369.598,372.598,247,248,"It kind of reminded me of another movie, AI."
 3,43,07:44,07:53,373.598,382.598,250,255,"There was like this couple sitting down eating dinner together, and the woman's like all annoyed at her boyfriend, because I don't know whatever she's just annoyed with him."
-3,"51, 54",07:55,08:07,384.598,396.598,257,264,"And then it turns out he's actually a robot because she could see a switch on the back of his neck and then she called the company that she got him from, to trade him in because she didn't like him, "
+3,"51, 54",07:55,08:07,384.598,396.598,257,264,"And then it turns out he's actually a robot because she could see a switch on the back of his neck and then she called the company that she got him from, to trade him in because she didn't like him,"
 3,"55, 57",08:08,08:13,397.598,402.598,266,268,"and then she picked out a new robot that she liked better, and then they delivered the new one."
 3,65,08:14,08:27,403.598,416.598,270,278,"And the new one was you know, taking more of an interest in her, you know asking her how her day was, you know, like she thought she was happier with him, but then it turns out he doesn't really like her either."
 3,"66, 67",08:27,08:36,416.598,425.598,279,284,"He's getting annoyed with her, so and then you realize that she's a robot too, and he just turns her off and goes and does his own thing."
@@ -77,7 +77,7 @@ movie,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
 -1,-1,12:27,12:30,656.598,659.598,439,440,Trying to think of another one.
 -1,-1,12:34,12:36,663.598,665.598,443,444,I can't remember the rest of them for some reason.
 -1,-1,12:36,12:37,665.598,666.598,445,445,I don't know why.
--1,-1,12:41,12:47,670.598,676.598,448,451,"I think I saw the catch a thief one, and then there was the animated one, "
+-1,-1,12:41,12:47,670.598,676.598,448,451,"I think I saw the catch a thief one, and then there was the animated one,"
 -1,-1,12:50,13:03,679.598,692.598,454,462,"and then there was the one about the rock, and then there was the one about shoes flying up in the air, and then there was the magician, and then there was the robot one."
 -1,-1,13:06,13:07,695.598,696.598,465,465,What other ones were there.
 8,8000,13:29,13:31,718.598,720.598,480,480,Oh yeah the Black Hole one.
@@ -91,8 +91,8 @@ movie,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
 8,164,14:28,14:33,777.598,782.598,519,522,"So basically all of the money was taken out of the vault, and he was trapped inside."
 8,8000,14:34,14:37,783.598,786.598,523,524,And that was pretty much it for that short film.
 9,9000,14:37,14:43,786.598,792.598,525,528,"And then there was another one, called Post it love or something."
-9,"168, 169",14:44,14:50,793.598,799.598,530,533,"There's these these two people that work in this office, that kind of have crush on each other, they're kind of in love with each other, "
-9,"171, 174, 175, 176",14:50,14:58,799.598,807.598,534,538,"and then they keep making pictures for the other one with post-it notes, and the pictures keep getting more and more detailed until "
+9,"168, 169",14:44,14:50,793.598,799.598,530,533,"There's these these two people that work in this office, that kind of have crush on each other, they're kind of in love with each other,"
+9,"171, 174, 175, 176",14:50,14:58,799.598,807.598,534,538,"and then they keep making pictures for the other one with post-it notes, and the pictures keep getting more and more detailed until"
 9,178,14:59,15:06,808.598,815.598,540,544,"at the end the guy finally makes a giant like mural of the two of them together, made entirely out of post-it notes on the wall in the back."
 9,9000,15:08,15:10,817.598,819.598,546,546,And that's that one.
 -1,-1,15:18,15:23,827.598,832.598,553,555,And uh now let's see which other ones.

@@ -1,4 +1,4 @@
-movie,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
+movie_num,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
 1,1000,00:44,00:48,8.064,12.064,6,8,"Okay, so the first movie was called: ""Catch Me If You Can."""
 1,"5, 6, 7",00:49,01:07,13.064,31.064,10,21,"And there were three imposters that were coming into the talk show and they were asking them questions concerning um what they did, because they were conman artists, and his name was, all of the three were named like William Frank something."
 1,8,01:08,01:14,32.064,38.064,22,25,And for the first one they asked him: oh why did he choose to do that even though he was talented?
@@ -81,7 +81,7 @@ movie,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
 5,105,11:16,11:28,640.064,652.064,428,435,"So then he throws the body off of the, out the window, um, somebody sees the body that fell out the window, so, um."
 5,88,11:29,11:33,653.064,657.064,436,438,"Well beforehand, before the whole thing started, something had fallen off the window."
 5,88,11:33,11:36,657.064,660.064,439,440,I think at the beginning and they called an ambulance.
-5,105,11:37,11:45,661.064,669.064,442,446,"But back to the part where I was at, um, so he's on the ladder and starts thinking about his life choices, "
+5,105,11:37,11:45,661.064,669.064,442,446,"But back to the part where I was at, um, so he's on the ladder and starts thinking about his life choices,"
 5,105,11:46,11:55,670.064,679.064,448,453,"and he starts thinking about how everybody wants to get a better job, and everybody wants the dream girl, and so maybe the decisions he made weren't the best decisions."
 5,5000,11:56,12:00,680.064,684.064,454,456,"So, I think that's where that one ended."
 -1,-1,12:00,12:06,684.064,690.064,457,460,"And then, I think this is when we get into the next set."
@@ -170,7 +170,7 @@ movie,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
 8,156,20:40,20:41,1204.064,1205.064,804,804,And he's trying to make more copies.
 8,157,20:42,20:47,1206.064,1211.064,805,807,"Meanwhile, he like places his coffee cup on top of the black hole."
 8,157,20:48,21:00,1212.064,1224.064,809,816,"But then the cup goes inside, so, but he didn't notice that yet, until like he turned and he like looked at the hole and every time he would get close to it, it would make like a - a vibration sound."
-8,"158, 159",21:01,21:13,1225.064,1237.064,818,825,"So he puts his hand in, takes out the coffee cup and then he's like very surprised so he folds up the sheet and he sees that it's just a sheet of paper, puts his hands in, "
+8,"158, 159",21:01,21:13,1225.064,1237.064,818,825,"So he puts his hand in, takes out the coffee cup and then he's like very surprised so he folds up the sheet and he sees that it's just a sheet of paper, puts his hands in,"
 8,"159, 160",21:14,21:23,1238.064,1247.064,826,831,"and he sees that he can go through, whatever object - solid object - so then he gets an idea and takes the sheet over to the vending machine."
 8,160,21:24,21:29,1248.064,1253.064,833,835,And then sticks his hand in and is able to get a snickers bar out of the vending machine.
 8,161,21:30,21:35,1254.064,1259.064,837,839,"And so then he gets a better idea about going to, I guess, grab the money from the company."
@@ -199,7 +199,7 @@ movie,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
 10,194,25:25,25:28,1489.064,1492.064,994,995,And the guy is following her because he wants the money.
 10,195,25:29,25:37,1493.064,1501.064,996,1001,And then the guy from the mys- the mysterious guy that just popped out of nowhere from the older car walks out.
 10,195,25:37,25:44,1501.064,1508.064,1002,1005,"He's like this really tall guy with old suspenders like, older style kind of clothing."
-10,197,25:45,25:46,1509.064,1510.064,1007,1007,"Walks out and like, "
+10,197,25:45,25:46,1509.064,1510.064,1007,1007,"Walks out and like,"
 10,-1,25:48,25:48,1512.064,1512.064,1009,1009,um
 10,197,25:51,25:56,1515.064,1520.064,1011,1013,"asks who, basically who the kid around from the bus stop is, and she says ""oh, he's a friend."""
 10,198,25:57,26:04,1521.064,1528.064,1015,1019,"The kid from the bus stop is like, weirded out because basically he just wants the money, he doesn't know the lady."
@@ -217,7 +217,7 @@ movie,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
 10,"210, 211",27:53,28:05,1637.064,1649.064,1092,1099,"And he's says, he like realizes that maybe he said it wrong, so he's like reading over everything but before he can even do anything, the lady shoots the guy - the magician guy."
 10,212,28:05,28:09,1649.064,1653.064,1100,1102,"And then when the magician is on the floor, he shoots her back."
 10,213,28:10,28:20,1654.064,1664.064,1104,1109,"So they're both on the floor then the bus stop kid is just barking, and barking, then he hears barks back so he's like um following the barks."
-10,214,28:21,28:31,1665.064,1675.064,1111,1117,"And then, I guess the person that was, the girl that the lady was looking for, that was in the trunk was also turned into kind of like an animal, maybe like, "
+10,214,28:21,28:31,1665.064,1675.064,1111,1117,"And then, I guess the person that was, the girl that the lady was looking for, that was in the trunk was also turned into kind of like an animal, maybe like,"
 10,-1,28:32,28:37,1676.064,1681.064,1118,1121,"um, what do you call it?"
 10,214,28:38,28:40,1682.064,1684.064,1122,1123,"Hypnotized, I guess."
 10,"215, 216",28:41,28:47,1685.064,1691.064,1124,1127,"They were both like dogs, and they were barking at each other and acting like dogs, and then they just like walk away with each other."
@@ -236,7 +236,7 @@ movie,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
 6,114,31:18,31:22,1842.064,1846.064,1229,1231,"But then there's somebody cutting the tree down, and he's like confused."
 6,"114, 115",31:23,31:36,1847.064,1860.064,1232,1240,"And then there's somebody else, some people like building something next to him, so he's like trying to sleep the whole time, and gets up and walks away and goes somewhere into the forest and tries to go to sleep."
 6,116,31:37,31:51,1861.064,1875.064,1242,1250,"But then somebody comes and grabs him and um takes him, makes like a wheel out of him for farming and then he's used and used so he cannot go to sleep."
-6,117,31:52,32:01,1876.064,1885.064,1252,1257,"And then the police comes, takes him, takes him out, takes him to uh, "
+6,117,31:52,32:01,1876.064,1885.064,1252,1257,"And then the police comes, takes him, takes him out, takes him to uh,"
 6,-1,32:04,32:04,1888.064,1888.064,1260,1260,"I guess,"
 6,117,32:06,32:08,1890.064,1892.064,1261,1261,"oh, so the military."
 6,"117, 118, 119",32:08,32:16,1892.064,1900.064,1262,1267,"I think it's the military comes in, uses him, turns him into like a little ball, and then uses him during war."
@@ -244,8 +244,8 @@ movie,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
 6,120,32:21,32:24,1905.064,1908.064,1271,1272,"Then he flies, falls into the sea, ends up somewhere else."
 6,121,32:25,32:27,1909.064,1911.064,1274,1274,"Um, he's a smaller rock."
 6,122,32:28,32:29,1912.064,1913.064,1276,1276,He's trying to find some sleep.
-6,123,32:30,32:38,1914.064,1922.064,1277,1281,"Um, but then he gets grabbed- somebody takes him, he gets taken, "
-6,-1,32:38,32:43,1922.064,1927.064,1282,1285,"and then um, "
+6,123,32:30,32:38,1914.064,1922.064,1277,1281,"Um, but then he gets grabbed- somebody takes him, he gets taken,"
+6,-1,32:38,32:43,1922.064,1927.064,1282,1285,"and then um,"
 6,"123, 124",32:44,32:58,1928.064,1942.064,1286,1295,"I think because he had a, he becomes like a small rock, but he has a fossil behind him so, like an archeologist, I guess, finds him, takes him, and then puts him in a museum."
 6,124,32:59,33:05,1943.064,1949.064,1296,1299,"And in the museum, he cannot get sleep because there are so many people like watching him, so much noise, and getting close."
 6,125,33:06,33:16,1950.064,1960.064,1301,1307,"But somebody gets so close to the, to the glass and he falls down, falls into somebody's garbage can."
@@ -253,8 +253,8 @@ movie,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
 6,125,33:28,33:29,1972.064,1973.064,1316,1316,And then he's like thrown into the garbage.
 6,"132, 133",33:30,33:45,1974.064,1989.064,1317,1326,"But then he's like trying to sleep but then he gets picked up, thrown into the furnace and again into this hot- hot oven, and then he comes like a glass - a glass mirror."
 6,134,33:46,33:56,1990.064,2000.064,1328,1333,"And then the glass mirror gets placed on the, the glass mirror gets placed on the satellite and gets taken into space."
-6,-1,33:57,33:58,2001.064,2002.064,1335,1335,"And then, "
-6,135,34:03,34:22,2007.064,2026.064,1339,1351,"um, but then I guess the satellite knocks into different, like different rocks - meteor rocks or different rocks - and like falls away and he like, falls into the atmosphere of a new planet and becomes like a big rock again, "
+6,-1,33:57,33:58,2001.064,2002.064,1335,1335,"And then,"
+6,135,34:03,34:22,2007.064,2026.064,1339,1351,"um, but then I guess the satellite knocks into different, like different rocks - meteor rocks or different rocks - and like falls away and he like, falls into the atmosphere of a new planet and becomes like a big rock again,"
 6,136,34:22,34:32,2026.064,2036.064,1352,1357,"like the planet I guess, gets a similar atmosphere as it was initially, where he was initially with greenery and like he's so happy because now he finally gets his sleep."
 6,6000,34:33,34:36,2037.064,2040.064,1359,1360,And I think that was it for that one.
 -1,-1,34:38,34:39,2042.064,2043.064,1362,1362,And then what else?

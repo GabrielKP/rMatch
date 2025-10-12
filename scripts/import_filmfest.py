@@ -22,8 +22,10 @@ def import_filmfest(filmfest_path: Path | str):
         recall_df = pd.read_excel(recall_path)
 
         # rename columns
-        col_map = {"movies": "movie", "scenes": "scene"}
+        col_map = {"movies": "movie_num", "scenes": "scene"}
         recall_df = recall_df.rename(columns=col_map)
+
+        recall_df["text"] = recall_df["text"].str.strip()
 
         recall_df.to_csv(
             output_dir / recall_path.stem.replace("_recall", ".csv"), index=False
@@ -105,6 +107,7 @@ def import_filmfest(filmfest_path: Path | str):
         transcript_df["subseg_start_time"] = transcript_df["subseg_start_time"].astype(
             float
         )
+        transcript_df["text"] = transcript_df["text"].str.strip()  # type: ignore
         transcript_df.to_csv(
             output_dir / f"{transcript_path.stem.split('_')[-1]}_transcript.csv",
             index=False,

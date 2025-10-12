@@ -6,8 +6,8 @@ movie_num,seg_num,seg_start_time,subseg_num,subseg_start_time,text
 12,1,0.0,5,0.29,"The words ""Let's all go to the Lobby to get Ourselves a Treat"" fade in as the chorus sings ""Let's all go to the lobby..."""
 12,2,0.34,1,0.34,"Old fashioned movie countdown counting down from 3 to 2 to 1 to 0. The chorus finishes singing ""to get ourselves a treat."""
 12,2,0.34,2,0.39,Cut to a completely black screen
-1,3,0.41,1,0.41,"""CATCH ME IF YOU CAN"" in bold white text fades in on a black screen before fading out "
-1,4,0.44,1,0.44,"""INSPIRED BY A TRUE STORY"" in bold white text fades in on a screen of TV static "
+1,3,0.41,1,0.41,"""CATCH ME IF YOU CAN"" in bold white text fades in on a black screen before fading out"
+1,4,0.44,1,0.44,"""INSPIRED BY A TRUE STORY"" in bold white text fades in on a screen of TV static"
 1,5,0.4700000000000001,1,0.47,"Establishing shot of a game show. ""TO TELL THE TRUTH"" in stylized text in the bottom center of the screen. The host says ""Thank you very much and welcome to 'To Tell the Truth'"""
 1,5,0.4700000000000001,2,0.5,"Yellow curtains open up to reveal three men in black suits, who start walking forward. The host says ""Our first guest, he's made a career out of being the most outrageous imposter that we've ever come across on his show. You're going to see what I mean"""
 1,6,0.59,1,0.59,"Host says, ""Number 1, what is your name please?"" The first man says ""My name is Frank William Abagnale"""
@@ -20,15 +20,15 @@ movie_num,seg_num,seg_start_time,subseg_num,subseg_start_time,text
 1,7,1.11,5,1.45,"The men start walking to the left, where there are three podiums. Host: ""My name is Frank William Abagnale"""
 1,8,1.4899999999999998,1,1.49,The men sit down at their respective podiums/seats
 1,8,1.4899999999999998,2,1.54,"Camera cuts to the host. He says ""So, for the first time he's going to have to tell the truth and we're going to start our question with Kitty"""
-1,8,1.4899999999999998,3,1.58,"Camera cuts to a lady. She says ""Thank you. Number 1, why, with all your talent and you're obviously a very bright  "
+1,8,1.4899999999999998,3,1.58,"Camera cuts to a lady. She says ""Thank you. Number 1, why, with all your talent and you're obviously a very bright"
 1,8,1.4899999999999998,4,2.03,"Camera zooms in on the first man. Kitty continues: ""Why didn't you go in for a legitimate profession?"""
 1,8,1.4899999999999998,5,2.04,"The man replies. ""It was really a question of dollars and cents. When I was a young man I needed the money, and I thought this list of careers was the easiest way to get it"". Kitty replies, ""I see"""
-1,9,2.14,1,2.14,"Camera pans to the second man. Kitty: ""Number 2. I find this all very fascinating. Who was it that finally caught you?"" "
+1,9,2.14,1,2.14,"Camera pans to the second man. Kitty: ""Number 2. I find this all very fascinating. Who was it that finally caught you?"""
 1,9,2.14,2,2.19,"The man leans in to the mic and replies, ""His name was Carl Hanratty"""
 1,10,2.23,1,2.23,Suddenly cut to a scene in the rain. A group of men are trying to communicate with French prison guards (police officers?)
 1,10,2.23,2,2.26,"Camera cuts to a wider shot showing a group of men. One man repeats his name ""Carl Hanratty"" to the French prison guards"
 1,10,2.23,3,2.3,"Close up of Carl Hanratty's face. He says ""I am Carl Hanratty"""
-1,10,2.23,4,2.35,"Hanratty says ""I represent the FBI of the United States of America. Yeah. I have orders to see the American prisoner Abagnale"" "
+1,10,2.23,4,2.35,"Hanratty says ""I represent the FBI of the United States of America. Yeah. I have orders to see the American prisoner Abagnale"""
 1,10,2.23,5,2.45,"Establishing shot of a French prison in the rain. In the bottom right corner, ""Marseille, France, Christmas Eve, 1969"" appears in white text"
 1,11,2.49,1,2.49,"View from inside a prison door, through a small round window. A French jailer unlocks and opens the door."
 1,11,2.49,2,2.57,Carl follows the jailer through a dimly lit hallway. The jailer picks up a stool and sets it down at the end of the hall.
@@ -40,14 +40,14 @@ movie_num,seg_num,seg_start_time,subseg_num,subseg_start_time,text
 1,13,3.31,4,3.54,"As Frank continues to cough, Carl says ""you know I've got a little bit of a cold myself"""
 1,14,4.02,1,4.02,"Carl says ""I'm here to read the articles of extradition according to the European Court for Human Rights. Article 1: Extradition shall be granted in respect of offenses under the laws..."""
 1,14,4.02,2,4.11,"Frank mumbles, ""help me"" repeatedly as Carl continues to read the articles"
-1,15,4.19,1,4.19,"Carl pauses, then says ""Frank, stop it"" "
+1,15,4.19,1,4.19,"Carl pauses, then says ""Frank, stop it"""
 1,15,4.19,2,4.21,"Frank says ""help me"" again, breathing heavily"
-1,15,4.19,3,4.24,"Carl says ""You don't think actually you can fool me, do ya?"" "
+1,15,4.19,3,4.24,"Carl says ""You don't think actually you can fool me, do ya?"""
 1,15,4.19,4,4.27,"Frank coughs coarsely and looks up at the ceiling. Carl says ""16 pages to go, stay with me"""
 1,16,4.31,1,4.31,"Carl: ""Article two. If the request for extradition includes several separate offenses... """
 1,16,4.31,2,4.36,Frank stumbles and then falls onto the floor
 1,17,4.39,1,4.39,"Carl stops reading out the articles. He says ""Frank. Frank."""
-1,17,4.39,2,4.46,"Carl stands up quickly, knocking over his stool. He shouts ""Get me a doctor in here! I need a doctor. Doctor, now!"" as the jail guard approaches. "
+1,17,4.39,2,4.46,"Carl stands up quickly, knocking over his stool. He shouts ""Get me a doctor in here! I need a doctor. Doctor, now!"" as the jail guard approaches."
 1,18,4.53,1,4.53,"Sudden cut to Carl and the jailors dragging Frank through a hallway. Carl says ""Don't sweat it Frank. We're going to get you right to a doctor"""
 1,18,4.53,2,5.0,"The jailors place Frank onto a hospital bed. Carl says, ""Frank if you can hear me, don't worry I'm going to take you home in the morning. Home in the morning, Frank"""
 1,19,5.05,1,5.04,"The jailors start washing their hands. Carl asks, ""what are you doing?"" Official ""Washing off the lice"" Carl: ""This man has to be in a plane for America. He has to see a doctor"" Jailor: ""The doctor comes in tomorrow"""
@@ -63,16 +63,16 @@ movie_num,seg_num,seg_start_time,subseg_num,subseg_start_time,text
 1,24,6.03,1,6.03,"The official presses his gun up against Frank's head. Frank stops crawling and sits back. In the background, the officials try to quiet the other prisoners."
 1,25,6.11,1,6.11,Frank gives up and lies down on his back. The camera pans to his face. Frank chuckles as he looks at Carl
 1,26,6.16,1,6.16,"Carl walks over, looking at Frank. Frank says ""Okay Carl..."""
-1,26,6.16,2,6.22,"Camera cuts to Frank, who says ""Let's go home"".  "
+1,26,6.16,2,6.22,"Camera cuts to Frank, who says ""Let's go home""."
 1,26,6.16,3,6.24,"The camera starts to zoom pan out. A voice in the background says ""The New Rochelle Rotary Club has a history that goes back to 1919"""
-2,27,6.31,1,6.31,"""THE RECORD""  in bold white text fades in on a black screen before fading out "
+2,27,6.31,1,6.31,"""THE RECORD""  in bold white text fades in on a black screen before fading out"
 2,28,6.37,1,6.37,"View outside a building, with a woman standing at a window. Camera slowly zooms in"
 2,28,6.37,2,6.39,woman sitting in room with a pizza box. She opens it and takes a slice out
 2,29,6.43,1,6.43,Someone knocks on the door. The woman turns around
 2,29,6.43,2,6.45,The woman opens the door and looks around
 2,30,6.48,1,6.48,The woman looks down to see a package on the floor
 2,30,6.48,2,6.5,The woman brings the package inside and sits down to start opening it up
-2,30,6.48,3,6.56,"The woman takes out a record in a sleeve that says ""A SINGLE LIFE"" "
+2,30,6.48,3,6.56,"The woman takes out a record in a sleeve that says ""A SINGLE LIFE"""
 2,31,6.58,1,6.58,"the woman takes out the record, which also says ""A SINGLE LIFE"". ""A film by JOB, JORIS AND MARKIEKE"" appears in white text in the bottom right corner"
 2,32,7.010000000000001,1,7.01,"The woman stands up and turns around to her record player, which sits on a desk beside her"
 2,32,7.010000000000001,2,7.04,Close up of the woman placing the record player needle on the record. Cheerful music starts playing
@@ -83,7 +83,7 @@ movie_num,seg_num,seg_start_time,subseg_num,subseg_start_time,text
 2,34,7.17,2,7.2,"Camera slowly zooms into the record player, which continues to spin"
 2,34,7.17,3,7.22,"The woman looks away and thinks for a moment, before realizing something"
 2,35,7.24,1,7.24,"The woman reaches out with her hand and stops the record player, stopping the music"
-2,35,7.24,2,7.27,"The woman spins the record backwards. The pizza in her hand magically grows back, as if time were reversed. "
+2,35,7.24,2,7.27,"The woman spins the record backwards. The pizza in her hand magically grows back, as if time were reversed."
 2,35,7.24,3,7.29,The woman is surprised. She spins the record back and forth to see that part of the pizza disappears and reappears with the record spinning
 2,35,7.24,4,7.33,The woman smiles at the record player and starts spinning it back rapidly
 2,35,7.24,5,7.35,"View of the pizza box on a couch and a candle on the table. As the record spins backwards, the number of pizzas in the box reduces and the candle shrinks. As the record spins forward, the number of pizzas increases and the candle grows"
@@ -91,11 +91,11 @@ movie_num,seg_num,seg_start_time,subseg_num,subseg_start_time,text
 2,36,7.4,1,7.4,The woman realizes something else and smiles widely
 2,36,7.4,2,7.42,The woman gets up to grab the record player's needle. She lifts it up before...
 2,36,7.4,3,7.44,"The screen flashes white for an instant and the scene changes. The walls turn white, the furniture and decor change, the woman's clothes change, even the woman's hairstyle changes. She looks around, smiling for a bit"
-2,36,7.4,4,7.49,"The woman looks down at her stomach, noticing that she is pregnant. "
+2,36,7.4,4,7.49,"The woman looks down at her stomach, noticing that she is pregnant."
 2,36,7.4,5,7.52,The woman rubs her stomach and thinks before getting another idea. She walks up to the record player again
 2,37,7.5600000000000005,1,7.56,"The woman moves the record back and forth twice, watching her stomach grow and retract"
 2,37,7.5600000000000005,2,7.58,The woman gets another idea and starts spinning the record forward rapidly until...
-2,37,7.5600000000000005,3,8.0,"A white flash and a popping sound, and the woman is holding a baby. "
+2,37,7.5600000000000005,3,8.0,"A white flash and a popping sound, and the woman is holding a baby."
 2,37,7.5600000000000005,4,8.02,"The baby starts crying, which appears to annoy the woman. She grabs the needle again, lifts it up and places it down on another location when..."
 2,38,8.05,1,8.05,"Another white flash and the room changes to a child's room. The woman is now a little girl holding a doll. She looks, surprised, at the doll momentarily"
 2,38,8.05,2,8.07,"She looks down at herself, surprised, before dropping the doll and walking over to the turntable"
@@ -104,8 +104,8 @@ movie_num,seg_num,seg_start_time,subseg_num,subseg_start_time,text
 2,39,8.12,2,8.15,"The woman notices her broken leg. She looks surprised, then disappointed"
 2,39,8.12,3,8.17,The woman starts rolling over to the record player when....
 2,39,8.12,4,8.19,"The record skips, and the woman is back to her original position. She rolls forward again, more determined and annoyed before...."
-2,39,8.12,5,8.24,"The record skips again, and the woman is back where she started. She starts to roll forward again, more rapidly "
-2,39,8.12,6,8.26,"The record skips again, and the woman is back where she started.  "
+2,39,8.12,5,8.24,"The record skips again, and the woman is back where she started. She starts to roll forward again, more rapidly"
+2,39,8.12,6,8.26,"The record skips again, and the woman is back where she started."
 2,39,8.12,7,8.28,"Close up of the woman's face; she looks determined. She holds her hands at the wheels of her wheelchair, ready to roll again"
 2,39,8.12,8,8.3,The record skips again and the woman tries to roll forward but the wheelchair falls back and she lands on the floor
 2,39,8.12,9,8.32,"The impact shakes the record player, and the needle jumps up before landing again"
@@ -115,7 +115,7 @@ movie_num,seg_num,seg_start_time,subseg_num,subseg_start_time,text
 2,40,8.34,4,8.41,The needle reaches the end of the record and the song ends
 2,41,8.43,1,8.43,"Another white flash. A blue urn lands on the floor, and the walker falls in the background. The urn's lid rattles for a moment"
 2,41,8.43,2,8.46,Close up of the record player. The record stops spinning and the needle moves to the side
-3,42,8.49,1,8.49,"""THE BOYFRIEND"" in bold white text fades in on a black screen before fading out "
+3,42,8.49,1,8.49,"""THE BOYFRIEND"" in bold white text fades in on a black screen before fading out"
 3,42,8.49,2,8.54,"The letters of ""high maintenance"" appear in the center of the screen one by one in white text. A simple jingle plays in the background"
 3,43,9.0,1,9.0,View of the back of a man's head. He's sitting at a table across from a woman and eating dinner. The woman looks at the man
 3,43,9.0,2,9.09,View of the man over the woman's shoulder. He's looking down at his plate and cutting something with his knife and fork
@@ -128,8 +128,8 @@ movie_num,seg_num,seg_start_time,subseg_num,subseg_start_time,text
 3,44,9.22,3,9.27,"The man, without looking up says ""not for me dear"" and continues eating"
 3,44,9.22,4,9.29,"The woman sits back down and glances at the man before saying ""you know it's our anniversary"""
 3,45,9.36,1,9.36,"The man stops eating and looks at the woman, saying ""you know I can't drink wine or alcohol"" before starting to eat again"
-3,45,9.36,2,9.39,"The woman picks up her wine glass and downs it in a few gulps while looking at the man. When she finishes, she sighs and looks at the man pointedly. "
-3,45,9.36,3,9.51,"The woman sets down her wine glass with a ""clink"" sound. She smiles, sighs and then pours more wine for herself. "
+3,45,9.36,2,9.39,"The woman picks up her wine glass and downs it in a few gulps while looking at the man. When she finishes, she sighs and looks at the man pointedly."
+3,45,9.36,3,9.51,"The woman sets down her wine glass with a ""clink"" sound. She smiles, sighs and then pours more wine for herself."
 3,45,9.36,4,9.59,"The man says ""the asparagus is very tender"""
 3,46,10.01,1,10.01,"The woman replies ""oh yeah"". The man continues to eat without looking up"
 3,46,10.01,2,10.04,"Side view of the woman's face. She says ""They say it's an aphrodisiac"" while looking at the man"
@@ -137,8 +137,8 @@ movie_num,seg_num,seg_start_time,subseg_num,subseg_start_time,text
 3,46,10.01,4,10.11,"The woman replies ""Oh, I don't know. People. That's just what people say"" while eating another bite of food"
 3,46,10.01,5,10.18,The man continues to look down and not say anything. The woman glances up at the man but doesn't say anything
 3,47,10.23,1,10.23,"The man looks up and says ""So dear, how was your day?"""
-3,47,10.23,2,10.25,"The woman, furious, gets up and says ""Oh geez. Shut up and have a drink!"" as she throws her glass of wine at the man. "
-3,47,10.23,3,10.29,"The woman sits down, agitated and says ""You're a computer analyst, not a fucking surgeon! Why can't you, I don't know, relax for once in your life?!"" "
+3,47,10.23,2,10.25,"The woman, furious, gets up and says ""Oh geez. Shut up and have a drink!"" as she throws her glass of wine at the man."
+3,47,10.23,3,10.29,"The woman sits down, agitated and says ""You're a computer analyst, not a fucking surgeon! Why can't you, I don't know, relax for once in your life?!"""
 3,48,10.36,1,10.35,The man takes something out of his pocket
 3,48,10.36,2,10.37,"The woman says angrily ""Oh don't you dare"""
 3,48,10.36,3,10.39,"The man, with wine still on his face puts a cigarette in his mouth and starts to smoke. The woman stands up and says ""Don't you dare smoke in my house!"""
@@ -146,43 +146,43 @@ movie_num,seg_num,seg_start_time,subseg_num,subseg_start_time,text
 3,48,10.36,5,10.45,The woman walks back across the room and angrily  puts the cigarette out in an ashtray
 3,48,10.36,6,10.47,The woman looks back across the room to see that the man is lighting another cigarette
 3,49,10.51,1,10.51,"The woman sits down and says, frustrated, ""Yeah, that's right. Passive smoke. That's, exactly what I wanted for my anniversary"". The man continues to look down and smoke"
-3,49,10.51,2,10.56,"The woman continues, ""followed by some stilted conversation. And if I'm really lucky, by some short, mechanical sex."" "
+3,49,10.51,2,10.56,"The woman continues, ""followed by some stilted conversation. And if I'm really lucky, by some short, mechanical sex."""
 3,49,10.51,3,11.07,The man looks up at the woman
-3,49,10.51,4,11.09,"The woman looks down, avoiding eye contact for a moment but glances up "
+3,49,10.51,4,11.09,"The woman looks down, avoiding eye contact for a moment but glances up"
 3,49,10.51,5,11.12,The man continues to stare at the woman. He swallows
 3,49,10.51,6,11.14,The woman looks back before saying....
 3,50,11.18,1,11.18,"The woman says ""I'm sorry."" and begins to stand up"
 3,50,11.18,2,11.21,"The woman walks across the room to the man, and says ""Come here"""
-3,50,11.18,3,11.25,"The woman sits down in the man's lap and hugs him, saying ""There, there. I didn't mean what I said"". "
-3,50,11.18,4,11.35,"The woman holds the man's head closer, stroking his hair. "
+3,50,11.18,3,11.25,"The woman sits down in the man's lap and hugs him, saying ""There, there. I didn't mean what I said""."
+3,50,11.18,4,11.35,"The woman holds the man's head closer, stroking his hair."
 3,51,11.38,1,11.38,The woman's hand traces the man's head to his neck. She pulls down the man's shirt collar to reveal a switch on his neck.
 3,51,11.38,2,11.44,Close up of the woman's face. She blinks
 3,51,11.38,3,11.46,"The woman's hand slides to the switch. She pushes it down with a ""click"" sound"
-3,51,11.38,4,11.5,"Close up of the man's face. With a whine sound, his neck droops and he lies on the woman's shoulder, seemingly unconscious "
+3,51,11.38,4,11.5,"Close up of the man's face. With a whine sound, his neck droops and he lies on the woman's shoulder, seemingly unconscious"
 3,52,11.53,1,11.53,"The woman pushes the man off her shoulder with a grunt, stands up, and walks away. His head hangs there, limp"
-3,52,11.53,2,12.01,"The woman sits down at the other side of the table. She takes off her shoes and crosses her legs on the table, sighing. She says sarcastically ""Happy anniversary"" "
+3,52,11.53,2,12.01,"The woman sits down at the other side of the table. She takes off her shoes and crosses her legs on the table, sighing. She says sarcastically ""Happy anniversary"""
 3,53,12.089999999999998,1,12.09,"Close up of the back of a laptop. The camera pans up to the woman, typing something. Metallophone music starts playing in the background"
-3,53,12.089999999999998,2,12.14,"On her computer screen: ""PROMETEUS ROBOTICS CHOOSE EVERLASTING LOVE"". With a click, the screen displays a lineup of six differently dressed men. "
+3,53,12.089999999999998,2,12.14,"On her computer screen: ""PROMETEUS ROBOTICS CHOOSE EVERLASTING LOVE"". With a click, the screen displays a lineup of six differently dressed men."
 3,53,12.089999999999998,3,12.17,The woman types something before looking up
 3,53,12.089999999999998,4,12.2,"Across the room, the man still sits there, his head down, hanging limply"
 3,53,12.089999999999998,5,12.22,The woman looks back down at her screen before smiling
-3,53,12.089999999999998,6,12.26,"On her screen: several pictures of a muscular, dark haired man. "
+3,53,12.089999999999998,6,12.26,"On her screen: several pictures of a muscular, dark haired man."
 3,54,12.28,1,12.28,The woman puts on a bluetooth headset before looking down at her screen again
 3,54,12.28,2,12.31,"Screen briefly shows the same page with the man, before switching to a screen that says ""...DIALING: 0800 800 800..."" Sounds of a phone being dialed in the background"
 3,54,12.28,3,12.34,"Close up of the woman's face. A woman on the other end of the phone says ""Hello you've reached Rachelite technical support, how may I help you?"" The woman replies: ""Hi. I, I'm unsatisfied with my current unit"" The customer support rep says ""Okay, what model do you currently have?"""
 3,54,12.28,4,12.45,"The camera pans from the computer screen to a picture frame of the woman in a wedding dress hugging the man. Woman: ""It's the 100 series"" Customer service: ""And what seems to be the problem?"""
 3,54,12.28,5,12.49,"Close up of the woman's face. Woman: ""He lacks ambition. He has no sense of adventure."" Customer service representative: ""Yes, that is a common malfunction with the 100 series."
 3,55,12.59,1,12.59,"The customer service rep continues, ""Would it help if we upgraded you to a higher model?"" Woman: ""Yeah, would you be able to..."""
-3,55,12.59,2,13.03,"Camera cuts to a view of the man sitting there, still limp. The woman continues... give me something "
+3,55,12.59,2,13.03,"Camera cuts to a view of the man sitting there, still limp. The woman continues... give me something"
 3,55,12.59,3,13.06,"Camera cuts back to a view of the woman. She continues, ""a bit sportier?"" Customer service rep: ""Certainly. Do you have any preferences?"" Woman: ""Oh, um...."" as she clicks the computer"
 3,55,12.59,4,13.13,"View of the computer screen, showing the same man. Woman: ""A rock climber. Oh no, a masseuse"""
-3,55,12.59,5,13.19,"Camera slowly pans away from the woman at her computer. Woman: ""Oh wait. A rock climbing masseuse? Yeah, like the picture. Yeah, but no beard. Maybe just a 5 o'clock shadow. Yeah. And, could he have shorter hair? And blonde. Yeah. And...."" "
+3,55,12.59,5,13.19,"Camera slowly pans away from the woman at her computer. Woman: ""Oh wait. A rock climbing masseuse? Yeah, like the picture. Yeah, but no beard. Maybe just a 5 o'clock shadow. Yeah. And, could he have shorter hair? And blonde. Yeah. And...."""
 3,55,12.59,6,13.39,The camera fades to black
 3,56,13.41,1,13.41,A loud banging sound on the black screen. Sudden cut to a view of a doorbell. The woman's eye approaches the doorbell.
 3,57,13.44,1,13.44,"A clicking sound as the door unlocks. The woman opens up the door to a delivery girl looking down at her clipboard. A large box that says ""Prometeus Robotics...."" is pushed into frame, and another delivery girl steps into frame"
 3,57,13.44,2,13.51,Someone walks across frame to reveal a  layer of plastic. Sound of wrinkling plastic as it is pulled away
 3,57,13.44,3,13.55,"Close up of the woman's face. She blinks, and the sound of wrinkling plastic continues"
-3,57,13.44,4,13.57,"The delivery woman peels back the plastic to reveal a man, exactly as the woman described earlier. "
+3,57,13.44,4,13.57,"The delivery woman peels back the plastic to reveal a man, exactly as the woman described earlier."
 3,57,13.44,5,14.02,Camera slowly zooms in on the woman's face. She looks intensely ahead. A delivery woman walks behind her. String music swells in the background.
 3,58,14.12,1,14.12,The woman turns her head to see....
 3,58,14.12,2,14.14,The delivery women have tied the original man to a cart and start to wheel him away
@@ -191,12 +191,12 @@ movie_num,seg_num,seg_start_time,subseg_num,subseg_start_time,text
 3,58,14.12,5,14.28,The woman gives the original man a quick kiss before backing away
 3,59,14.31,1,14.31,Close up of the woman's hands as she takes a ring off of the original man's ring finger
 3,60,14.34,1,14.34,Close up of the woman's hands as she puts the ring on the new man's ring finger. She sets the man's hand down and pats it gently
-3,61,14.430000000000001,1,14.43,"Close up of the woman's hands on the man's neck. She flicks the switch with a click, and an electronic whine starts "
+3,61,14.430000000000001,1,14.43,"Close up of the woman's hands on the man's neck. She flicks the switch with a click, and an electronic whine starts"
 3,61,14.430000000000001,2,14.45,The whine continues. The woman walks across the frame and the man sits there motionless
 3,61,14.430000000000001,3,14.47,The woman sits down and looks expectantly at the man
 3,61,14.430000000000001,4,14.5,"The man blinks. With an electronic whine, he looks around. He then grabs the napkin next to him and sits up"
 3,62,15.01,1,15.01,"The woman asks cautiously ""Glass of wine?"" and looks at the man"
-3,62,15.01,2,15.05,"The man, looking down, replies ""No thanks, I've got a big climb tomorrow as he eats a bite of food. "
+3,62,15.01,2,15.05,"The man, looking down, replies ""No thanks, I've got a big climb tomorrow as he eats a bite of food."
 3,62,15.01,3,15.08,The woman looks back before looking down again
 3,63,15.1,1,15.1,"The man looks at the woman and says ""the asparagus is very tender"""
 3,63,15.1,2,15.12,"The woman looks back hesitantly before smiling, nodding and saying ""Yes, dear"""
@@ -216,9 +216,9 @@ movie_num,seg_num,seg_start_time,subseg_num,subseg_start_time,text
 3,66,16.07,2,16.09,The woman's neck goes limp and her head hangs
 3,66,16.07,3,16.11,The man looks up and smiles slightly before walking away
 3,66,16.07,4,16.13,"View of the woman's face hanging there, expressionless. The man walks away"
-3,67,16.17,1,16.17,"View of the woman's neck, revealing a switch. "
+3,67,16.17,1,16.17,"View of the woman's neck, revealing a switch."
 3,67,16.17,2,16.22,"Camera pans up. In the background the man walks across the room and sits down on a sofa with a cigarette and turns on the TV, crossing his legs"
-3,67,16.17,3,16.17,"Close up of the man's emotionless face as he smokes, with the TV going in the background. "
+3,67,16.17,3,16.17,"Close up of the man's emotionless face as he smokes, with the TV going in the background."
 4,68,16.39,1,16.39,"""THE SHOE"" in bold white text fades in on a black screen"
 4,69,16.45,1,16.45,Close up of a dirty black running shoe lying on a sidewalk. How They Get There appears in bold black text in the upper left corner of the screen before fading out
 4,69,16.45,2,16.54,Shoe turns upright. Person wearing the shoe is tapping their foot
@@ -237,11 +237,11 @@ movie_num,seg_num,seg_start_time,subseg_num,subseg_start_time,text
 4,76,17.51,2,17.53,"The man, looking at the girl, dips his back and sways his arms side to side rhythmically"
 4,76,17.51,3,17.56,"The girl, looking back at the man, sways her arms back and forth in the same manner."
 4,76,17.51,4,17.58,"Camera cuts back to the man, who is now smiling, continues to sway his arms in an exaggerated manner"
-4,76,17.51,5,18.02,"The girl also sways her arms, smiling. She then ducks behind an electrical box and emerges, crouching, with her right hand placed on her head and waving. "
+4,76,17.51,5,18.02,"The girl also sways her arms, smiling. She then ducks behind an electrical box and emerges, crouching, with her right hand placed on her head and waving."
 4,76,17.51,6,18.06,"The man copies the girl, also placing his hand on top of his head and crouching over"
 4,76,17.51,7,18.08,"The girl switches to miming an old man, with one hand placed on her back"
 4,76,17.51,8,18.1,"The man does the same, copying the girl"
-4,77,18.13,1,18.13,"Camera cuts back the girl, who suddenly stands upright in surprise. She looks back and places her hands over her mouth in alarm. "
+4,77,18.13,1,18.13,"Camera cuts back the girl, who suddenly stands upright in surprise. She looks back and places her hands over her mouth in alarm."
 4,77,18.13,2,18.15,The man copies the girl. A car approaches in the background. The girl waves her hand in panic and a horn goes off in the background.
 4,78,18.18,1,18.17,"The man, still copying the girl walks into the path of an oncoming car, oblivious"
 4,78,18.18,2,18.19,"The car crashes into the man, breaking its windshield. The man flips over the hood of the car."
@@ -249,10 +249,10 @@ movie_num,seg_num,seg_start_time,subseg_num,subseg_start_time,text
 4,80,18.33,1,18.33,The girl sees a shoe flying through the air.
 4,80,18.33,2,18.37,The shoe lands next to a curb and the camera starts panning to the right
 4,80,18.33,3,18.43,Another black sneaker next to the curb comes into focus
-5,81,18.54,1,18.54,"""KEITH REYNOLDS"" in bold white text fades in on a black screen, then quickly fades out "
+5,81,18.54,1,18.54,"""KEITH REYNOLDS"" in bold white text fades in on a black screen, then quickly fades out"
 5,82,19.01,1,19.01,A small blue sedan drives right on the black horizon towards a tall solid black building. The sky is bright with a couple clouds
 5,83,19.12,1,19.12,"""Keith Reynolds can't make it tonight"" in bold white text on a black background appears"
-5,84,19.15,1,19.15,"Closer view of the blue sedan in front of the building. Keith Reynolds, a blue stick figure, steps out of the car and starts walking "
+5,84,19.15,1,19.15,"Closer view of the blue sedan in front of the building. Keith Reynolds, a blue stick figure, steps out of the car and starts walking"
 5,84,19.15,2,19.23,Keith notices that he forgot his hat. He walks back into the car to retrieve it before continuing
 5,85,19.33,1,19.33,"Upbeat music starts as the figure walks up the stairs. A narrator says ""This is Keith Reynolds, and today is promotion day"""
 5,85,19.33,2,19.41,"Keith walks through the first floor and waves at his coworkers. Narrator: ""having worked at the company eight years, he's the most senior junior business analyst in the building"""
@@ -303,7 +303,7 @@ movie_num,seg_num,seg_start_time,subseg_num,subseg_start_time,text
 5,104,23.57,1,23.57,"Sarah faints and falls to the ground. Keith looks down dejectedly. Narrator: ""She fainted. He guessed dead bodies had that effect on women"""
 5,104,23.57,2,24.02,"Keith climbs out the window. Narrator: ""Fortunately, she was just clear of the stairs and would live to die another day. Keith Reynolds didn't know what he would do without her"""
 5,105,24.099999999999998,1,24.1,"Keith drags Patrick's body out of the window. Narrator: ""and as Keith tugged Patrick out onto the ladder, he suddenly realizes..."""
-5,105,24.099999999999998,2,24.15,"Keith hangs on the ladder. Narrator continues: ""...realizes that a lot of people probably want the same things he does. A great job. A beautiful wife. Happiness. And even if you're lucky enough to get even some of it, like Patrick down there, it only takes a moment and it can all be taken away from you. "
+5,105,24.099999999999998,2,24.15,"Keith hangs on the ladder. Narrator continues: ""...realizes that a lot of people probably want the same things he does. A great job. A beautiful wife. Happiness. And even if you're lucky enough to get even some of it, like Patrick down there, it only takes a moment and it can all be taken away from you."
 5,106,24.33,1,24.33,"Keith looks up. Narrator: ""He takes one last look at the building that has been his life for the last 8 years and sees a man he's never seen before"""
 5,106,24.33,2,24.39,"Barry turns to see Keith hanging on the ladder. Narrator: ""It was a rather surreal moment for Barry, whose job it was to mop the floors. Keith Reynolds, balanced there"""
 5,106,24.33,3,24.49,"Camera cuts to a black screen, narration stops"
@@ -314,7 +314,7 @@ movie_num,seg_num,seg_start_time,subseg_num,subseg_start_time,text
 11,107,0.0,5,0.29,"The words ""Let's all go to the Lobby to get Ourselves a Treat"" fade in as the chorus sings ""Let's all go to the lobby..."""
 11,108,0.34,1,0.34,"Old fashioned movie countdown counting down from 3 to 2 to 1 to 0. The chorus finishes singing ""to get ourselves a treat."""
 11,108,0.34,2,0.39,Cut to a completely black screen
-6,109,0.41,1,0.41,"""THE ROCK "" in bold white text fades in on a black screen, then quickly fades out "
+6,109,0.41,1,0.41,"""THE ROCK "" in bold white text fades in on a black screen, then quickly fades out"
 6,110,0.45,1,0.45,Underwater scene on the sea floor with lots of prehistoric sea creatures. A nautilus swims across the frame
 6,110,0.45,2,0.47,Camera starts to pan up to the surface of the water
 6,111,0.51,1,0.51,"Now above water, we see a large mountain with eyes and a round nose. A couple dragonflies fly across the frame"
@@ -333,7 +333,7 @@ movie_num,seg_num,seg_start_time,subseg_num,subseg_start_time,text
 6,114,1.26,3,1.33,"The man walks in front of the boulder, who, now completely awake, starts groaning"
 6,114,1.26,4,1.41,We now see a several men using axes to build houses to the boulder's left. The boulder is disturbed by their noise
 6,115,1.44,1,1.44,The boulder uses his arms to lift himself out of the ground and starts to walk
-6,115,1.44,2,1.49,"The boulder walks to another forest area, where he finds a cliffside to lie down and sleep "
+6,115,1.44,2,1.49,"The boulder walks to another forest area, where he finds a cliffside to lie down and sleep"
 6,116,1.58,1,1.58,"While the boulder is sleeping, a rope is slung over his nose. The rope pulls is pulled, waking the boulder up"
 6,116,1.58,2,2.01,"In a wider shot, it is shown that a donkey and some men are dragging the boulder away"
 6,116,1.58,3,2.04,Cut to a scene where three men are pulling the rock on a cart
@@ -402,14 +402,14 @@ movie_num,seg_num,seg_start_time,subseg_num,subseg_start_time,text
 6,136,5.47,1,5.47,"The stars in the sky start to spin, as if to indicate the passage of time. Slowly, the landscape shifts and mountains form"
 6,136,5.47,2,5.51,Clouds start to form and rain starts falling. A body of water collects in the center
 6,136,5.47,3,5.54,A face starts to emerge from a mountain. He opens his eyes as plants start growing and he looks around. The mountain sighs heavily before falling asleep
-7,137,6.1000000000000005,1,6.1,"""THE PRISONER "" in bold white text fades in on a black screen, then quickly fades out "
+7,137,6.1000000000000005,1,6.1,"""THE PRISONER "" in bold white text fades in on a black screen, then quickly fades out"
 7,138,6.15,1,6.15,"Black screen fades into a scene of outside a cafe. A man wearing a black suit walks up to maid who is cleaning up a table. The maid says ""we'll be with you in a minute"""
 7,138,6.15,2,6.2,"Camera cuts to a closer view of the man. He asks, ""What's the name of this place?"" The woman answers ""You're new here, aren't you?"" Man: ""Where?"" Maid: ""Do you want breakfast?"" Man: Where is this?"" Maid: ""The village?"" Man: ""Yes"" Maid: ""I'll see if coffee's ready"""
 7,139,6.28,1,6.28,"The man reaches for the maid's arm and asks urgently, ""Where's the police station?"""
 7,139,6.28,2,6.3,"The maid turns around, saying ""there isn't one"" Man: ""Can I use your phone"" Maid: ""we haven't got one"" Man: ""where can I make a call?"" Maid: ""well there's a phone box around the corner"". The man thanks her and walks away briskly"
 7,140,6.36,1,6.36,Camera cuts to wide shot of the man walking through the street and around the corner while looking for the phone booth. Ominous music plays in the background.
 7,141,6.51,1,6.5,The man walks up to the phone box and grabs an L-shaped phone. He holds it up and examines it
-7,141,6.51,2,6.55,"The phone beeps. A woman says ""Number please"" Man: ""what exchange is this?"" Woman: ""Number please"" Man: ""I want to make a call t-"" Woman: ""Local calls only, what is your number sir"" "
+7,141,6.51,2,6.55,"The phone beeps. A woman says ""Number please"" Man: ""what exchange is this?"" Woman: ""Number please"" Man: ""I want to make a call t-"" Woman: ""Local calls only, what is your number sir"""
 7,141,6.51,3,7.05,"The man pauses, then says ""Haven't got a number"" Woman: ""No number, no call"". The phone clicks and the man sets it down"
 7,142,7.11,1,7.13,The man begins to walk back towards the camera. He looks around
 7,142,7.11,2,7.24,Camera cuts again to the man walking up to what looks like a map of the village
@@ -430,7 +430,7 @@ movie_num,seg_num,seg_start_time,subseg_num,subseg_start_time,text
 7,146,8.22,2,8.25,"The woman says ""the charge is two units"" as the man turns around. Man: ""Units?"" Woman: ""Credit units. Oh well, pay me next time"""
 7,146,8.22,3,8.31,"Camera cuts back to the woman, who gestures and says ""be seeing you"" before starting to drive off"
 7,146,8.22,4,8.33,Camera cuts to a wide view of a white building with the man and car in front of it. The car drives off to the right as the man looks around
-7,147,8.4,1,8.4,"The man looks at a sign in front of the building that says ""General Store"" before walking in "
+7,147,8.4,1,8.4,"The man looks at a sign in front of the building that says ""General Store"" before walking in"
 7,147,8.4,2,8.44,"Camera cuts to view from inside of the general store, with the man entering through the door. A man is speaking French in the background"
 7,147,8.4,3,8.53,The man starts walking right and the camera pans right to reveal a clerk speaking to a woman in a blue dress
 7,147,8.4,4,8.57,"The clerk says ""wouldn't you go help yourself, the pineapple ma'am"" and the woman walks out of frame and back to get a pineapple. The clerk thanks the lady before she leaves"
@@ -452,11 +452,11 @@ movie_num,seg_num,seg_start_time,subseg_num,subseg_start_time,text
 7,153,10.23,2,10.28,"The clerk says ""be seeing you"", making the same gesture again to the man as he leaves"
 7,153,10.23,3,10.3,"The clerk turns to the new customer and says ""yes, sir?"""
 7,153,10.23,4,10.33,"The man turns, opens the door and exits"
-8,154,10.36,1,10.36,"""THE BLACK HOLE"" in bold white text fades in on a black screen, then quickly fades out "
+8,154,10.36,1,10.36,"""THE BLACK HOLE"" in bold white text fades in on a black screen, then quickly fades out"
 8,155,10.4,1,10.4,"""THE BLACK HOLE"" appears in bold white text on a black screen. A circle opens up to reveal an office setting"
 8,155,10.4,2,10.42,The camera pans right to reveal a man wearing a white shirt and gray tie. The man sighs
 8,155,10.4,3,10.49,"The man hits a button on the copy machine, which quickly beeps 3 times"
-8,155,10.4,4,10.51,"The man notices something is wrong, frowning. He looks down at the copier "
+8,155,10.4,4,10.51,"The man notices something is wrong, frowning. He looks down at the copier"
 8,155,10.4,5,10.53,The man hits the button on the copier 3 times in a row and the copier beeps repeatedly
 8,155,10.4,6,10.55,"View of man's feet, he kicks the copier"
 8,156,10.57,1,10.57,The copy machine prints out a solid black circle on a large white sheet of paper
@@ -472,14 +472,14 @@ movie_num,seg_num,seg_start_time,subseg_num,subseg_start_time,text
 8,158,11.17,4,11.25,The man cautiously reaches his hand towards the black hole but quickly withdraws it. He looks around to see if others are watching
 8,158,11.17,5,11.3,The man reaches his hand into the black hole apprehensively and takes out his coffee cup
 8,158,11.17,6,11.36,"The man holds up the coffee cup, surprised. He sets it down to his side to examine the black hole"
-8,159,11.4,1,11.4,"The man picks up the piece of paper, holding it at eye level. He reaches his hand into it before pulling it back out "
+8,159,11.4,1,11.4,"The man picks up the piece of paper, holding it at eye level. He reaches his hand into it before pulling it back out"
 8,159,11.4,2,11.45,The man chuckles nervously. He looks around and his gaze focuses on something in the distance
 8,160,11.49,1,11.49,"The man walks up to a vending machine, placing the black hole up on the glass"
 8,160,11.49,2,11.53,The man looks around nervously before reaching his hand into the hole
 8,160,11.49,3,11.56,"With his hand inside the black hole, we hear the crinkling sound of a candy wrapper. The man slowly pulls out a candy bar"
 8,160,11.49,4,12.0,The man looks at the candy bar and the black hole in mild awe
 8,160,11.49,5,12.02,"The man walks away, eating his candy bar while smiling slightly at the black hole"
-8,160,11.49,6,12.05,"The man looks around the office. Something catches his eye, and he stops smiling  "
+8,160,11.49,6,12.05,"The man looks around the office. Something catches his eye, and he stops smiling"
 8,161,12.07,1,12.07,"We see an office door that says ""keep out"". The camera slowly zooms in on the door"
 8,161,12.07,2,12.11,The man walks towards the door
 8,161,12.07,3,12.13,The man places the black hole up against the door and reaches in. We hear a clicking sound as he unlocks it from the inside
@@ -495,7 +495,7 @@ movie_num,seg_num,seg_start_time,subseg_num,subseg_start_time,text
 8,164,12.54,1,12.54,The camera pans out as we hear a faint knocking sound on the safe
 8,164,12.54,2,12.58,The camera jumps back again as the knocking continues and the sounds of the office grow louder
 8,164,12.54,3,13.01,Camera cuts to a black screen and sound stops
-9,165,13.03,1,13.03,"""POST-IT LOVE"" in bold white text fades in on a black screen, then quickly fades out "
+9,165,13.03,1,13.03,"""POST-IT LOVE"" in bold white text fades in on a black screen, then quickly fades out"
 9,166,13.07,1,13.07,"Black screen fades to a photo of a building framed and hung on a lilac wall. ""Post-it Love"" in pink text appears in the upper left corner of the photo frame before fading out. A drum beat starts in the background"
 9,167,13.1,1,13.1,"Camera cuts to a woman standing in front of a printer, looking down. Upbeat whistle music starts playing"
 9,167,13.1,2,13.16,Aerial view of the woman making copies of something. Camera starts to pan left
@@ -504,12 +504,12 @@ movie_num,seg_num,seg_start_time,subseg_num,subseg_start_time,text
 9,169,13.389999999999999,1,13.39,The man and woman stand up simultaneously. They both turn their heads and see each other.
 9,169,13.389999999999999,2,13.42,"The man turns away, looking back at his work. The woman does the same with a slight smile"
 9,170,13.46,1,13.46,The man walks to his desk and starts to sit down
-9,170,13.46,2,13.49,"The man notices a blue folder on his desk. He reaches to open it, frowning slightly "
-9,171,13.52,1,13.52,"When he opens the folder, the man finds a smiley face made using pink post it notes inside. "
+9,170,13.46,2,13.49,"The man notices a blue folder on his desk. He reaches to open it, frowning slightly"
+9,171,13.52,1,13.52,"When he opens the folder, the man finds a smiley face made using pink post it notes inside."
 9,172,13.56,1,13.56,The man scoots back in his chair and looks around in confusion.
-9,172,13.56,2,13.59,"Behind him, the woman pokes her head out of her cubicle. The man turns his head "
+9,172,13.56,2,13.59,"Behind him, the woman pokes her head out of her cubicle. The man turns his head"
 9,172,13.56,3,14.01,The woman notices the man looking at her and quickly ducks behind her cubicle wall
-9,173,14.03,1,14.03,"The man smiles, looking at the folder, before scooting up "
+9,173,14.03,1,14.03,"The man smiles, looking at the folder, before scooting up"
 9,173,14.03,2,14.09,The man close the folder and appears to think
 9,174,14.11,1,14.11,The woman gets to her desk. She sets down her stuff and goes to open the blinds
 9,174,14.11,2,14.17,"The woman opens the blinds to reveal a sun made out of orange and yellow post it notes on her window. She notices it, looks around a bit and starts to sit down"
@@ -523,20 +523,20 @@ movie_num,seg_num,seg_start_time,subseg_num,subseg_start_time,text
 9,176,14.48,3,14.57,"In front of her is a bouquet of four flowers made of post it notes on the wall. From behind with her hands on the light switch, it looks as if she is holding the flowers"
 9,177,15.0,1,15.0,The woman walks out of the supply closet with an armful of post it notes. She turns off the light and closes the door behind her
 9,177,15.0,2,15.1,The woman walks off to the right in a hurry with all of the post it notes
-9,177,15.0,3,15.12,"Cut to the woman walking down a hallway, still holding the post it notes. She looks behind her "
+9,177,15.0,3,15.12,"Cut to the woman walking down a hallway, still holding the post it notes. She looks behind her"
 9,178,15.18,1,15.18,The woman slows to a stop as she notices something in front of her. The camera pans out as the music swells
-9,178,15.18,2,15.23,"Camera shows a giant mural of the man and woman's faces made with post it notes, with hearts surrounding them. The man is standing there, continuing to work on the mural "
+9,178,15.18,2,15.23,"Camera shows a giant mural of the man and woman's faces made with post it notes, with hearts surrounding them. The man is standing there, continuing to work on the mural"
 9,178,15.18,3,15.28,Camera cuts to a closer shot of the man working on the woman's hair clip in the mural.
 9,179,15.32,1,15.32,The man turns to notice the woman standing there
-9,179,15.32,2,15.36,"He stands up, looking at her an smiling "
+9,179,15.32,2,15.36,"He stands up, looking at her an smiling"
 9,180,15.4,1,15.4,"The woman, still in shock, stares back"
 9,180,15.4,2,15.43,The woman starts to smile back
-10,181,15.48,1,15.48,"""BUS STOP"" in bold white text fades in on a black screen, then quickly fades out "
+10,181,15.48,1,15.48,"""BUS STOP"" in bold white text fades in on a black screen, then quickly fades out"
 10,182,15.56,1,15.56,"Shot of the sun, bright in a clear sky. Faint music plays in the background"
 10,182,15.56,2,16.0,"Shot of an empty street, buildings are worn. Faint music continues to play"
 10,182,15.56,3,16.04,A man stands on the sidewalk at a bus stop. He's sweating through a red t-shirt and holding a plastic bag. He's wearing white headphones. Cars rumble in the background
 10,182,15.56,4,16.08,Close up of the man's face. He's sweating profusely and he blinks wearily
-10,182,15.56,5,16.13,"Camera cuts to a shot of the man's grocery bag. Through the plastic we see a tub of strawberry ice cream, condensation collecting inside. "
+10,182,15.56,5,16.13,"Camera cuts to a shot of the man's grocery bag. Through the plastic we see a tub of strawberry ice cream, condensation collecting inside."
 10,182,15.56,6,16.15,"The man continues to stand there, waiting for the bus. A car roars in the background"
 10,183,16.2,1,16.2,A black SUV roars into frame before screeching to a stop. The man turns his head to look
 10,183,16.2,2,16.24,A woman opens the driver seat door and climbs out of the car before hurrying to a nearby payphone. She picks up the payphone as the man watches
@@ -547,13 +547,13 @@ movie_num,seg_num,seg_start_time,subseg_num,subseg_start_time,text
 10,186,16.55,2,17.0,"Camera cuts to a close up of the man, who asks ""What?"" while the woman says ""It's an emergency. Can I borrow your phone it's an emergency. I'm not going to take it"""
 10,186,16.55,3,17.03,"The woman waits, panting slightly as the man reaches into his pocket to grab his phone. He hands it to the woman"
 10,186,16.55,4,17.07,The woman starts to walk away to the street with the phone while dialing.
-10,187,17.1,1,17.1,"While calling, the woman paces back and front on the street. She says ""I'm here. I said I'm here"" "
+10,187,17.1,1,17.1,"While calling, the woman paces back and front on the street. She says ""I'm here. I said I'm here"""
 10,187,17.1,2,17.18,"The man watches her and sighs. She says ""What? Where?"" After a pause, she says ""I swear to god, I will tell everyone. Everyone you know. Okay, I will..."""
 10,187,17.1,3,17.28,"The camera cuts to the woman on the street. She continues, ""I will go to the police"""
 10,188,17.3,1,17.3,"Now shouting and pacing faster, the woman says, ""Excuse me, I will go to the police, okay?!"""
-10,188,17.3,2,17.34,"The woman asks ""Hello?"" as if the other person has hung up. She then says, more emphatically, ""Hello?"" "
+10,188,17.3,2,17.34,"The woman asks ""Hello?"" as if the other person has hung up. She then says, more emphatically, ""Hello?"""
 10,189,17.36,1,17.36,The woman throws the phone down onto the street in anger.
-10,189,17.36,2,17.38,"The man, surprised starts to walk over. "
+10,189,17.36,2,17.38,"The man, surprised starts to walk over."
 10,189,17.36,3,17.4,The woman starts crying and stands there
 10,190,17.45,1,17.45,"The man, crouching with his broken phone in his hand, squints at the woman. He says ""Miss? Miss this phone is broken. Are you going to get like 60 bucks for it or something? Miss?"""
 10,191,17.58,1,17.57,"The woman, looking away, says ""He's here."" She turns her head slightly and the man asks ""Are you okay?"
@@ -569,8 +569,8 @@ movie_num,seg_num,seg_start_time,subseg_num,subseg_start_time,text
 10,196,18.42,1,18.42,"The woman gets closer to the man, now outside of his car. She mumbles, ""This time you've gone too far, you've gone way too far. I'm, I'm not - """
 10,197,18.5,1,18.5,"The 2nd man says, ""What the heck Charelle?"" to which the woman replies, ""Fuck you, Bob"""
 10,197,18.5,2,18.52,"View of the man, leaning against the hood of his car. He points and says ""You better start behaving, I told you everything's going to be okay and everything will be -"
-10,197,18.5,3,18.55,"Cut to view of the woman. She interrupts the 2nd man, saying ""Where is she?"" "
-10,197,18.5,4,18.58,"The 2nd man asks, ""Who's this?"" and the woman turns her head to look at the 1st red shirted man. "
+10,197,18.5,3,18.55,"Cut to view of the woman. She interrupts the 2nd man, saying ""Where is she?"""
+10,197,18.5,4,18.58,"The 2nd man asks, ""Who's this?"" and the woman turns her head to look at the 1st red shirted man."
 10,197,18.5,5,19.0,"The camera cuts to the red shirted man. The woman says, ""Just a friend."" to which the man frowns in confusion"
 10,198,19.02,1,19.02,"Camera cuts back to the 2nd man, who repeats, ""A friend?"" He gets up"
 10,198,19.02,2,19.04,"The 2nd man starts walking towards the 1st man. The first man says, ""Nah, I don't know her, I was just waiting for the bus and she used my phone and she broke it so I was just trying to get the money for another one"". In the background, the woman walks past"
@@ -579,10 +579,10 @@ movie_num,seg_num,seg_start_time,subseg_num,subseg_start_time,text
 10,198,19.02,5,19.18,"The 2nd man turns to face the woman and starts walking towards her. He says, angrily, ""Did you tell him who I am?"" as the woman backs away"
 10,199,19.21,1,19.21,"The 1st man says ""Oh shit, you're Aldini the great, you do the magic show"""
 10,199,19.21,2,19.26,"Camera cuts to the magician, who smiles at the 1st. The 1st continues, ""at the casino. The magician bows. The 1st man turns to the woman and says ""And you're his assistant"""
-10,200,19.28,1,19.28,"The woman pulls out a gun, pointing it at the 1st man, shouting ""Shut up!"" She turns the gun towards the 2nd man, shouting ""Shut up!"" again. "
-10,200,19.28,2,19.3,"Camera cuts to the 1st man, who cringes in fear. The woman continues, ""Where is she?!"" "
+10,200,19.28,1,19.28,"The woman pulls out a gun, pointing it at the 1st man, shouting ""Shut up!"" She turns the gun towards the 2nd man, shouting ""Shut up!"" again."
+10,200,19.28,2,19.3,"Camera cuts to the 1st man, who cringes in fear. The woman continues, ""Where is she?!"""
 10,200,19.28,3,19.32,"Camera cuts to the magician. He says, ""Charelle, take it easy"" he puts his hands up in front of him and asks, ""Is that thing loaded?"""
-10,201,19.35,1,19.35,"The magician continues, ""Well guess what?"" he reaches forward and a small gun appears in his hand. He says, ""I've got one of my own"" "
+10,201,19.35,1,19.35,"The magician continues, ""Well guess what?"" he reaches forward and a small gun appears in his hand. He says, ""I've got one of my own"""
 10,201,19.35,2,19.38,"Camera cuts to a view of all three people in a stand off. The magician continues, ""Look at this beauty. Once owned by professor Pata Physique"""
 10,201,19.35,3,19.42,"Camera cuts to the woman, pointing the gun at the man. The 2nd man continues, ""Use in a duel to the death against Vlad, prince of the Romanese"""
 10,202,19.44,1,19.44,The woman then points her gun up into the air and fires a shot. The 1st man winces
@@ -622,8 +622,8 @@ movie_num,seg_num,seg_start_time,subseg_num,subseg_start_time,text
 10,213,21.32,2,21.35,"Camera cuts to an aerial view. The 1st man is on the floor eating ice cream. On either side of him are the magician and his assistant, lying on the floor and bleeding out. Another bark is heard in the background"
 10,213,21.32,3,21.37,"The 1st man stops eating momentarily and starts barking in reply, looking around before crawling on all fours to his left. He stops momentarily to sniff the dead woman's leg"
 10,213,21.32,4,21.46,The man continues crawling on all fours and barking as the camera follows him
-10,214,22.04,1,22.04,"The camera pans right to reveal a woman in a white dress, also on all fours and barking. The man and the woman bark at each other. "
+10,214,22.04,1,22.04,"The camera pans right to reveal a woman in a white dress, also on all fours and barking. The man and the woman bark at each other."
 10,215,22.12,1,22.12,The man crawls into frame and starts sniffing the woman's rear while barking. She does the same.
-10,215,22.12,2,22.2,"The man and the woman face each other, continuing to bark back and forth and jump, acting like dogs. "
+10,215,22.12,2,22.2,"The man and the woman face each other, continuing to bark back and forth and jump, acting like dogs."
 10,215,22.12,3,22.31,The man gets on his back and barks with the woman for a moment. He gets up and starts crawling
-10,216,22.37,1,22.37,"The man and the woman start crawling away, next to the car and barking.  "
+10,216,22.37,1,22.37,"The man and the woman start crawling away, next to the car and barking."

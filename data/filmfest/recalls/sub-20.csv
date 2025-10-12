@@ -1,4 +1,4 @@
-movie,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
+movie_num,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
 1,5,00:51,00:56,7.881999999999998,12.881999999999998,6,9,"So the first one is Catch Me If You Can, and they start with a game show."
 1,"5, 6",00:57,01:05,13.881999999999998,21.881999999999998,10,15,"So they have three people come out, and they say their name, and it’s Frank something, and they're all the, saying they're same name."
 1,7,01:05,01:26,21.881999999999998,42.882,16,29,"And they say that he’s the best con man, and he had flown planes, like two million miles, and he had also been the pediatric doctor surgeon something, and then he was the youngest, ‘cause he did this all by age 19."
@@ -68,7 +68,7 @@ movie,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
 3,67,09:35,09:39,531.882,535.882,356,357,And then he goes down and sits and watches TV and smokes a cigarette.
 4,69,09:41,09:46,537.882,542.882,360,362,"And then there's the Shoe clip, where there's a zoomed in picture of the shoe."
 4,76,09:46,09:52,542.882,548.882,363,366,"And then this guy is walking, and everything he does, the girl sort of copies."
-4,76,09:52,10:00,548.882,556.882,367,371,"And as they're walking down the street, you know, he sort of waves, and she waves back, and then he sort of like, you know, walks funny, and she walks funny, "
+4,76,09:52,10:00,548.882,556.882,367,371,"And as they're walking down the street, you know, he sort of waves, and she waves back, and then he sort of like, you know, walks funny, and she walks funny,"
 4,76,10:00,10:07,556.882,563.882,372,376,"and then she walks down behind this sort of like box, and she's hidden from view, and he copies her then."
 4,77,10:07,10:17,563.882,573.882,377,383,"And then she walks to the intersection, and she sort of like waves at him to stop, but he doesn’t get it, and he like waves back at her and keeps going, ‘cause he's like mimicking her."
 4,78,10:18,10:21,574.882,577.882,384,385,"And then he gets hit by a car, and he likes cracks the windshield."
@@ -114,11 +114,11 @@ movie,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
 6,116,15:53,15:57,909.882,913.882,608,609,"And then these guys come and get him, so they can turn him into a wheel."
 6,116,15:57,16:11,913.882,927.882,610,619,"And so they shave him down, and then he's like in sort of this like, not a factory, but like a place, and he's like being spun around."
 6,-1,16:11,16:19,927.882,935.882,620,624,And what is it called? I don’t know.
-6,-1,16:19,16:22,935.882,938.882,625,626,"Like near, I don’t know, whatever, "
+6,-1,16:19,16:22,935.882,938.882,625,626,"Like near, I don’t know, whatever,"
 6,116,16:22,16:24,938.882,940.882,627,627,and the rock is being spun around.
 6,"117, 118, 119",16:26,16:37,942.882,953.882,630,636,"Then some army people come in to get him, and then they make him into a cannonball, and he's like shot at the ship, and he breaks the ship’s mast."
 6,120,16:38,16:41,954.882,957.882,638,639,And then he falls down in the water.
-6,121,16:41,16:52,957.882,968.882,640,646,"And he becomes, every time he gets a little bit smaller, and he turns into like a little pebble, and then he washes up on the shore or something, "
+6,121,16:41,16:52,957.882,968.882,640,646,"And he becomes, every time he gets a little bit smaller, and he turns into like a little pebble, and then he washes up on the shore or something,"
 6,123,16:52,17:01,968.882,977.882,647,652,"and this scientist finds him, ‘cause he has like a, you know, some sort of record of an insect or something in the side of him that broke off."
 6,"124, 125",17:02,17:08,978.882,984.882,654,657,"And so then he's in a museum, and this kid runs up and slams on the glass door, and he falls out the back."
 6,126,17:09,17:15,985.882,991.882,658,661,"And then he goes outside, and then somebody kicks him around."

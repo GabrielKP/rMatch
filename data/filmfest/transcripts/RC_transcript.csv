@@ -15,10 +15,10 @@ movie_num,seg_num,seg_start_time,subseg_num,subseg_start_time,text
 1,7,1.11,2,1.2,The camera pans over to the second Frank. The host states that he was a chief resident pediatrician at the Georgia Hospital during that time.
 1,7,1.11,3,1.27,The camera pans over to the third Frank. The host states that the real Frank was assistant Attorney General for Louisiana.
 1,7,1.11,4,1.34,"The camera pans out to all three of them. The host states that when he was caught, the real Frank was the youngest and most daring con-man in US history. He cashed 4 million dollars in fraudulent checks, in 26 foreign countries and all 50 states. This was all before his 19th birthday."
-1,7,1.11,5,1.44,"All three men walk to their left to a beige and sky blue game show desk labelled ""1"",""2"", and ""3."" "
+1,7,1.11,5,1.44,"All three men walk to their left to a beige and sky blue game show desk labelled ""1"",""2"", and ""3."""
 1,8,1.4899999999999998,1,1.49,The men proceed to sit down at each number to applause. There are cartoon robots behind them and on the desks. The studio's color palette is beige and sky blue.
 1,8,1.4899999999999998,2,1.55,"The host introduces the first woman to ask the question, whose name is Kiddy."
-1,8,1.4899999999999998,3,1.6,"The camera pans over to the first elderly woman asking the first question, which is ""Why not use your talent for a legitimate profession?"" "
+1,8,1.4899999999999998,3,1.6,"The camera pans over to the first elderly woman asking the first question, which is ""Why not use your talent for a legitimate profession?"""
 1,8,1.4899999999999998,4,2.0399999999999996,The camera closes in one Frank number 1. The man states that it was the easiest way to get money.
 1,9,2.14,1,2.1399999999999997,The camera pans over to Frank number 2 who is asked who caught him by someone who is fascinated by him. Frank number 2 answers that his name was Carl Hanratty.
 1,10,2.23,1,2.23,"The scene changes to several men standing in the rain with an umbrella, all but one with a police uniform on and a man with glasses. Screen tint is blue. The man in glasses is saying ""Carl Hanratty,"" but the police are having trouble pronouncing the name."
@@ -338,7 +338,7 @@ movie_num,seg_num,seg_start_time,subseg_num,subseg_start_time,text
 7,143,7.31,1,7.31,"The man looks at the map for a moment. The map is itself green but there are different buttons, such as a high-number keypad. The man examines the different numbers to call, and his finger lands at ""taxi rank,"" which is number ""9"" on the keypad."
 7,143,7.31,2,7.34,"The man presses ""9"" on the number keyboard, but then a motorcycle noise starts revving."
 7,144,7.38,1,7.38,"A woman in a red striped shirt stops the car, indicating that she was the source of the call. The woman asks ""where to, sir?"" The man is startled a bit."
-7,144,7.38,2,7.42,"She says the same in French or Spanish, indicating that this is in Europe. "
+7,144,7.38,2,7.42,"She says the same in French or Spanish, indicating that this is in Europe."
 7,144,7.38,3,7.46,"The man responds that he wants to go to the ""nearest town,"" but she says that her service only local."
 7,144,7.38,4,7.4799999999999995,The man responds that he wants to go as far as she is able to go.
 7,145,7.500000000000001,1,7.5,"They drive down the street and the man asks why she spoke to him in French, and then she says that the language is international, but then he responds that it is probably a waste of time to ask where they are."

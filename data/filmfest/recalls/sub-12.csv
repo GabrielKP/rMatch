@@ -1,9 +1,9 @@
-movie,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
+movie_num,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
 1,1000,01:08,01:10,9.476999999999997,11.476999999999997,7,8,Catch Me If You Can.
 1,5,01:11,01:20,12.476999999999997,21.476999999999997,9,14,"The segment opens on a, what appears to be a mid-70s game show, titled “To Tell the Truth.”"
 1,5,01:21,01:34,22.476999999999997,35.477,16,24,"It opens with the announcer introducing 3 gentlemen who walk from backstage, each identically dressed in the uniform of an airline pilot."
 1,"6,7",01:35,01:50,36.477,51.477,25,34,"He's introduced as Frank Abagnale, who was a con artist posing as an airline pilot, a pediatrician, and a third position, I can't recall."
-1,8,01:52,02:11,53.477,72.477,37,48,"They take a seat on the side of the stage, and a contestant, an older women with brown hair, asks the first of the Frank Abagnales why he had chosen to live as a con artist rather than with a legitimate career, "
+1,8,01:52,02:11,53.477,72.477,37,48,"They take a seat on the side of the stage, and a contestant, an older women with brown hair, asks the first of the Frank Abagnales why he had chosen to live as a con artist rather than with a legitimate career,"
 1,8,02:14,02:17,75.477,78.477,51,52,and he replies that it was a matter of dollars and cents.
 1,9,02:21,02:29,82.477,90.477,56,60,She goes on to ask the second Abagnale who it was that finally caught him.
 1,9,02:30,02:35,91.477,96.477,62,64,And he replies that it was an FBI agent named Carl Hanratty.
@@ -15,12 +15,12 @@ movie,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
 1,16,03:30,03:33,151.477,154.477,102,103,Frank begins to cough heavily and collapses.
 1,"17,19",03:37,03:52,158.477,173.477,107,116,"Carl asks the prison guard to get a doctor to remove Frank from his cell, to remove Frank from his cell and bring him to a hospital bed, and they tell Carl that a doctor would not be available until the next day."
 1,19,03:56,04:04,177.477,185.477,119,124,"Frank says that if, Carl says that if Frank dies under their watch, he will hold them responsible."
-1,20,04:05,04:10,186.477,191.477,125,128,"Meanwhile, Frank has escaped from the hospital, "
+1,20,04:05,04:10,186.477,191.477,125,128,"Meanwhile, Frank has escaped from the hospital,"
 1,21,04:14,04:21,195.477,202.477,131,135,"and down the hall of the main section of the prison, where the other inmates are encouraging his escape."
-1,23,04:25,04:27,206.477,208.477,139,139,"He's pursued by the guards, "
-1,24,04:30,04:33,211.477,214.477,142,143,"and one of the guards finally holds a gun to the back of his head, "
+1,23,04:25,04:27,206.477,208.477,139,139,"He's pursued by the guards,"
+1,24,04:30,04:33,211.477,214.477,142,143,"and one of the guards finally holds a gun to the back of his head,"
 1,25,04:34,04:37,215.477,218.477,145,146,"whereupon Frank again collapses,"
-1,26,04:39,04:42,220.477,223.477,148,149," and tells Carl, “Let’s go home.”"
+1,26,04:39,04:42,220.477,223.477,148,149,"and tells Carl, “Let’s go home.”"
 2,2000,04:49,04:50,230.477,231.477,155,155,The Record.
 2,28,04:54,05:01,235.477,242.477,158,162,We see a computer-animated segment with a young woman sitting in an apartment.
 2,"28,29",05:02,05:06,243.477,247.477,163,165,"She's about to eat a slice of pizza, when she hears a knock on the door."
@@ -28,8 +28,8 @@ movie,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
 2,"32,33,34",05:16,05:28,257.477,269.477,173,180,"She puts it on the record player, and begins to eat her pizza but sees that a segment of it already appears to have been eaten."
 2,"35,36",05:32,05:56,273.477,297.477,183,198,"By accident she discovers that the further the song progresses, the further into the future it will take her, and she experiments with this so that, over the course of the segment, it brings her a few years into the future, where she's in a nicer apartment and pregnant."
 2,-1,05:59,06:03,300.477,304.477,201,203,And then later..
-2,"37,38",06:06,06:23,307.477,324.477,206,216," she pushes the song further into the future so that she has her child in her arms, but as it’s crying, it seems to annoy her, and she brings the song closer to its beginning, which pushes her into her childhood."
-2,39,06:27,06:39,328.477,340.477,220,227,"Then finally further into the future, where she's in a wheelchair, has difficulty approaching the record to change her position in time, "
+2,"37,38",06:06,06:23,307.477,324.477,206,216,"she pushes the song further into the future so that she has her child in her arms, but as it’s crying, it seems to annoy her, and she brings the song closer to its beginning, which pushes her into her childhood."
+2,39,06:27,06:39,328.477,340.477,220,227,"Then finally further into the future, where she's in a wheelchair, has difficulty approaching the record to change her position in time,"
 2,40,06:46,06:59,347.477,360.477,233,240,"and finally brings her further into the future, where she's a much older woman on a walker, and she's trying to approach the record in time to stop the song from ending."
 2,41,07:01,07:09,362.477,370.477,243,247,"She can't make it in time, and the segment ends with the woman as an urn of ashes."
 3,3000,07:22,07:23,383.477,384.477,257,257,The Boyfriend.
@@ -53,33 +53,33 @@ movie,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
 3,57,10:04,10:06,545.477,547.477,365,365,It arrives shortly thereafter.
 3,"58,59,60",10:09,10:18,550.477,559.477,368,373,"They remove the older model, but she first kisses him and removes the wedding ring, and places it on the newer one."
 3,"61,62,63",10:23,10:32,564.477,573.477,377,382,"The opening scene seems to repeat with much of the same dialogue, but with a much more favorable rapport to the woman."
-3,"64,65",10:35,10:41,576.477,582.477,385,388,"The man makes his way over to the other side of the table and begins to massage her shoulders, "
-3,66,10:43,10:53,584.477,594.477,391,396,"and finally pulling the switch on the back of her neck, revealing her to also be a robot, "
+3,"64,65",10:35,10:41,576.477,582.477,385,388,"The man makes his way over to the other side of the table and begins to massage her shoulders,"
+3,66,10:43,10:53,584.477,594.477,391,396,"and finally pulling the switch on the back of her neck, revealing her to also be a robot,"
 3,67,10:54,10:58,595.477,599.477,398,400,"and whereupon he relaxes, lights a cigarette, and watches television."
 4,4000,11:05,11:06,606.477,607.477,405,405,The Shoe.
 4,69,11:13,11:23,614.477,624.477,411,416,"There's a text on the screen saying, “How do they get there?” with an image of a shoe on the pavement."
 4,70,11:25,11:32,626.477,633.477,419,422,"You see it belongs to a man, who’s leaning against a car and drinking a carton of milk."
-4,72,11:37,11:46,638.477,647.477,427,432,"The owner in the car, the owner of the car, a older gentleman in a tank top, shoos the man away, "
-4,73,11:47,11:50,648.477,651.477,433,434,"and he goes walking down the sidewalk, "
+4,72,11:37,11:46,638.477,647.477,427,432,"The owner in the car, the owner of the car, a older gentleman in a tank top, shoos the man away,"
+4,73,11:47,11:50,648.477,651.477,433,434,"and he goes walking down the sidewalk,"
 4,74,11:51,12:01,652.477,662.477,436,442,"where he notices a girl on the opposite side of the street in a red sweater, who begins to imitate his movements."
 4,76,12:11,12:15,672.477,676.477,449,451,"They go back and forth, imitating various gestures."
-4,"77,78",12:20,12:34,681.477,695.477,455,464,"When the girl begins to warn him of an oncoming car, which he interprets as a new gesture to imitate and is hit by the car,  "
+4,"77,78",12:20,12:34,681.477,695.477,455,464,"When the girl begins to warn him of an oncoming car, which he interprets as a new gesture to imitate and is hit by the car,"
 4,80,12:41,12:50,702.477,711.477,469,474,and his shoe gets knocked off and goes flying through the air and lands on the side of the curb.
 4,80,12:54,13:03,715.477,724.477,478,483,"The camera pans down the curbside, where we see another shoe, presumably from an earlier similar incident."
 6,6000,13:26,13:26,747.477,747.477,499,499,The Rock.
 6,111,13:32,13:38,753.477,759.477,503,506,"There is a large mountain, I'm assuming in the Prehistoric Age."
-6,112,13:45,13:50,766.477,771.477,512,514,"It’s a very sleepy mountain, and as time passes, "
+6,112,13:45,13:50,766.477,771.477,512,514,"It’s a very sleepy mountain, and as time passes,"
 6,"113,114",14:05,14:20,786.477,801.477,525,534,"the mountain gets reduced to the size of a hill, on which a tree is growing, and some men cut down the tree to begin building a cabin."
 6,115,14:22,14:33,803.477,814.477,537,543,And the rock is annoyed by the noise and gets himself up and moves over to a mountainside.
-6,116,14:41,14:49,822.477,830.477,549,554,"And he's pulled from the mountainside and hitched to a mule, where he is fashioned into a millstone,  "
-6,"117,118",14:51,15:00,832.477,841.477,556,561,"and then later is taken by soldiers, fashioned into a cannonball, "
+6,116,14:41,14:49,822.477,830.477,549,554,"And he's pulled from the mountainside and hitched to a mule, where he is fashioned into a millstone,"
+6,"117,118",14:51,15:00,832.477,841.477,556,561,"and then later is taken by soldiers, fashioned into a cannonball,"
 6,119,15:06,15:18,847.477,859.477,566,573,"fired at a ship, broken into a number of pieces, and then as the fragment settles in a river."
 6,"123,124",15:35,15:47,876.477,888.477,585,592,He's later found by an archaeologist with a fossilized crustacean on his back and displayed in a museum.
-6,"124,125",15:55,16:05,896.477,906.477,599,604,"An excited child, pounding against the glass of the exhibit, pushes the rock "
+6,"124,125",15:55,16:05,896.477,906.477,599,604,"An excited child, pounding against the glass of the exhibit, pushes the rock"
 6,125,16:12,16:14,913.477,915.477,610,610,"down into a garbage chute, I believe."
-6,"129,131,133",16:23,16:32,924.477,933.477,617,622,"He's finally reduced to a grain of sand, which is collected and fashioned into a lens "
+6,"129,131,133",16:23,16:32,924.477,933.477,617,622,"He's finally reduced to a grain of sand, which is collected and fashioned into a lens"
 6,134,16:38,16:43,939.477,944.477,627,630,"that is to be a part of a satellite, which is shot into space,"
-6,"135, 136",16:46,16:59,947.477,960.477,633,640," crashes, and enters upon a different planet, very much like the scene at the beginning, and he's formed as a mountain again and finally gets to sleep."
+6,"135, 136",16:46,16:59,947.477,960.477,633,640,"crashes, and enters upon a different planet, very much like the scene at the beginning, and he's formed as a mountain again and finally gets to sleep."
 7,7000,17:17,17:17,978.477,978.477,653,653,The Prisoner.
 7,138,17:21,17:23,982.477,984.477,656,656,We see a man dressed all in black.
 7,138,17:26,17:28,987.477,989.477,659,660,He approaches a woman in a cafe.
@@ -106,7 +106,7 @@ movie,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
 10,186,21:27,21:30,1228.477,1231.477,820,821,She's very arrogant.
 10,186,21:32,21:38,1233.477,1239.477,823,826,"He complies, and she gets a few steps away and makes a phone call."
 10,187,21:43,21:53,1244.477,1254.477,831,836,She's very distraught and seems to be angry with the person she's speaking to and asking about another person’s welfare.
-10,189,21:58,22:01,1259.477,1262.477,841,842,"She smashes the phone against the ground, "
+10,189,21:58,22:01,1259.477,1262.477,841,842,"She smashes the phone against the ground,"
 10,190,22:07,22:17,1268.477,1278.477,847,852,"and the man at the bus stop remarks that it is broken, and asks if he could have maybe sixty dollars to help replace it."
 10,190,22:21,22:23,1282.477,1284.477,856,856,She pays him no attention.
 10,192,22:32,22:35,1293.477,1296.477,863,864,A second vehicle arrives and parks under a bridge.
@@ -115,8 +115,8 @@ movie,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
 10,"204,205",23:22,23:28,1343.477,1349.477,897,900,The assistant goes to the trunk of Aldini’s car and opens it.
 10,"205,200,201",23:29,23:40,1350.477,1361.477,901,908,"We cannot see what she sees, but she appears very distraught by what she sees in the trunk of the car, and she pulls a gun on Aldini, who produces one of his own."
 10,202,23:44,23:46,1365.477,1367.477,911,912,The assistant fires into the air.
-10,"206,208",24:05,24:24,1386.477,1405.477,925,937,"While the assistant was inspecting the trunk of the car, Aldini performed a kind of spell over the bus stop man, which at first seemed to hypnotize him, causing him to lose consciousness, "
-10,209,24:24,24:28,1405.477,1409.477,938,940,"and then upon wakening, seemed to believe that he was a dog, "
+10,"206,208",24:05,24:24,1386.477,1405.477,925,937,"While the assistant was inspecting the trunk of the car, Aldini performed a kind of spell over the bus stop man, which at first seemed to hypnotize him, causing him to lose consciousness,"
+10,209,24:24,24:28,1405.477,1409.477,938,940,"and then upon wakening, seemed to believe that he was a dog,"
 10,213,24:32,24:39,1413.477,1420.477,943,947,and he laps at the melted ice cream that had spilled from his bag earlier.
 10,"211,212",24:51,25:01,1432.477,1442.477,956,962,"Aldini and his assistant are both at a stand-off, and each shoots the other."
 10,213,25:08,25:16,1449.477,1457.477,967,972,"The man from the bus stop, who is now behaving as if he were a dog, begins to crawl down the street."
@@ -127,8 +127,8 @@ movie,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
 5,85,26:47,26:54,1548.477,1555.477,1033,1037,"Philip Reynolds has worked in the office for 8 years, and today he is expecting a promotion."
 5,"86,87",27:06,27:19,1567.477,1580.477,1046,1054,"He first takes the elevator up to an employee’s lounge, where every day he offers a cup of coffee to his coworker Sara, who every day refuses."
 5,"87,88",27:20,27:34,1581.477,1595.477,1055,1064,"And today she tosses the coffee out the window, which seems to hit a window washer in the face and cause him to fall."
-5,90,27:46,27:52,1607.477,1613.477,1073,1076,"And while this is happening, another employee at the company, possibly Philip’s rival, "
-5,90,28:00,28:02,1621.477,1623.477,1082,1082,"his last name is Campbell, "
+5,90,27:46,27:52,1607.477,1613.477,1073,1076,"And while this is happening, another employee at the company, possibly Philip’s rival,"
+5,90,28:00,28:02,1621.477,1623.477,1082,1082,"his last name is Campbell,"
 5,90,28:12,28:21,1633.477,1642.477,1090,1095,"has received a promotion of his own, possibly the one that Philip was waiting for."
 5,92,28:49,28:54,1670.477,1675.477,1115,1117,Campbell goes to tell Sara the news of his promotion.
 5,"92,93",28:55,28:59,1676.477,1680.477,1119,1120,"She's pleased, and they're kissing in the employee’s lounge."
@@ -136,15 +136,15 @@ movie,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
 5,94,29:18,29:23,1699.477,1704.477,1134,1136,Campbell goes onto the elevator.
 5,96,29:46,29:49,1727.477,1730.477,1153,1154,"And Reynolds kills Campbell in the elevator,"
 5,98,29:55,30:06,1736.477,1747.477,1159,1165,"later dragging him out to one of the upper floors, and dragging his body down the stairs."
-5,"97,99",30:19,30:28,1760.477,1769.477,1175,1180,"They soon find another employee who’s taken the stairs, rather than the elevator, as part of her New Year’s resolution, and she faints,  "
+5,"97,99",30:19,30:28,1760.477,1769.477,1175,1180,"They soon find another employee who’s taken the stairs, rather than the elevator, as part of her New Year’s resolution, and she faints,"
 5,101,30:41,30:53,1782.477,1794.477,1189,1196,and Reynolds finally has the idea to use the ladder he had earlier seen against the outside of the building and exit with Campbell’s body.
 5,105,31:04,31:18,1805.477,1819.477,1205,1213,"I believe Campbell’s body falls to the ground, and when Reynolds goes out the window onto the ladder, the ladder begins to sway."
 5,"105,106",31:36,31:53,1837.477,1854.477,1226,1236,"And Reynolds is face-to-face with a janitor whom he had never seen before, and he reflects that most people, like him, share the same desires and ambitions."
 9,9000,32:18,32:19,1879.477,1880.477,1254,1254,Post-It Love.
 9,"167,168",32:29,32:37,1890.477,1898.477,1261,1266,"There is a young man and a young woman working in an office, making copies in copy machines on either side of a partition."
 9,"169,170,171",32:51,33:07,1912.477,1928.477,1276,1286,"They notice each other, and when the young man returns to his desk, he opens a blue folder, and finds inside post-it notes in the shape of a smiley face."
-9,172,33:15,33:19,1936.477,1940.477,1292,1294,"He looks over to see the young woman, who was watching his reaction, "
-9,174,33:23,33:42,1944.477,1963.477,1297,1309," and later that day or the next day, the young woman approaches her cubicle and raises the blinds and finds post-it notes in the shape of a sun against the window."
+9,172,33:15,33:19,1936.477,1940.477,1292,1294,"He looks over to see the young woman, who was watching his reaction,"
+9,174,33:23,33:42,1944.477,1963.477,1297,1309,"and later that day or the next day, the young woman approaches her cubicle and raises the blinds and finds post-it notes in the shape of a sun against the window."
 9,175,34:11,34:21,1992.477,2002.477,1329,1335,And later the man finds post-its in the shape of a heart in a thought cloud on what I believe was the door of a bathroom stall.
 9,176,34:24,34:36,2005.477,2017.477,1338,1345,"And we see the young woman in a supply closet, where she sees a post-it message of a bouquet of flowers."
 9,"177,178,180",34:38,34:56,2019.477,2037.477,1347,1358,"She leaves the supply closet with an armload of post-its of different colors and sizes, only to walk in on the young man completing a mural-sized post-it mosaic of the two of them, and she's very moved."

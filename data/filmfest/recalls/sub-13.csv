@@ -1,5 +1,5 @@
-movie,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
-1,5,01:05,01:27,8.414000000000001,30.414,7,20,"Okay, so the first movie was Catch me if you can with Leonardo di Caprio and it starts with 3, with a like a TV show, a game show I guess, with 3 men, "
+movie_num,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
+1,5,01:05,01:27,8.414000000000001,30.414,7,20,"Okay, so the first movie was Catch me if you can with Leonardo di Caprio and it starts with 3, with a like a TV show, a game show I guess, with 3 men,"
 1,5,01:28,01:33,31.414,36.414,22,24,"all of them wearing the same clothes and kind of like a briefcase, and Leonardo di Caprio's in the middle."
 1,"4, 5, 6",01:34,01:45,37.414,48.414,26,32,"And I guess the premise is that they are all 3 they are con men, and they go by the same name, they are Frank something Abagnale."
 1,"6, 7",01:46,01:52,49.414,55.414,34,37,And they have different professions and lead different lives but they're all the same man.
@@ -24,7 +24,7 @@ movie,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
 2,"32, 33, 34",05:34,05:41,277.414,284.414,186,190,"So she's going to eat this pizza but then, plays the music, but then notices that as the music goes on, her pizza gets eaten."
 2,35,05:42,05:50,285.414,293.414,191,196,"And then she realizes that she can play, she can play with time through this disc."
 2,35,05:52,05:53,295.414,296.414,198,198,So she does.
-2,35,05:54,06:01,297.414,304.414,199,203,"So she goes forward in time, she goes back and forth, back and forth, back and forth, kind of like short range, "
+2,35,05:54,06:01,297.414,304.414,199,203,"So she goes forward in time, she goes back and forth, back and forth, back and forth, kind of like short range,"
 2,35,06:01,06:09,304.414,312.414,204,208,"so kind of like, I don't know, within the same day, like her pizza gets eaten and then comes back and then eaten and comes back and then eaten and then come back."
 2,"36, 37",06:09,06:19,312.414,322.414,209,215,"But then she goes to later age, so she becomes like pregnant, and then she has a baby."
 2,"38, 39, 40",06:20,06:32,323.414,335.414,217,224,"And she can keep going back and forth, and then she becomes like older and then she's on a wheelchair and then she becomes younger and she has a doll in her hand, and she's like a kid."
@@ -66,7 +66,7 @@ movie,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
 5,93,10:42,10:43,585.414,586.414,391,391,They're still kissing.
 5,94,10:44,10:50,587.414,593.414,393,396,"And then, he asks the guy in the elevator, you know, the main guy, to leave the elevator door open for him."
 5,94,10:50,10:54,593.414,597.414,397,398,"So now they're sharing the elevator door, or the elevator."
-5,95,10:56,11:13,599.414,616.414,401,411,"And he can see his reflection in the mirror looking back at him, and he actually says to him well, three words that he, I guess regrets, but I'm guessing is go fuck yourself, "
+5,95,10:56,11:13,599.414,616.414,401,411,"And he can see his reflection in the mirror looking back at him, and he actually says to him well, three words that he, I guess regrets, but I'm guessing is go fuck yourself,"
 5,96,11:14,11:24,617.414,627.414,413,418,"anyway, the guy hits him, and the main guy hits him back, but so much, so aggressively, that he kills him."
 5,96,11:25,11:30,628.414,633.414,420,422,"And then, he decides that he needs to hide the body."
 5,98,11:30,11:36,633.414,639.414,423,426,"He decides to take the elevator, the stairs I think, because the elevator, well that would be, he would probably get caught."
@@ -89,7 +89,7 @@ movie,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
 10,185,14:22,14:28,805.414,811.414,538,541,"Meanwhile her car has been I think moving the entire time, anyway."
 10,"192, 194",14:29,14:44,812.414,827.414,543,552,"Eventually this car pulls in, and this guy comes out of the car, and the woman is walking towards the man and the main guy at the, with the headphones, is following the woman."
 10,"195, 196, 197",14:46,14:49,829.414,832.414,554,555,This guy gets out of the car and he starts interacting with the woman.
-10,198,14:49,15:04,832.414,847.414,556,565,"The old man, he's an older man, and he's clearly upset that this other guy is there, he's like, what do you know about me, blah blah blah, and she's like, nobody knows who you are, and they're having a heated, well she's very upset, "
+10,198,14:49,15:04,832.414,847.414,556,565,"The old man, he's an older man, and he's clearly upset that this other guy is there, he's like, what do you know about me, blah blah blah, and she's like, nobody knows who you are, and they're having a heated, well she's very upset,"
 10,198,15:05,15:14,848.414,857.414,567,572,"and the guy's like no no no I don't know who, oh, the girl's like oh he's just a friend and he's like mehh, not really, I just want money for my phone, I don't know anything."
 10,"197, 200, 201",15:15,15:32,858.414,875.414,573,584,"And then, she takes out like a gun and he takes out a fake gun, the woman is wondering where somebody is, she's like where is she where is she, what did you do to her, something like that."
 10,199,15:32,15:41,875.414,884.414,585,590,"Anyway, the old man, oh the main guy is like oh I know who you are, you're a magician and you're the assistant."
@@ -98,7 +98,7 @@ movie,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
 10,"209,  211, 212",16:02,16:11,905.414,914.414,605,610,"His ice cream melted, it's all over the floor, and the two, and the magician shoots the assistant, the assistant shoots the magician."
 10,"205, 207",16:12,16:24,915.414,927.414,611,618,"Oh also before, while the guy was being hypnotized, the woman checks the trunk of the car, and is so upset, that's why she shoots the magician."
 10,207,16:25,16:27,928.414,930.414,620,620,She's so upset at what she sees in the trunk.
-10,10000,16:28,16:38,931.414,941.414,622,628,"And I have an i-, I think that what she sees in the trunk is the person she was looking for, the woman she was looking for turned into a dog, I think, "
+10,10000,16:28,16:38,931.414,941.414,622,628,"And I have an i-, I think that what she sees in the trunk is the person she was looking for, the woman she was looking for turned into a dog, I think,"
 10,214,16:38,16:53,941.414,956.414,629,638,"because when the main guy's a dog, this other woman dog who's wearing what looks like uh the clothes that you would wear at the hospital, like a gown, a hospital gown, is also a dog."
 10,215,16:53,16:55,956.414,958.414,639,639,And then they're like hanging out.
 10,216,16:56,16:59,959.414,962.414,641,642,"In the end the guy seems happier, because now he has a friend."
@@ -113,8 +113,8 @@ movie,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
 6,"124, 126",18:11,18:21,1034.414,1044.414,691,696,"Oh it's in a museum, it gets kicked like a pebble on the street, so much stuff happens to it and it's so tired and it just wants to sleep."
 6,136,18:24,18:27,1047.414,1050.414,699,700,I think in the end it does sleep. I don't remember.
 3,3000,18:30,18:36,1053.414,1059.414,703,706,"Oh my gosh, okay, actually the third movie, I'm pretty sure, was the Boyfriend, and this was so creepy."
-3,42,18:36,18:49,1059.414,1072.414,707,715,"Okay so there's this, it starts with something about ambition, I don't know why it said ambitious on the screen, it said it, in text, "
-3,43,18:49,19:00,1072.414,1083.414,716,722,"but anyway, this woman and this man are at the dinner table and they're like wealthy, I don't know, they're having this fancy dinner, the kind of dinner that like one of them is on one side of the long table and the other on the other, "
+3,42,18:36,18:49,1059.414,1072.414,707,715,"Okay so there's this, it starts with something about ambition, I don't know why it said ambitious on the screen, it said it, in text,"
+3,43,18:49,19:00,1072.414,1083.414,716,722,"but anyway, this woman and this man are at the dinner table and they're like wealthy, I don't know, they're having this fancy dinner, the kind of dinner that like one of them is on one side of the long table and the other on the other,"
 3,43,19:01,19:11,1084.414,1094.414,724,730,"and they're eating like asparagus and you can hear like the click, like the clicking of the like fork and knife as they cut their food."
 3,43,19:12,19:20,1095.414,1103.414,731,736,"And they're being very like formal, and they're referring to each other as dear and it's their anniversary."
 3,44,19:21,19:29,1104.414,1112.414,737,742,"And she's clearly very, well she's very upset because she wants to pour him wine, and he can't because he's on call."
@@ -123,7 +123,7 @@ movie,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
 3,46,19:50,19:57,1133.414,1140.414,757,760,"And she's like yeah, it's an aphrodisiac, and he's like, why do you say that, and she's like, well that's just what people say."
 3,"46, 47",19:58,20:06,1141.414,1149.414,762,766,"And he's like oh, and she's sooo angry at him because I guess she wants to have sex, and he's so cold or something."
 3,48,20:07,20:17,1150.414,1160.414,768,774,"And then she's like, she like pours her water glass on his face, and he's so angry and he starts smoking."
-3,47,20:18,20:35,1161.414,1178.414,775,786,"She also, she's like uh just like I don't even know why you can't drink, going from stupid dinner to stupid conversation, stilted conversation, if I'm lucky, to make short mechanical sex, "
+3,47,20:18,20:35,1161.414,1178.414,775,786,"She also, she's like uh just like I don't even know why you can't drink, going from stupid dinner to stupid conversation, stilted conversation, if I'm lucky, to make short mechanical sex,"
 3,48,20:36,20:45,1179.414,1188.414,787,792,"which ended up being interesting, because, well that's when he starts smoking and she's so upset, she's like you do NOT smoke in my house, and puts out his cigarette."
 3,48,20:45,20:46,1188.414,1189.414,793,793,But he lights another one.
 3,"49, 50, 51",20:47,21:01,1190.414,1204.414,795,803,"And she's so angry, but then she goes over to him, and she's like I'm so sorry for what I said, probably referring to the sex comment, I'm so sorry I didn't mean it, and she's massaging his head, caressing his head, and then, turns him off."
@@ -147,7 +147,7 @@ movie,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
 3,61,23:14,23:15,1337.414,1338.414,893,893,And now they're having dinner.
 3,63,23:16,23:25,1339.414,1348.414,894,899,"And it's kind of similar, it's weird, because he's also commenting on how the asparagus is tender, but then HE is like oh I hear it's an aphrodisiac."
 3,63,23:26,23:26,1349.414,1349.414,901,901,And she smiles.
-3,62,23:27,23:35,1350.414,1358.414,901,906,"Oh also before that, she offers wine and he's like no I have a big climb tomorrow, which is very interesting, "
+3,62,23:27,23:35,1350.414,1358.414,901,906,"Oh also before that, she offers wine and he's like no I have a big climb tomorrow, which is very interesting,"
 3,3000,23:35,23:50,1358.414,1373.414,907,916,"because it's like, you know what, everybody, I don't know it made me think there's problems with everybody, right, like you can design the perfect man but like yeah good luck with that, anyway."
 3,62,23:51,23:55,1374.414,1378.414,917,919,"Um so he's like no I have a big climb tomorrow, I can't drink, and she's like oh, God."
 3,3000,23:56,23:58,1379.414,1381.414,921,921,That's what she thinks to herself I'm sure.

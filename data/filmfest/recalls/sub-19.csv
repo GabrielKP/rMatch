@@ -1,4 +1,4 @@
-movie,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
+movie_num,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
 11,11000,01:08,01:17,9.927,18.927,8,13,"Okay, so the very first thing that happened was a little interlude thing like in a drive-in movie theater."
 11,"1,107",01:17,01:25,18.927,26.927,14,18,"There was a dancing popcorn and soda and they were singing ""let's all go to the lobby to get ourselves a treat."""
 11,11000,01:26,01:28,27.927,29.927,20,20,That happened at the beginning of both sections.
@@ -11,7 +11,7 @@ movie,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
 1,9,02:12,02:14,73.92699999999999,75.92699999999999,50,51,He starts to answer and it starts to go into his memory.
 1,10,02:15,02:27,76.92699999999999,88.92699999999999,52,59,"And it's Tom Hanks who's the investigator guy and he showed up at a prison, I think it's a German prison or something, to try to extradite the con artist."
 1,10,02:27,02:37,88.92699999999999,98.92699999999999,60,66,"And he's having a hard time, he's standing in the rain with his umbrella and talking to the German prison people and having a really hard time making himself understood and speaking slowly."
-1,10,02:37,02:41,98.92699999999999,102.92699999999999,67,69,"He's got kind of a funny, maybe, Southern accent, some kind of a funny accent, Tom Hanks does. "
+1,10,02:37,02:41,98.92699999999999,102.92699999999999,67,69,"He's got kind of a funny, maybe, Southern accent, some kind of a funny accent, Tom Hanks does."
 1,"11,13",02:43,02:47,104.92699999999999,108.92699999999999,71,73,And he finally goes in and he gets to see Leonardo di Caprio.
 1,13,02:49,02:54,110.92699999999999,115.92699999999999,75,77,"And it's through, he's in this little cell and it's really dingy and it's dripping."
 1,13,02:55,03:01,116.92699999999999,122.92699999999999,79,82,"Tom Hanks gets under his umbrella to shield himself from the dripping from the ceiling, which is a funny moment."
@@ -25,7 +25,7 @@ movie,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
 1,"23,24,25",04:06,04:11,187.927,192.927,126,129,And they catch him and put a gun to his head and he collapses himself backwards on the floor and surrenders.
 1,1000,04:11,04:14,192.927,195.927,130,131,And that I guess is the story of how he was caught.
 1,1000,04:16,04:19,197.927,200.927,133,134,Ok that one I probably remember better than any of the others
-2,2000,04:19,04:28,200.927,209.927,135,140,"moving on from there, the next one, I'm not sure if it was the next one, I think it was the next one, was either animated or a Claymation "
+2,2000,04:19,04:28,200.927,209.927,135,140,"moving on from there, the next one, I'm not sure if it was the next one, I think it was the next one, was either animated or a Claymation"
 2,28,04:28,04:30,209.927,211.927,141,141,and it was of a girl and she had a box of pizza.
 2,28,04:30,04:38,211.927,219.927,142,147,"And she was in her room, she looked like she was, I don't know, like a young adult kind of a woman, maybe like in her 20s or something like that."
 2,"30,31",04:39,04:42,220.927,223.927,148,149,And an envelope shows up at her door and in the envelope is a record.
@@ -66,10 +66,10 @@ movie,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
 6,123,08:23,08:26,444.927,447.927,298,299,"He's got some marine, ancient marine fossil inside of him."
 6,"124,125,126",08:27,08:30,448.927,451.927,300,301,And then he falls out of the museum and goes rolling through the city.
 6,127,08:30,08:32,451.927,453.927,302,303,Someone picks him up and throws him through a window at some point.
-6,"129,130",08:33,08:37,454.927,458.927,304,306,"And then at the end of it he becomes, he's eroded down, he finally becomes sand "
+6,"129,130",08:33,08:37,454.927,458.927,304,306,"And then at the end of it he becomes, he's eroded down, he finally becomes sand"
 6,"131,132",08:38,08:40,459.927,461.927,308,308,and the sand gets picked up and melted into glass
 6,"133,134",08:40,08:44,461.927,465.927,309,311,"and the glass is put on the front of a satellite, he's shot into space, this rock."
-6,135,08:46,08:49,467.927,470.927,313,314,"And something happens to the satellite, he ends up crashing on another planet, "
+6,135,08:46,08:49,467.927,470.927,313,314,"And something happens to the satellite, he ends up crashing on another planet,"
 6,136,08:50,09:03,471.927,484.927,316,323,"and the closing scene in the one about the rock is this cracked piece of glass with this rock character inside of it has become part of a mountain on another planet, that now has prehistoric life, so the plot has come full circle."
 6,6000,09:06,09:08,487.927,489.927,326,327,That's what I remember about the one about the rock.
 -1,-1,09:11,09:12,492.927,493.927,330,330,What's another one.

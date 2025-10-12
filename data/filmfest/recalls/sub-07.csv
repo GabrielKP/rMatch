@@ -1,4 +1,4 @@
-movie,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
+movie_num,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
 11,11000,01:27,01:34,7.126999999999995,14.126999999999995,6,9,"Ok, so I guess I’ll start by saying that there were two lobby clips, just because I know you record those, and I did remember them."
 11,"1, 107",01:34,01:40,14.126999999999995,20.126999999999995,10,13,"So it says, “Let’s all go to the lobby and get some snacks,” and it’s all pink, and there's boxes that are dancing, and so on."
 10,10000,01:40,01:43,20.126999999999995,23.126999999999995,14,15,"Ok, so the last clip was the bus stop."
@@ -50,7 +50,7 @@ movie,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
 9,"167, 168",05:53,06:01,273.127,281.127,183,187,It starts with these two people who are making photocopies side-by-side in an office building.
 9,169,06:01,06:08,281.127,288.127,188,192,"And then they like both look up over the partitions that are slightly like lower than their heads, and look over at each other."
 9,170,06:08,06:14,288.127,294.127,193,196,"And then the, the, they all go off to their respective desks."
-9,"170, 171",06:14,06:26,294.127,306.127,197,204,"The first one the guy goes, and he sits down at his desk, and he opens a file, a file folder, and sees something inside "
+9,"170, 171",06:14,06:26,294.127,306.127,197,204,"The first one the guy goes, and he sits down at his desk, and he opens a file, a file folder, and sees something inside"
 9,9000,06:26,06:31,306.127,311.127,205,207,"which I didn’t note because I was distracted ‘cause the volume was loud, and then I asked Janice to turn down the volume."
 9,174,06:31,06:44,311.127,324.127,208,216,"The next time I kinda tuned in was when the woman was at her, going to her desk and then she like opened the curtains or the blinds and saw this flower that was made of post-it notes on her window."
 9,175,06:46,06:52,326.127,332.127,218,221,"And then the next kind of short part is the guy, who’s now in the bathroom, adjusting his tie."
@@ -155,7 +155,7 @@ movie,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
 1,1000,18:21,18:31,1021.127,1031.127,682,687,"I’ve never seen the movie, so I, I assume the game show part was part of the movie, but there was like two related segments."
 1,6,18:31,18:47,1031.127,1047.127,688,698,"The first part was Catch Me If You Can game show with three contestants, who I guess are trying to compete for the part of somebody named Frank, Frank Williams Abagnale."
 1,6,18:48,18:53,1048.127,1053.127,700,702,"The middle one is Leonardo DiCaprio, and I’m really bad with names, so I don’t know who the other two actors are."
-1,6,18:54,18:55,1054.127,1055.127,704,704,"But they're introduced and then, "
+1,6,18:54,18:55,1054.127,1055.127,704,704,"But they're introduced and then,"
 1,7,18:56,19:11,1056.127,1071.127,705,714,"the, the voiceover says something about the background of this Frank Williams, I don’t know if it’s Williams, Frank something Abagnale character about how he impersonated a bunch of different jobs,"
 1,7,19:11,19:23,1071.127,1083.127,715,722,"I think including something like a judge maybe or someone high up in court, maybe a surgeon, and something else, I don’t know, all, all pretty high positions."
 1,7,19:23,19:32,1083.127,1092.127,723,728,"Anyways, the three people, who are all dressed as like navy captains or something like that, they move behind three different podiums, and they have a seat."
@@ -169,7 +169,7 @@ movie,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
 1,10,20:26,20:34,1146.127,1154.127,765,769,"And he, I think, is trying to get into the prison to see this Frank character."
 1,"11, 12, 13",20:34,20:43,1154.127,1163.127,770,775,"And so he’s, he’s taken in by like a policeman, and he’s shown to the cell where, where Frank is hidden away."
 1,"12, 13",20:43,20:59,1163.127,1179.127,776,786,"We don’t see him at this point, but he’s shown like a little stool, and he’s told that he can sit there, that there is like this little doorway thing, which he isn’t allowed to pass anything through to the prisoner, but he can sit there and talk to him."
-1,14,20:59,21:06,1179.127,1186.127,787,791,"And so the Tom Hanks character, Carl, I think, whatever, is sitting there, "
+1,14,20:59,21:06,1179.127,1186.127,787,791,"And so the Tom Hanks character, Carl, I think, whatever, is sitting there,"
 1,14,21:06,21:15,1186.127,1195.127,792,797,"and then he brings out like this book, and I think he starts reading him something about like different articles, something that is clearly, I guess, relevant to his case or how he's gonna be tried or something."
 1,13,21:17,21:24,1197.127,1204.127,799,803,"And now we see Frank like holed up in his little cell, with long straggly hair, really, really sick, like coughing a lot."
 1,13,21:24,21:27,1204.127,1207.127,804,805,His cough sounds really phlegmy and gross.
@@ -193,7 +193,7 @@ movie,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
 1,-1,23:22,23:25,1322.127,1325.127,882,883,"I don’t remember anything after that, so I think it must’ve ended then."
 -1,-1,23:27,23:27,1327.127,1327.127,886,886,Ok.
 2,2000,23:29,23:32,1329.127,1332.127,887,888,"The next one, I think it was The Record."
-2,28,23:32,23:41,1332.127,1341.127,889,894,"So it starts with this, this was a cartoon, and starts with like this redheaded girl who’s in her little like apartment, "
+2,28,23:32,23:41,1332.127,1341.127,889,894,"So it starts with this, this was a cartoon, and starts with like this redheaded girl who’s in her little like apartment,"
 2,"28, 29",23:42,23:49,1342.127,1349.127,896,899,"and she has a box of pizza, and she opens it, and she gets out a slice, and then she’s gonna start to eat, but she gets some mail."
 2,"30, 31",23:50,23:59,1350.127,1359.127,901,906,"And so she goes to her door, and opens the door and gets her mail out, then sits back on her seat and pulls out a record."
 2,32,23:59,24:05,1359.127,1365.127,907,910,"It’s called A Single Life, and she puts the record on the record player and starts to play it."
@@ -220,7 +220,7 @@ movie,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
 2,39,26:07,26:19,1487.127,1499.127,992,999,"But the record keeps jumping on its own, and every time it does that, it kind of moves her back in time, so she moves forward in her armchair, in her wheelchair, but then is forced to jump back in time."
 2,39,26:20,26:23,1500.127,1503.127,1001,1002,"She does that a few bits, and it’s like she’s stuck in this loop."
 2,40,26:23,26:28,1503.127,1508.127,1003,1005,"But eventually she gets it to, to skip ahead to like another track."
-2,40,26:28,26:31,1508.127,1511.127,1006,1007,"And this time again she's an old lady in a walker, "
+2,40,26:28,26:31,1508.127,1511.127,1006,1007,"And this time again she's an old lady in a walker,"
 2,-1,26:32,26:37,1512.127,1517.127,1009,1011,and I don’t remember what happens from here.
 2,40,26:39,26:42,1519.127,1522.127,1014,1015,"I feel like she might’ve fallen, but I'm not 100% sure."
 2,2000,26:42,26:44,1522.127,1524.127,1016,1016,That’s all I can remember from that one.
