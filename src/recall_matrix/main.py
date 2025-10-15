@@ -181,7 +181,7 @@ def get_total_cross_entropy_x_given_y(
     tokenizer: PreTrainedTokenizer,
     input_str_x: str,
     input_str_y: str,
-    is_rj: bool,
+    print_str: str,
     verbose: bool = False,
 ) -> float:
     """Compute cross_entropy(LLM(X | Y), X)"""
@@ -203,11 +203,7 @@ def get_total_cross_entropy_x_given_y(
     idx_id_x = min(np.where(offset_mapping[:, :, -1] > idx_char_x)[1])
 
     if verbose:
-        prefix = (
-            "[italic red]H(E | R0 to Rj-1, Rj):[/italic red]"
-            if is_rj
-            else "[italic red]H(E | R0 to Rj-1):[/italic red]"
-        )
+        prefix = f"[italic red]{print_str}:[/italic red]"
         decode_str_y = tokenizer.decode(input_ids[0, :idx_id_x])
         decode_str_x = tokenizer.decode(input_ids[0, idx_id_x:])
 
@@ -235,7 +231,7 @@ def get_total_cross_entropy_x_given_y(
     return cross_entropy.numpy().sum()
 
 
-def mutual_information_with_history(
+def mutual_information_computation(
     model: PreTrainedModel,
     tokenizer: PreTrainedTokenizer,
     normalize: bool,
@@ -255,7 +251,7 @@ def mutual_information_with_history(
             tokenizer=tokenizer,
             input_str_x=story_segment,
             input_str_y=" ".join(r0_to_r_j_minus_1),
-            is_rj=False,
+            print_str="H(E | R0 to Rj-1)",
             verbose=verbose,
         )
 
@@ -264,7 +260,7 @@ def mutual_information_with_history(
             tokenizer=tokenizer,
             input_str_x=story_segment,
             input_str_y=" ".join([*r0_to_r_j_minus_1, rj]),
-            is_rj=True,
+            print_str="H(E | R0 to Rj-1, Rj)",
             verbose=verbose,
         )
 
@@ -276,6 +272,55 @@ def mutual_information_with_history(
             mi_for_j[idx_story_segment] = max(
                 0, (H_e_given_r0_to_r_j_minus_1 - H_e_given_r0_to_r_j)
             )
+        if verbose:
+            console.print(
+                (
+                    f"> MI(E_{idx_story_segment}, R_{rj_idx})"
+                    f" = {mi_for_j[idx_story_segment]}"
+                ),
+                style="bold yellow",
+            )
+
+    return mi_for_j
+
+
+def mutual_information_computation_reversed(
+    model: PreTrainedModel,
+    tokenizer: PreTrainedTokenizer,
+    normalize: bool,
+    story_segments: list[str],
+    r0_to_r_j_minus_1: list[str],
+    rj: str,
+    rj_idx: int,  # just for debugging
+    verbose: bool = False,
+) -> np.ndarray:
+    """Compute the normalized mutual information"""
+
+    # TODO: Can do some serious optimization: batching, caching, ..
+    mi_for_j = np.zeros(len(story_segments))
+    for idx_story_segment, story_segment in enumerate(story_segments):
+        H_rj_given_e = get_total_cross_entropy_x_given_y(
+            model=model,
+            tokenizer=tokenizer,
+            input_str_x=rj,
+            input_str_y=story_segment,
+            print_str="H(R_j | E)",
+            verbose=verbose,
+        )
+
+        H_rj = get_total_cross_entropy_x_given_y(
+            model=model,
+            tokenizer=tokenizer,
+            input_str_x=rj,
+            input_str_y="",
+            print_str="H(R_j)",
+            verbose=verbose,
+        )
+
+        if normalize:
+            mi_for_j[idx_story_segment] = max(0, 1 - (H_rj_given_e / H_rj))
+        else:
+            mi_for_j[idx_story_segment] = max(0, (H_rj - H_rj_given_e))
         if verbose:
             console.print(
                 (
@@ -302,12 +347,34 @@ def mutual_information(
     """Compute the mutual information"""
 
     if mutual_information_method == "with_history":
-        return mutual_information_with_history(
+        return mutual_information_computation(
             model=model,
             tokenizer=tokenizer,
             normalize=normalize,
             story_segments=story_segments,
             r0_to_r_j_minus_1=r0_to_r_j_minus_1,
+            rj=rj,
+            rj_idx=rj_idx,
+            verbose=verbose,
+        )
+    elif mutual_information_method == "without_history":
+        return mutual_information_computation(
+            model=model,
+            tokenizer=tokenizer,
+            normalize=normalize,
+            story_segments=story_segments,
+            r0_to_r_j_minus_1=[],
+            rj=rj,
+            rj_idx=rj_idx,
+            verbose=verbose,
+        )
+    elif mutual_information_method == "reversed_without_history":
+        return mutual_information_computation_reversed(
+            model=model,
+            tokenizer=tokenizer,
+            normalize=normalize,
+            story_segments=story_segments,
+            r0_to_r_j_minus_1=[],
             rj=rj,
             rj_idx=rj_idx,
             verbose=verbose,
@@ -392,11 +459,17 @@ def plot_rms_comparison(
     sub_ids_conditions: list[list[str]],
     movie_nums_conditions: list[list[int]],
     rms_conditions: list[list[np.ndarray]],
+    mutual_information_method: str,
+    mutual_information_normalize: bool,
 ):
     """Plot the recall matrices comparison"""
 
     comparison_name = "-".join(conditions)
-    output_dir = Path("outputs") / "plots" / "rms_comparison" / comparison_name
+    norm_str = "normalized" if mutual_information_normalize else "unnormalized"
+    method_name = f"{mutual_information_method}_{norm_str}"
+    output_dir = (
+        Path("outputs") / "plots" / "rms_comparison" / comparison_name / method_name
+    )
     print(f"Saving plots to {str(output_dir)}")
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -446,6 +519,8 @@ def plot_rms_comparison(
 if __name__ == "__main__":
     sub_ids = ["sub-01"]
     movie_nums = [1, 2]
+    mutual_information_method = "reversed_without_history"
+    mutual_information_normalize = True
     recalls_df = load_recalls(
         dataset="filmfest", sub_ids=sub_ids, movie_nums=movie_nums
     )
@@ -456,8 +531,8 @@ if __name__ == "__main__":
         model_name=model_name,
         recalls_df=recalls_df,
         transcript_df=transcript_df,
-        mutual_information_method="with_history",
-        mutual_information_normalize=False,
+        mutual_information_method=mutual_information_method,
+        mutual_information_normalize=mutual_information_normalize,
         verbose=True,
     )
 
@@ -470,4 +545,6 @@ if __name__ == "__main__":
         sub_ids_conditions=[sub_ids_binary, sub_ids_mi],
         movie_nums_conditions=[movie_nums_binary, movie_nums_mi],
         rms_conditions=[rms_binary, recall_matrices_mi],
+        mutual_information_method=mutual_information_method,
+        mutual_information_normalize=mutual_information_normalize,
     )
