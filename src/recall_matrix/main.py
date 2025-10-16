@@ -182,6 +182,7 @@ def get_total_cross_entropy_x_given_y(
     input_str_x: str,
     input_str_y: str,
     print_str: str,
+    device: str | torch.device,
     verbose: bool = False,
 ) -> float:
     """Compute cross_entropy(LLM(X | Y), X)"""
@@ -212,7 +213,7 @@ def get_total_cross_entropy_x_given_y(
         )
 
     with torch.no_grad():
-        (logits, _) = model(input_ids=input_ids, return_dict=False)
+        (logits, _) = model(input_ids=input_ids.to(device), return_dict=False)
 
     logits = logits.cpu()
     # choose only the logits from x
@@ -239,6 +240,7 @@ def mutual_information_computation(
     r0_to_r_j_minus_1: list[str],
     rj: str,
     rj_idx: int,  # just for debugging
+    device: str | torch.device,
     verbose: bool = False,
 ) -> np.ndarray:
     """Compute the normalized mutual information"""
@@ -252,6 +254,7 @@ def mutual_information_computation(
             input_str_x=story_segment,
             input_str_y=" ".join(r0_to_r_j_minus_1),
             print_str="H(E | R0 to Rj-1)",
+            device=device,
             verbose=verbose,
         )
 
@@ -261,6 +264,7 @@ def mutual_information_computation(
             input_str_x=story_segment,
             input_str_y=" ".join([*r0_to_r_j_minus_1, rj]),
             print_str="H(E | R0 to Rj-1, Rj)",
+            device=device,
             verbose=verbose,
         )
 
@@ -292,6 +296,7 @@ def mutual_information_computation_reversed(
     r0_to_r_j_minus_1: list[str],
     rj: str,
     rj_idx: int,  # just for debugging
+    device: str | torch.device,
     verbose: bool = False,
 ) -> np.ndarray:
     """Compute the normalized mutual information"""
@@ -305,6 +310,7 @@ def mutual_information_computation_reversed(
             input_str_x=rj,
             input_str_y=story_segment,
             print_str="H(R_j | E)",
+            device=device,
             verbose=verbose,
         )
 
@@ -314,6 +320,7 @@ def mutual_information_computation_reversed(
             input_str_x=rj,
             input_str_y="",
             print_str="H(R_j)",
+            device=device,
             verbose=verbose,
         )
 
@@ -342,6 +349,7 @@ def mutual_information(
     r0_to_r_j_minus_1: list[str],
     rj: str,
     rj_idx: int,
+    device: str | torch.device,
     verbose: bool = False,
 ) -> np.ndarray:
     """Compute the mutual information"""
@@ -355,6 +363,7 @@ def mutual_information(
             r0_to_r_j_minus_1=r0_to_r_j_minus_1,
             rj=rj,
             rj_idx=rj_idx,
+            device=device,
             verbose=verbose,
         )
     elif mutual_information_method == "without_history":
@@ -366,6 +375,7 @@ def mutual_information(
             r0_to_r_j_minus_1=[],
             rj=rj,
             rj_idx=rj_idx,
+            device=device,
             verbose=verbose,
         )
     elif mutual_information_method == "reversed_without_history":
@@ -377,6 +387,7 @@ def mutual_information(
             r0_to_r_j_minus_1=[],
             rj=rj,
             rj_idx=rj_idx,
+            device=device,
             verbose=verbose,
         )
     else:
@@ -392,6 +403,7 @@ def compute_rm(
     normalize: bool,
     story_segments: list[str],
     recall_segments: list[str],
+    device: str | torch.device,
     verbose: bool = False,
 ) -> np.ndarray:
     """Compute the recall matrix"""
@@ -409,6 +421,7 @@ def compute_rm(
             r0_to_r_j_minus_1=recall_segments[:idx_recall_segment],
             rj=recall_segment,
             rj_idx=idx_recall_segment,
+            device=device,
             verbose=verbose,
         )
 
@@ -421,10 +434,27 @@ def get_filmfest_rm_mi(
     transcript_df: pd.DataFrame,
     mutual_information_method: str,
     mutual_information_normalize: bool,
+    device: str | dict | None = None,
     verbose: bool = False,
 ) -> tuple[list[str], list[int], list[np.ndarray]]:
-    model = AutoModelForCausalLM.from_pretrained(model_name, token=CONFIG["HF_TOKEN"])
-    tokenizer = AutoTokenizer.from_pretrained(model_name, token=CONFIG["HF_TOKEN"])
+    if device is None:
+        device = "auto"
+
+    model = AutoModelForCausalLM.from_pretrained(
+        model_name, token=CONFIG["HF_TOKEN"], device_map=device
+    )
+    tokenizer = AutoTokenizer.from_pretrained(
+        model_name, token=CONFIG["HF_TOKEN"], device_map=device
+    )
+
+    # get used device
+    used_device: torch.device = (
+        next(iter(model.hf_device_map.values()))  # type: ignore
+        if hasattr(model, "hf_device_map")
+        else model.device
+    )
+
+    console.print(f"Used device: {used_device}", style="bold yellow")
 
     sub_ids: list[str] = list()
     movie_nums: list[int] = list()
@@ -446,6 +476,7 @@ def get_filmfest_rm_mi(
                 normalize=mutual_information_normalize,
                 story_segments=story_segments,
                 recall_segments=recall_segments,
+                device=used_device,
                 verbose=verbose,
             )
             sub_ids.append(sub_id)  # type: ignore
@@ -519,14 +550,14 @@ def plot_rms_comparison(
 if __name__ == "__main__":
     sub_ids = ["sub-01"]
     movie_nums = [1, 2]
-    mutual_information_method = "reversed_without_history"
-    mutual_information_normalize = True
+    mutual_information_method = "with_history"
+    mutual_information_normalize = False
     recalls_df = load_recalls(
         dataset="filmfest", sub_ids=sub_ids, movie_nums=movie_nums
     )
     transcript_df = load_transcripts(dataset="filmfest")
 
-    model_name = "meta-llama/Llama-3.2-1B-Instruct"
+    model_name = "meta-llama/Llama-3.1-8B-Instruct"
     sub_ids_mi, movie_nums_mi, recall_matrices_mi = get_filmfest_rm_mi(
         model_name=model_name,
         recalls_df=recalls_df,
@@ -541,7 +572,7 @@ if __name__ == "__main__":
     )
 
     plot_rms_comparison(
-        conditions=["binary_human", "mi_llama_1b_instruct"],
+        conditions=["binary_human", "mi_llama_3.1_8b_instruct"],
         sub_ids_conditions=[sub_ids_binary, sub_ids_mi],
         movie_nums_conditions=[movie_nums_binary, movie_nums_mi],
         rms_conditions=[rms_binary, recall_matrices_mi],
