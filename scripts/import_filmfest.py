@@ -116,7 +116,7 @@ def import_filmfest(filmfest_path: Path | str):
 
 if __name__ == "__main__":
     parser = ArgumentParser()
-    parser.add_argument("--filmfest-path", type=str, default="../filmfest")
+    parser.add_argument("--filmfest-path", type=str, default="downloads/filmfest")
     args = parser.parse_args()
 
     filmfest_path = args.filmfest_path
