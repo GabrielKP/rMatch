@@ -77,12 +77,24 @@ class MIRM:
         )
         log.info(f"Using device: {self.device}")
 
+        # test whether tokenizer adds a bos token
+        # only reliable way seems to test this if not specified
+        if hasattr(self.tokenizer, "add_bos_token"):
+            self.add_bos_token = self.tokenizer.add_bos_token
+        elif self.tokenizer.bos_token is None:
+            self.add_bos_token = False
+        else:
+            tokens = self.tokenizer.encode("test")
+            self.add_bos_token = tokens[0] == self.tokenizer.bos_token_id
+        log.info(f"Tokenizer adds a bos token: {self.add_bos_token}")
+
     def cross_entropy_x_given_y(
         self,
         input_str_x: str,
         input_str_y: str,
         print_str: str,
         verbose: bool = False,
+        token_wise: bool = False,
     ) -> float:
         """Compute cross_entropy(LLM(X | Y), X)"""
 
@@ -102,24 +114,9 @@ class MIRM:
 
         idx_id_x = min(np.where(offset_mapping[:, :, -1] > idx_char_x)[1])
 
-        # gpt2 does not add bos tokens, and if input_str_y is
-        # empty, you cannot predict the first token from nothing,
-        # thus we need to start from the second token.
-        if (
-            hasattr(self.tokenizer, "add_bos_token")
-            and not self.tokenizer.add_bos_token
-            and idx_id_x == 0
-        ):
-            idx_id_x = 1
-
-        if verbose:
-            prefix = f"[italic red]{print_str}:[/italic red]"
-            decode_str_y = self.tokenizer.decode(input_ids[0, :idx_id_x])
-            decode_str_x = self.tokenizer.decode(input_ids[0, idx_id_x:])
-
-            console.print(
-                f"{prefix} [white]{decode_str_y}[/white][green]{decode_str_x}[/green]"
-            )
+        # if tokenizer does not add bos token, we need to start from second token
+        if not self.add_bos_token:
+            idx_id_x += 1
 
         with torch.no_grad():
             (logits, _) = self.model(
@@ -140,7 +137,25 @@ class MIRM:
         labels_x_flat = labels_x.view(-1)
 
         cross_entropy = F.cross_entropy(logits_x_flat, labels_x_flat, reduction="none")
-        return cross_entropy.numpy().sum()
+        sum_cross_entropy = cross_entropy.numpy().sum()
+
+        if verbose:
+            prefix = f"[italic red]{print_str}={sum_cross_entropy:.3f}[/italic red]"
+            decode_str_y = self.tokenizer.decode(input_ids[0, :idx_id_x])
+            decode_str_x = self.tokenizer.decode(input_ids[0, idx_id_x:])
+
+            console.print(
+                f"{prefix} [white]{decode_str_y}[/white][green]{decode_str_x}[/green]"
+            )
+            if token_wise:
+                token_strs: list[str] = []
+                for idx_token in range(len(labels_x_flat)):
+                    tok = self.tokenizer.decode(labels_x_flat[idx_token])
+                    ce = cross_entropy[idx_token].item()
+                    token_strs.append(f"{tok}: {ce:.3f}")
+                console.print(f"Token-wise cross entropy: {' | '.join(token_strs)}")
+
+        return sum_cross_entropy
 
     def recall_matrix_rj_given_ei(
         self,
@@ -175,7 +190,7 @@ class MIRM:
                     recall_matrix[i, j] = max(0, (H_R_j - H_R_j_given_E_i))
                 if verbose:
                     console.print(
-                        (f"> MI(E_{i}, R_{j}) = {recall_matrix[i, j]}"),
+                        (f"> MI(E_{i}, R_{j}) = {recall_matrix[i, j]:.3f}"),
                         style="bold yellow",
                     )
 
@@ -214,7 +229,7 @@ class MIRM:
                     recall_matrix[i, j] = max(0, (H_E_i - H_E_i_given_R_j))
                 if verbose:
                     console.print(
-                        (f"> MI(E_{i}, R_{j}) = {recall_matrix[i, j]}"),
+                        (f"> MI(E_{i}, R_{j}) = {recall_matrix[i, j]:.3f}"),
                         style="bold yellow",
                     )
 
@@ -266,7 +281,7 @@ class MIRM:
                     )
                 if verbose:
                     console.print(
-                        (f"> MI(E_{i}, R_{j}{given_str}) = {recall_matrix[i, j]}"),
+                        (f"> MI(E_{i}, R_{j}{given_str}) = {recall_matrix[i, j]:.3f}"),
                         style="bold yellow",
                     )
 
