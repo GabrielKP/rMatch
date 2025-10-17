@@ -5,6 +5,35 @@ from pathlib import Path
 
 import pandas as pd
 
+FILMFEST_MOVIE_TO_NUM = {
+    "1. Cartoon intro 1": 12,
+    "2. Catch Me If You Can": 1,
+    "3. The Record": 2,
+    "4. The Boyfriend": 3,
+    "5. The Shoe": 4,
+    "6. Keith Reynolds": 5,
+    "8. The Rock": 6,
+    "9. The Prisoner": 7,
+    "10. The Black Hole": 8,
+    "11. Post-it Love": 9,
+    "12. Bus Stop": 10,
+    "7. Cartoon intro 2": 11,
+}
+FILMFEST_NUM_TO_MOVIE = {
+    12: "cartoon_intro_1",
+    1: "catch_me_if_you_can",
+    2: "the_record",
+    3: "the_boyfriend",
+    4: "the_shoe",
+    5: "keith_reynolds",
+    6: "the_rock",
+    7: "the_prisoner",
+    8: "the_black_hole",
+    9: "post_it_love",
+    10: "bus_stop",
+    11: "cartoon_intro_2",
+}
+
 
 def import_filmfest(filmfest_path: Path | str):
     filmfest_path = Path(filmfest_path)
@@ -26,6 +55,10 @@ def import_filmfest(filmfest_path: Path | str):
         recall_df = recall_df.rename(columns=col_map)
 
         recall_df["text"] = recall_df["text"].str.strip()
+        recall_df["movie_name"] = recall_df["movie_num"].map(FILMFEST_NUM_TO_MOVIE)
+        recall_df["sub-id"] = recall_path.stem.split("_")[0]
+
+        recall_df = recall_df[["sub-id", "movie_name", "movie_num", "scene", "text"]]
 
         recall_df.to_csv(
             output_dir / recall_path.stem.replace("_recall", ".csv"), index=False
@@ -61,21 +94,13 @@ def import_filmfest(filmfest_path: Path | str):
             transcript_df.groupby("Segment number").cumcount() + 1
         )
         # add movie number
-        movie_title_map = {
-            "1. Cartoon intro 1": 12,
-            "2. Catch Me If You Can": 1,
-            "3. The Record": 2,
-            "4. The Boyfriend": 3,
-            "5. The Shoe": 4,
-            "6. Keith Reynolds": 5,
-            "8. The Rock": 6,
-            "9. The Prisoner": 7,
-            "10. The Black Hole": 8,
-            "11. Post-it Love": 9,
-            "12. Bus Stop": 10,
-            "7. Cartoon intro 2": 11,
-        }
-        transcript_df["movie_num"] = transcript_df["Movie title"].map(movie_title_map)  # type: ignore
+        transcript_df["movie_num"] = transcript_df["Movie title"].map(
+            FILMFEST_MOVIE_TO_NUM
+        )
+        # add normalized movie name
+        transcript_df["movie_name"] = transcript_df["movie_num"].map(
+            FILMFEST_NUM_TO_MOVIE
+        )
 
         # rename columns
         col_map = {
@@ -90,6 +115,7 @@ def import_filmfest(filmfest_path: Path | str):
         # keep columns we want
         transcript_df = transcript_df[
             [
+                "movie_name",
                 "movie_num",
                 "seg_num",
                 "seg_start_time",

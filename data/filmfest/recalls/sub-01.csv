@@ -1,105 +1,105 @@
-movie_num,scene,starttime,endtime,startsec_adj,endsec_adj,startTR,endTR,text
-10,10000,01:40,01:44,9.597999999999999,13.597999999999999,7,9,Okay the last movie that I saw was kind of a weird one.
-10,10000,01:44,01:49,13.597999999999999,18.598,10,12,"That was, it almost reminded me of a Stephen King kind of thing."
-10,"182, 185",01:50,01:58,19.598,27.598,14,18,"Like this guy, he was standing on the street waiting for a bus, and this frantic woman came up to him and approached him, you know something's obviously wrong."
-10,185,01:58,02:09,27.598,38.598,19,26,"I thought you know maybe some kind of domestic violence situation or something because she was really frantic, and she was so frantic she didn't even put her truck in parking, it's like rolling away."
-10,186,02:09,02:11,38.598,40.598,27,27,"She runs up to him and she's got to use his phone,"
-10,"187, 188",02:12,02:16,41.598,45.598,29,30,"and she takes his phone and she's screaming at somebody and she's all pissed off,"
-10,"189, 190",02:16,02:26,45.598,55.598,31,37,"then drops the phone on the ground and breaks it, and the guy's mad and he's approaching her saying you know you need to give me back money for the phone and then"
-10,191,02:26,02:29,55.598,58.598,38,39,the guy she was screaming on the phone comes.
-10,192,02:29,02:36,58.598,65.598,40,44,"And he's been sitting there in the car watching them the whole time, like blasting classical music really loud and it seems weird."
-10,193,02:36,02:42,65.598,71.598,45,48,"And then, and then he's like who's this guy, how do you know him?"
-10,198,02:42,02:48,71.598,77.598,49,52,"And then, and then he's some kind of famous person, he's like do you know who I am?"
-10,199,02:51,03:03,80.598,92.598,55,62,"And the guy realizes who he was, turned out he was some famous magician from some casino and that woman was his assistant and they're having, and he's a really bad person and they're having some kind of problems."
-10,-1,03:04,03:05,93.598,94.598,63,63,"And then,"
-10,206,03:08,03:15,97.598,104.598,66,70,and then it turns out the guy is some kind of evil demon or something and he's got like demonic powers and he starts hypnotizing the guy.
-10,"206, 207",03:16,03:19,105.598,108.598,71,72,"It makes his eyes roll back in his head, then he passes out."
-10,213,03:20,03:21,109.598,110.598,74,74,He then turns into a dog.
-10,214,03:22,03:33,111.598,122.598,75,82,"And then we realize at the end that he's turned other people into dogs too, because he's not only a magician, he's got some demonic powers or something."
--1,-1,03:37,03:40,126.598,129.598,85,86,And then there were a couple animated ones that I remember.
-2,28,03:40,03:50,129.598,139.598,87,93,"That one, my favorite one was the one with the, the second one, there was a woman sitting in an apartment, it's animated, it's digitally animated."
-2,"32, 33, 36",03:52,04:06,141.598,155.598,95,104,"And she puts a record on the record player and then it skips, and she gets all annoyed, and she fixes it, and then she notices whenever she does something to the record player, it sends her to a different place, a different part of her life."
-2,36,04:07,04:11,156.598,160.598,105,107,"She puts it on a different song and then like all of a sudden she's in a different apartment,"
-2,37,04:11,04:21,160.598,170.598,108,114,"and then she's pregnant, and she notices like the more, the more she fools around with the record, and adjust it, it just makes her like more and more pregnant, and she makes it go backwards to make herself less pregnant,"
-2,37,04:21,04:27,170.598,176.598,115,118,"and then she makes herself more pregnant by fooling around with it even more, then all of a sudden she's holding a baby."
-2,"38, 39",04:29,04:32,178.598,181.598,120,121,"You know, then she fools around with the record player some more."
-2,"38, 39",04:32,04:46,181.598,195.598,122,130,"It makes her get old, then makes her get younger again, then makes her you know switches her to a different apartment, and then a wheelchair, she broke her leg and then she can't do anything with the record player again,"
-2,"40, 41",04:46,05:01,195.598,210.598,131,140,"and then she just keeps fiddling with the record player and adjusting it, and then she keeps doing that, it keeps taking her through more stages of life until at the end she's dead and she's cremated in an urn."
-5,5000,05:02,05:09,211.598,218.598,142,146,"And then there was another really weird animated one, which is like basically just a bunch of different colored stick figures."
-5,85,05:10,05:15,219.598,224.598,147,150,"And this real matter-of-fact narrator, he's like ""this guy went to work today."""
-5,86,05:17,05:23,226.598,232.598,152,155,"""And this guy was hoping he'd get a promotion and then he didn't get the promotion."""
-5,"86,  90, 91, 92",05:23,05:35,232.598,244.598,156,163,"And there's this girl at the office that he likes and he wants to be with her, and then he didn't get the promotion and he's all pissed off and then some other guy is going to be with the girl, and he got the promotion."
-5,96,05:35,05:39,244.598,248.598,164,166,"So the narrator's like ""so he decides to kill the guy."""
-5,98,05:41,05:46,250.598,255.598,168,170,And then he can't take his body in the elevator because he's going to get blood all over the place.
-5,"98, 99",05:47,05:52,256.598,261.598,172,174,"So he takes him up the stairs, and then he runs into this other person who's going up the stairs, and then,"
-5,"101, 105",05:54,06:01,263.598,270.598,177,180,"I think he has to kill that person too, and then, and then he realizes what he's done and he's got to jump out the window and kill himself"
-5,5000,06:01,06:11,270.598,280.598,181,187,"and this like matter-of-fact narrator just like saying all this stuff that's happening and it's really, that was one of the weirder ones, it was just stick figures."
-6,6000,06:13,06:18,282.598,287.598,189,192,And then the other animated one was about a rock that starts out as a big mountain.
-6,6000,06:18,06:23,287.598,292.598,193,195,It almost reminded me of something that could have been on a show like Sesame Street or something.
-6,"111, 112, 113",06:24,06:31,293.598,300.598,197,200,"It starts out like a couple hundred years ago as a big mountain and then like over all the years, you know you see its lifespan."
-6,116,06:31,06:41,300.598,310.598,201,207,"People keep doing stuff to it; first, they took it down, they made it into a, they ground it down and made it into a gristmill"
-6,118,06:44,06:52,313.598,321.598,210,214,"and after that, it got ground down more, and then it ended up getting made into a cannon ball for this, to be used in the Civil War."
-6,"119, 120",06:52,06:56,321.598,325.598,215,217,And they shot it out of a cannon and then it ended up in the ocean.
-6,"121, 124",06:59,07:06,328.598,335.598,220,224,"And then it washed up on the beach and it became a fossil, and then it ended up in New York probably, what looked like in the 30's."
-6,"124, 125, 126, 129",07:07,07:14,336.598,343.598,225,229,"They put it in a museum, and then it ended up leaving the museum, and then it was on the street, and then it got ran over by a street sweeper."
-6,"130, 133, 134",07:15,07:23,344.598,352.598,231,235,"And it became sand, and then they used the sand to make a lens for a telescope, which got blasted up into space."
-6,136,07:23,07:27,352.598,356.598,236,238,And then it started its life over again on a new planet.
-6,136,07:27,07:30,356.598,359.598,239,240,It became another mountain again.
-6,6000,07:31,07:33,360.598,362.598,241,242,It's pretty crazy.
-3,3000,07:35,07:39,364.598,368.598,244,246,"And then there was another movie, about a bunch of robots."
-3,3000,07:40,07:43,369.598,372.598,247,248,"It kind of reminded me of another movie, AI."
-3,43,07:44,07:53,373.598,382.598,250,255,"There was like this couple sitting down eating dinner together, and the woman's like all annoyed at her boyfriend, because I don't know whatever she's just annoyed with him."
-3,"51, 54",07:55,08:07,384.598,396.598,257,264,"And then it turns out he's actually a robot because she could see a switch on the back of his neck and then she called the company that she got him from, to trade him in because she didn't like him,"
-3,"55, 57",08:08,08:13,397.598,402.598,266,268,"and then she picked out a new robot that she liked better, and then they delivered the new one."
-3,65,08:14,08:27,403.598,416.598,270,278,"And the new one was you know, taking more of an interest in her, you know asking her how her day was, you know, like she thought she was happier with him, but then it turns out he doesn't really like her either."
-3,"66, 67",08:27,08:36,416.598,425.598,279,284,"He's getting annoyed with her, so and then you realize that she's a robot too, and he just turns her off and goes and does his own thing."
-1,1000,08:40,08:48,429.598,437.598,287,292,"And the first movie that I saw was hmm, To catch a thief, I think."
-1,5,08:49,09:00,438.598,449.598,293,300,"And it starts out with these three guys on that old game show, to tell the truth, and they have to guess which one is the real guy."
-1,"6, 7",09:01,09:14,450.598,463.598,301,309,"I don't remember his name, but he was this guy that supposedly posed as a pediatrician and airline pilot at the same time, for a couple of years before he finally got caught."
-1,10,09:15,09:19,464.598,468.598,311,312,And then they showed the flashback to the scene where he got caught in France.
-1,"13, 20",09:21,09:28,470.598,477.598,315,318,"He was in jail, and he was really sick when he was in jail, and he managed to run away anyway."
-1,25,09:31,09:42,480.598,491.598,321,328,"And you know, you couldn't really tell if he was actually sick or if he was just faking it pretending but I think he actually was, and they managed to catch him and that was pretty much it for that one."
-4,"68, 70",09:44,09:55,493.598,504.598,330,336,"And then another movie, another movie was about, this was this little short about this guy that's walking down the street while he's drinking a little carton of milk."
-4,"71, 76",09:56,10:10,505.598,519.598,338,346,"And he sees this girl that he likes across the street and he's kind of flirting with her, and they're kind of like dancing back and forth and you know just like flirting with each other across the street, and then he's not paying attention to where he's going."
-4,"78, 80",10:10,10:22,519.598,531.598,347,354,"And he ends up getting hit by a car, and then his shoes fly off and they end up on the ground, and it's basically explained, like how did these shoes get on the ground."
-4,4000,10:22,10:24,531.598,533.598,355,356,That's basically that one.
--1,-1,10:25,10:40,534.598,549.598,357,366,"Hmm another one, another movie that I've seen."
-7,7000,10:42,10:55,551.598,564.598,369,376,"Oh yeah one of them I think, but it might have been a James Bond movie, but I don't know, is the guy that was in some kind of village somewhere in Europe."
-7,138,10:56,11:07,565.598,576.598,378,384,"I don't know, he had a British accent, and he realizes he's in some weird village, somewhere in Europe and he has no idea where he's at or how he got there, and he's trying to find out where he is."
-7,138,11:07,11:09,576.598,578.598,385,386,Nobody wants to tell him.
-7,138,11:10,11:17,579.598,586.598,387,391,"He's at a restaurant and he's like can you give me directions, how to get out of here, and the waitress at the restaurant doesn't want to tell him."
-7,"140, 141",11:18,11:22,587.598,591.598,393,394,And then he goes and tries to make a call from the phone box.
-7,"141, 143, 144",11:22,11:37,591.598,606.598,395,404,"He doesn't know the number so the operator doesn't want to help him and then he uses some kind of weird information thing to get a taxi, and the taxi comes, and she's like I can only take you like local in town."
-7,"147, 148, 151",11:38,11:49,607.598,618.598,406,412,"So he goes as far as he can and then he ends up at a store, he tries to get a map, and they won't give him a map that shows him like anything outside of the village and where they are."
-7,151,11:50,11:52,619.598,621.598,414,414,He just basically can't figure out where he is.
--1,-1,11:56,11:58,625.598,627.598,418,418,What's another one.
--1,-1,12:04,12:07,633.598,636.598,423,424,Trying to think of another that I saw.
--1,-1,12:27,12:30,656.598,659.598,439,440,Trying to think of another one.
--1,-1,12:34,12:36,663.598,665.598,443,444,I can't remember the rest of them for some reason.
--1,-1,12:36,12:37,665.598,666.598,445,445,I don't know why.
--1,-1,12:41,12:47,670.598,676.598,448,451,"I think I saw the catch a thief one, and then there was the animated one,"
--1,-1,12:50,13:03,679.598,692.598,454,462,"and then there was the one about the rock, and then there was the one about shoes flying up in the air, and then there was the magician, and then there was the robot one."
--1,-1,13:06,13:07,695.598,696.598,465,465,What other ones were there.
-8,8000,13:29,13:31,718.598,720.598,480,480,Oh yeah the Black Hole one.
-8,8000,13:32,13:34,721.598,723.598,482,482,Yeah there's one called the black hole.
-8,156,13:34,13:45,723.598,734.598,483,490,"It's this guy, he's in an office, for whatever reason, he printed out a big black circle on a piece of paper that just happened to come out of the copy machine for some odd reason."
-8,156,13:45,13:46,734.598,735.598,491,491,It didn't show why.
-8,159,13:47,13:53,736.598,742.598,492,495,"And then he realizes that he could, it's actually a gateway to another dimension."
-8,"159, 160",13:53,14:04,742.598,753.598,496,502,"He could stick his hand inside the black hole and then he realizes that when he puts it up against something, that he could put his hand through whatever he puts the paper up against."
-8,"160, 162",14:05,14:15,754.598,764.598,504,510,"So he realizes that he could use it to steal candy out of the vending machine, and then he realizes that he could use it to steal money out of the vault in his boss' office."
-8,"162, 163",14:16,14:28,765.598,777.598,511,518,"So he went and did that and then he got greedy and then he ended up like going all the way inside the black hole, and he got stuck inside the vault because the piece of paper fell off of it."
-8,164,14:28,14:33,777.598,782.598,519,522,"So basically all of the money was taken out of the vault, and he was trapped inside."
-8,8000,14:34,14:37,783.598,786.598,523,524,And that was pretty much it for that short film.
-9,9000,14:37,14:43,786.598,792.598,525,528,"And then there was another one, called Post it love or something."
-9,"168, 169",14:44,14:50,793.598,799.598,530,533,"There's these these two people that work in this office, that kind of have crush on each other, they're kind of in love with each other,"
-9,"171, 174, 175, 176",14:50,14:58,799.598,807.598,534,538,"and then they keep making pictures for the other one with post-it notes, and the pictures keep getting more and more detailed until"
-9,178,14:59,15:06,808.598,815.598,540,544,"at the end the guy finally makes a giant like mural of the two of them together, made entirely out of post-it notes on the wall in the back."
-9,9000,15:08,15:10,817.598,819.598,546,546,And that's that one.
--1,-1,15:18,15:23,827.598,832.598,553,555,And uh now let's see which other ones.
--1,-1,15:26,15:27,835.598,836.598,558,558,I think I described most of them.
--1,-1,15:31,15:33,840.598,842.598,561,562,Hmm I know I'm forgetting a couple of them.
--1,-1,15:35,15:37,844.598,846.598,564,564,I don't remember.
--1,-1,15:38,15:40,847.598,849.598,566,566,As much as I can remember right this second.
--1,-1,15:54,16:05,863.598,874.598,577,583,"Let's see, I did the one about the post-it notes, the one about the magician, the one that I think was a James Bond movie."
--1,-1,16:07,16:16,876.598,885.598,585,590,Let's see what other; it's like two or three more that I think I don't remember right this second.
--2,-2,16:16,16:18,885.598,887.598,591,592,I think that's as much as I can remember.
+sub-id,movie_name,movie_num,scene,text
+sub-01,bus_stop,10,10000,Okay the last movie that I saw was kind of a weird one.
+sub-01,bus_stop,10,10000,"That was, it almost reminded me of a Stephen King kind of thing."
+sub-01,bus_stop,10,"182, 185","Like this guy, he was standing on the street waiting for a bus, and this frantic woman came up to him and approached him, you know something's obviously wrong."
+sub-01,bus_stop,10,185,"I thought you know maybe some kind of domestic violence situation or something because she was really frantic, and she was so frantic she didn't even put her truck in parking, it's like rolling away."
+sub-01,bus_stop,10,186,"She runs up to him and she's got to use his phone,"
+sub-01,bus_stop,10,"187, 188","and she takes his phone and she's screaming at somebody and she's all pissed off,"
+sub-01,bus_stop,10,"189, 190","then drops the phone on the ground and breaks it, and the guy's mad and he's approaching her saying you know you need to give me back money for the phone and then"
+sub-01,bus_stop,10,191,the guy she was screaming on the phone comes.
+sub-01,bus_stop,10,192,"And he's been sitting there in the car watching them the whole time, like blasting classical music really loud and it seems weird."
+sub-01,bus_stop,10,193,"And then, and then he's like who's this guy, how do you know him?"
+sub-01,bus_stop,10,198,"And then, and then he's some kind of famous person, he's like do you know who I am?"
+sub-01,bus_stop,10,199,"And the guy realizes who he was, turned out he was some famous magician from some casino and that woman was his assistant and they're having, and he's a really bad person and they're having some kind of problems."
+sub-01,bus_stop,10,-1,"And then,"
+sub-01,bus_stop,10,206,and then it turns out the guy is some kind of evil demon or something and he's got like demonic powers and he starts hypnotizing the guy.
+sub-01,bus_stop,10,"206, 207","It makes his eyes roll back in his head, then he passes out."
+sub-01,bus_stop,10,213,He then turns into a dog.
+sub-01,bus_stop,10,214,"And then we realize at the end that he's turned other people into dogs too, because he's not only a magician, he's got some demonic powers or something."
+sub-01,,-1,-1,And then there were a couple animated ones that I remember.
+sub-01,the_record,2,28,"That one, my favorite one was the one with the, the second one, there was a woman sitting in an apartment, it's animated, it's digitally animated."
+sub-01,the_record,2,"32, 33, 36","And she puts a record on the record player and then it skips, and she gets all annoyed, and she fixes it, and then she notices whenever she does something to the record player, it sends her to a different place, a different part of her life."
+sub-01,the_record,2,36,"She puts it on a different song and then like all of a sudden she's in a different apartment,"
+sub-01,the_record,2,37,"and then she's pregnant, and she notices like the more, the more she fools around with the record, and adjust it, it just makes her like more and more pregnant, and she makes it go backwards to make herself less pregnant,"
+sub-01,the_record,2,37,"and then she makes herself more pregnant by fooling around with it even more, then all of a sudden she's holding a baby."
+sub-01,the_record,2,"38, 39","You know, then she fools around with the record player some more."
+sub-01,the_record,2,"38, 39","It makes her get old, then makes her get younger again, then makes her you know switches her to a different apartment, and then a wheelchair, she broke her leg and then she can't do anything with the record player again,"
+sub-01,the_record,2,"40, 41","and then she just keeps fiddling with the record player and adjusting it, and then she keeps doing that, it keeps taking her through more stages of life until at the end she's dead and she's cremated in an urn."
+sub-01,keith_reynolds,5,5000,"And then there was another really weird animated one, which is like basically just a bunch of different colored stick figures."
+sub-01,keith_reynolds,5,85,"And this real matter-of-fact narrator, he's like ""this guy went to work today."""
+sub-01,keith_reynolds,5,86,"""And this guy was hoping he'd get a promotion and then he didn't get the promotion."""
+sub-01,keith_reynolds,5,"86,  90, 91, 92","And there's this girl at the office that he likes and he wants to be with her, and then he didn't get the promotion and he's all pissed off and then some other guy is going to be with the girl, and he got the promotion."
+sub-01,keith_reynolds,5,96,"So the narrator's like ""so he decides to kill the guy."""
+sub-01,keith_reynolds,5,98,And then he can't take his body in the elevator because he's going to get blood all over the place.
+sub-01,keith_reynolds,5,"98, 99","So he takes him up the stairs, and then he runs into this other person who's going up the stairs, and then,"
+sub-01,keith_reynolds,5,"101, 105","I think he has to kill that person too, and then, and then he realizes what he's done and he's got to jump out the window and kill himself"
+sub-01,keith_reynolds,5,5000,"and this like matter-of-fact narrator just like saying all this stuff that's happening and it's really, that was one of the weirder ones, it was just stick figures."
+sub-01,the_rock,6,6000,And then the other animated one was about a rock that starts out as a big mountain.
+sub-01,the_rock,6,6000,It almost reminded me of something that could have been on a show like Sesame Street or something.
+sub-01,the_rock,6,"111, 112, 113","It starts out like a couple hundred years ago as a big mountain and then like over all the years, you know you see its lifespan."
+sub-01,the_rock,6,116,"People keep doing stuff to it; first, they took it down, they made it into a, they ground it down and made it into a gristmill"
+sub-01,the_rock,6,118,"and after that, it got ground down more, and then it ended up getting made into a cannon ball for this, to be used in the Civil War."
+sub-01,the_rock,6,"119, 120",And they shot it out of a cannon and then it ended up in the ocean.
+sub-01,the_rock,6,"121, 124","And then it washed up on the beach and it became a fossil, and then it ended up in New York probably, what looked like in the 30's."
+sub-01,the_rock,6,"124, 125, 126, 129","They put it in a museum, and then it ended up leaving the museum, and then it was on the street, and then it got ran over by a street sweeper."
+sub-01,the_rock,6,"130, 133, 134","And it became sand, and then they used the sand to make a lens for a telescope, which got blasted up into space."
+sub-01,the_rock,6,136,And then it started its life over again on a new planet.
+sub-01,the_rock,6,136,It became another mountain again.
+sub-01,the_rock,6,6000,It's pretty crazy.
+sub-01,the_boyfriend,3,3000,"And then there was another movie, about a bunch of robots."
+sub-01,the_boyfriend,3,3000,"It kind of reminded me of another movie, AI."
+sub-01,the_boyfriend,3,43,"There was like this couple sitting down eating dinner together, and the woman's like all annoyed at her boyfriend, because I don't know whatever she's just annoyed with him."
+sub-01,the_boyfriend,3,"51, 54","And then it turns out he's actually a robot because she could see a switch on the back of his neck and then she called the company that she got him from, to trade him in because she didn't like him,"
+sub-01,the_boyfriend,3,"55, 57","and then she picked out a new robot that she liked better, and then they delivered the new one."
+sub-01,the_boyfriend,3,65,"And the new one was you know, taking more of an interest in her, you know asking her how her day was, you know, like she thought she was happier with him, but then it turns out he doesn't really like her either."
+sub-01,the_boyfriend,3,"66, 67","He's getting annoyed with her, so and then you realize that she's a robot too, and he just turns her off and goes and does his own thing."
+sub-01,catch_me_if_you_can,1,1000,"And the first movie that I saw was hmm, To catch a thief, I think."
+sub-01,catch_me_if_you_can,1,5,"And it starts out with these three guys on that old game show, to tell the truth, and they have to guess which one is the real guy."
+sub-01,catch_me_if_you_can,1,"6, 7","I don't remember his name, but he was this guy that supposedly posed as a pediatrician and airline pilot at the same time, for a couple of years before he finally got caught."
+sub-01,catch_me_if_you_can,1,10,And then they showed the flashback to the scene where he got caught in France.
+sub-01,catch_me_if_you_can,1,"13, 20","He was in jail, and he was really sick when he was in jail, and he managed to run away anyway."
+sub-01,catch_me_if_you_can,1,25,"And you know, you couldn't really tell if he was actually sick or if he was just faking it pretending but I think he actually was, and they managed to catch him and that was pretty much it for that one."
+sub-01,the_shoe,4,"68, 70","And then another movie, another movie was about, this was this little short about this guy that's walking down the street while he's drinking a little carton of milk."
+sub-01,the_shoe,4,"71, 76","And he sees this girl that he likes across the street and he's kind of flirting with her, and they're kind of like dancing back and forth and you know just like flirting with each other across the street, and then he's not paying attention to where he's going."
+sub-01,the_shoe,4,"78, 80","And he ends up getting hit by a car, and then his shoes fly off and they end up on the ground, and it's basically explained, like how did these shoes get on the ground."
+sub-01,the_shoe,4,4000,That's basically that one.
+sub-01,,-1,-1,"Hmm another one, another movie that I've seen."
+sub-01,the_prisoner,7,7000,"Oh yeah one of them I think, but it might have been a James Bond movie, but I don't know, is the guy that was in some kind of village somewhere in Europe."
+sub-01,the_prisoner,7,138,"I don't know, he had a British accent, and he realizes he's in some weird village, somewhere in Europe and he has no idea where he's at or how he got there, and he's trying to find out where he is."
+sub-01,the_prisoner,7,138,Nobody wants to tell him.
+sub-01,the_prisoner,7,138,"He's at a restaurant and he's like can you give me directions, how to get out of here, and the waitress at the restaurant doesn't want to tell him."
+sub-01,the_prisoner,7,"140, 141",And then he goes and tries to make a call from the phone box.
+sub-01,the_prisoner,7,"141, 143, 144","He doesn't know the number so the operator doesn't want to help him and then he uses some kind of weird information thing to get a taxi, and the taxi comes, and she's like I can only take you like local in town."
+sub-01,the_prisoner,7,"147, 148, 151","So he goes as far as he can and then he ends up at a store, he tries to get a map, and they won't give him a map that shows him like anything outside of the village and where they are."
+sub-01,the_prisoner,7,151,He just basically can't figure out where he is.
+sub-01,,-1,-1,What's another one.
+sub-01,,-1,-1,Trying to think of another that I saw.
+sub-01,,-1,-1,Trying to think of another one.
+sub-01,,-1,-1,I can't remember the rest of them for some reason.
+sub-01,,-1,-1,I don't know why.
+sub-01,,-1,-1,"I think I saw the catch a thief one, and then there was the animated one,"
+sub-01,,-1,-1,"and then there was the one about the rock, and then there was the one about shoes flying up in the air, and then there was the magician, and then there was the robot one."
+sub-01,,-1,-1,What other ones were there.
+sub-01,the_black_hole,8,8000,Oh yeah the Black Hole one.
+sub-01,the_black_hole,8,8000,Yeah there's one called the black hole.
+sub-01,the_black_hole,8,156,"It's this guy, he's in an office, for whatever reason, he printed out a big black circle on a piece of paper that just happened to come out of the copy machine for some odd reason."
+sub-01,the_black_hole,8,156,It didn't show why.
+sub-01,the_black_hole,8,159,"And then he realizes that he could, it's actually a gateway to another dimension."
+sub-01,the_black_hole,8,"159, 160","He could stick his hand inside the black hole and then he realizes that when he puts it up against something, that he could put his hand through whatever he puts the paper up against."
+sub-01,the_black_hole,8,"160, 162","So he realizes that he could use it to steal candy out of the vending machine, and then he realizes that he could use it to steal money out of the vault in his boss' office."
+sub-01,the_black_hole,8,"162, 163","So he went and did that and then he got greedy and then he ended up like going all the way inside the black hole, and he got stuck inside the vault because the piece of paper fell off of it."
+sub-01,the_black_hole,8,164,"So basically all of the money was taken out of the vault, and he was trapped inside."
+sub-01,the_black_hole,8,8000,And that was pretty much it for that short film.
+sub-01,post_it_love,9,9000,"And then there was another one, called Post it love or something."
+sub-01,post_it_love,9,"168, 169","There's these these two people that work in this office, that kind of have crush on each other, they're kind of in love with each other,"
+sub-01,post_it_love,9,"171, 174, 175, 176","and then they keep making pictures for the other one with post-it notes, and the pictures keep getting more and more detailed until"
+sub-01,post_it_love,9,178,"at the end the guy finally makes a giant like mural of the two of them together, made entirely out of post-it notes on the wall in the back."
+sub-01,post_it_love,9,9000,And that's that one.
+sub-01,,-1,-1,And uh now let's see which other ones.
+sub-01,,-1,-1,I think I described most of them.
+sub-01,,-1,-1,Hmm I know I'm forgetting a couple of them.
+sub-01,,-1,-1,I don't remember.
+sub-01,,-1,-1,As much as I can remember right this second.
+sub-01,,-1,-1,"Let's see, I did the one about the post-it notes, the one about the magician, the one that I think was a James Bond movie."
+sub-01,,-1,-1,Let's see what other; it's like two or three more that I think I don't remember right this second.
+sub-01,,-2,-2,I think that's as much as I can remember.
