@@ -52,9 +52,10 @@ class MIRM:
         self.mutual_information_normalize = mutual_information_normalize
 
         if model_name is None:
-            model_name = CONFIG.get("MODEL_NAME", "gpt2")
-        self.model_name = model_name
-        log.info(f"Initializing model: {model_name}")
+            self.model_name: str = CONFIG.get("MODEL_NAME", "gpt2")  # type: ignore
+        else:
+            self.model_name = model_name
+        log.info(f"Initializing model: {self.model_name}")
 
         if device is None:
             device = CONFIG.get("DEVICE", "auto")
@@ -62,10 +63,10 @@ class MIRM:
         token = CONFIG.get("HF_TOKEN")
 
         self.model = AutoModelForCausalLM.from_pretrained(
-            model_name, token=token, device_map=device
+            self.model_name, token=token, device_map=device
         )
         self.tokenizer = AutoTokenizer.from_pretrained(
-            model_name, token=token, device_map=device
+            self.model_name, token=token, device_map=device
         )
 
         # get device

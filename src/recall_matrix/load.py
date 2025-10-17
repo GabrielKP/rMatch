@@ -6,7 +6,7 @@ import pandas as pd
 
 def load_cyoa_story_recall_segments(
     story_names: list[str],
-) -> list[tuple[list[str], list[str]]]:
+) -> list[tuple[str, str, list[str], list[str]]]:
     """Returns the story segments and recall segments for the given story names.
 
     Parameters
@@ -52,7 +52,7 @@ def load_filmfest_story_recall_segments(
     story_names: list[str],
     sub_ids: list[str] | None = None,
     transcript_rater: str = "JL",
-) -> list[tuple[list[str], list[str]]]:
+) -> list[tuple[str, str, list[str], list[str]]]:
     """Returns the story segments and recall segments for the given story names.
 
     Parameters
@@ -154,14 +154,14 @@ def load_cyoa_recall_matrix_human_binary(story_name: str, sub_id: str) -> np.nda
                     assert (
                         idx_event == int(transcript_df.loc[idx_event, "event"]) - 1
                     ), "Event data not in order."
-                    recall_matrix[idx_event, idx_recall] = 1
+                    recall_matrix[idx_event, idx_recall] = 1  # type: ignore
                 continue
 
             # sanity check
             assert idx_event == int(transcript_df.loc[idx_event, "event"]) - 1, (
                 "Event data not in order."
             )
-            recall_matrix[idx_event, idx_recall] = 1
+            recall_matrix[idx_event, idx_recall] = 1  # type: ignore
     return recall_matrix
 
 
