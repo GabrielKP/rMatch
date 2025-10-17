@@ -10,11 +10,20 @@ log = get_logger(__name__)
 
 
 class MIRM:
-    def __init__(self, model_name: str | None = None, device: str | None = None):
+    def __init__(
+        self,
+        mutual_information_method: str,
+        mutual_information_normalize: bool,
+        model_name: str | None = None,
+        device: str | None = None,
+    ):
         """Initialize the Mutual Information Recall Matrix (MIRM) object.
 
         Parameters
         ----------
+        mutual_information_method: str
+            The method to use for computing the mutual information.
+            Currently one of: "rj_given_ei", "ei_given_rj", "ei_given_r0_to_rj".
         model_name: str | None, default=None
             The name of the model to use.
             If None, the model will be taken from .env MODEL_NAME.
@@ -27,6 +36,20 @@ class MIRM:
             https://huggingface.co/docs/accelerate/usage_guides/big_modeling
             https://huggingface.co/docs/transformers/main_classes/model#transformers.PreTrainedModel
         """
+
+        if mutual_information_method not in [
+            "rj_given_ei",
+            "ei_given_rj",
+            "ei_given_r0_to_rj",
+        ]:
+            raise ValueError(
+                f"Invalid mutual information method: {mutual_information_method}"
+            )
+        log.info(f"Using mutual information method: {mutual_information_method}")
+        self.mutual_information_method = mutual_information_method
+
+        log.info(f"Normalize mutual information: {mutual_information_normalize}")
+        self.mutual_information_normalize = mutual_information_normalize
 
         if model_name is None:
             model_name = CONFIG.get("MODEL_NAME", "gpt2")
@@ -246,25 +269,42 @@ class MIRM:
 
     def compute_mutual_information_recall_matrix(
         self,
-        mutual_information_method: str,
-        normalize: bool,
         story_segments: list[str],
         recall_segments: list[str],
+        mutual_information_normalize: bool | None = None,
+        mutual_information_method: str | None = None,
         verbose: bool = False,
     ) -> np.ndarray:
-        """Compute the mutual information recall matrix"""
+        """Compute the mutual information recall matrix
+
+        Can override the mutual information method by passing it as an argument."""
+
+        if mutual_information_method is None:
+            mutual_information_method = self.mutual_information_method
+
+        if mutual_information_normalize is None:
+            mutual_information_normalize = self.mutual_information_normalize
 
         if mutual_information_method == "rj_given_ei":
             return self.recall_matrix_rj_given_ei(
-                normalize, story_segments, recall_segments, verbose
+                mutual_information_normalize,
+                story_segments,
+                recall_segments,
+                verbose,
             )
         elif mutual_information_method == "ei_given_rj":
             return self.recall_matrix_ei_given_rj(
-                normalize, story_segments, recall_segments, verbose
+                mutual_information_normalize,
+                story_segments,
+                recall_segments,
+                verbose,
             )
         elif mutual_information_method == "ei_given_r0_to_rj":
             return self.recall_matrix_ei_given_r0_to_rj(
-                normalize, story_segments, recall_segments, verbose
+                mutual_information_normalize,
+                story_segments,
+                recall_segments,
+                verbose,
             )
         else:
             raise ValueError(

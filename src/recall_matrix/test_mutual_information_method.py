@@ -76,7 +76,11 @@ def test_mutual_information_method(
     )
 
     # 2. init mirm
-    mirm = MIRM(model_name=model_name)
+    mirm = MIRM(
+        model_name=model_name,
+        mutual_information_method=mutual_information_method,
+        mutual_information_normalize=mutual_information_normalize,
+    )
     model_name = mirm.model_name
 
     # 3. compute recall matrix and plot
@@ -92,8 +96,6 @@ def test_mutual_information_method(
         )
         # b) compute mutual information recall matrix
         rm_mutual_information = mirm.compute_mutual_information_recall_matrix(
-            mutual_information_method=mutual_information_method,
-            normalize=mutual_information_normalize,
             story_segments=story_segments,
             recall_segments=recall_segments,
             verbose=verbose,
