@@ -13,7 +13,7 @@ from recall_matrix.load import (
     load_cyoa_recall_matrix_human_binary,
     load_cyoa_story_recall_segments,
 )
-from recall_matrix.mutual_information import MIRM
+from recall_matrix.mutual_information_recall_matrix import MIRM
 
 
 def plot_recall_matrix_comparison(
