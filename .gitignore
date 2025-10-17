@@ -3,3 +3,5 @@ DS_Store
 outputs
 downloads
 data/cyoa
+.vscode
+__pycache__
