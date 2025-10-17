@@ -104,7 +104,11 @@ class MIRM:
         # gpt2 does not add bos tokens, and if input_str_y is
         # empty, you cannot predict the first token from nothing,
         # thus we need to start from the second token.
-        if not self.tokenizer.add_bos_token and idx_id_x == 0:
+        if (
+            hasattr(self.tokenizer, "add_bos_token")
+            and not self.tokenizer.add_bos_token
+            and idx_id_x == 0
+        ):
             idx_id_x = 1
 
         if verbose:
