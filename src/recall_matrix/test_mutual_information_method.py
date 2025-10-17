@@ -91,20 +91,20 @@ def test_mutual_information_method(
             story_name=story_name, sub_id=sub_id
         )
         # b) compute mutual information recall matrix
-        # rm_mutual_information = mirm.compute_mutual_information_recall_matrix(
-        #     mutual_information_method=mutual_information_method,
-        #     normalize=mutual_information_normalize,
-        #     story_segments=story_segments,
-        #     recall_segments=recall_segments,
-        #     verbose=verbose,
-        # )
+        rm_mutual_information = mirm.compute_mutual_information_recall_matrix(
+            mutual_information_method=mutual_information_method,
+            normalize=mutual_information_normalize,
+            story_segments=story_segments,
+            recall_segments=recall_segments,
+            verbose=verbose,
+        )
 
         # c) plot both
         plot_recall_matrix_comparison(
             story_name=story_name,
             sub_id=sub_id,
             recall_matrix_human_binary=rm_human_binary,
-            recall_matrix_mutual_information=rm_human_binary,
+            recall_matrix_mutual_information=rm_mutual_information,
             mutual_information_method=mutual_information_method,
             mutual_information_normalize=mutual_information_normalize,
             model_name=model_name,
