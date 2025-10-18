@@ -46,6 +46,7 @@ class MIRM:
             "rj_given_e0_to_ei",
             "r0_to_rj_given_ei",
             "rj_given_r0_to_rj_minus_1_and_ei",
+            "rj_given_r0_to_rj_minus_1_and_e0_to_ei",
             "ei_given_rj",
             "ei_given_r0_to_rj",
         ]:
@@ -365,6 +366,61 @@ class MIRM:
 
         return recall_matrix
 
+    def recall_matrix_rj_given_r0_to_rj_minus_1_and_e0_to_ei(
+        self,
+        normalize: bool,
+        story_segments: list[str],
+        recall_segments: list[str],
+        verbose: bool = False,
+    ) -> np.ndarray:
+        """Compute the recall matrix"""
+
+        # TODO: Can do some serious optimization: batching, caching, ..
+        recall_matrix = np.empty((len(story_segments), len(recall_segments)))
+        for i, _ in enumerate(tqdm(story_segments, desc="(RM)")):
+            for j, R_j in enumerate(recall_segments):
+                H_R_j_with_E_i = self.cross_entropy_x_given_y(
+                    input_str_x=R_j,
+                    input_str_y=" ".join(story_segments[: i + 1]),
+                    print_str=f"H(R_{j} | R_0 to R_{j - 1}, E_0 toE_{i})",
+                    prefix_x=" ".join(recall_segments[:j]) + " ",
+                    verbose=verbose,
+                )
+
+                H_R_j_without_E_i = self.cross_entropy_x_given_y(
+                    input_str_x=R_j,
+                    input_str_y=" ".join(story_segments[:i]),
+                    print_str=f"H(R_{j} | R_0 to R_{j - 1}, E_0 to E_{i - 1})",
+                    prefix_x=" ".join(recall_segments[:j]) + " ",
+                    verbose=verbose,
+                )
+
+                if normalize:
+                    recall_matrix[i, j] = max(
+                        0,
+                        1 - (H_R_j_with_E_i / H_R_j_without_E_i),
+                    )
+                else:
+                    recall_matrix[i, j] = min(
+                        max(
+                            0,
+                            (H_R_j_without_E_i - H_R_j_with_E_i),
+                        ),
+                        10,
+                    )
+                if verbose:
+                    console.print(
+                        (
+                            f"> MI(E_0 to E_{i}, R_0 to R_{j})"
+                            f" = {recall_matrix[i, j]:.3f}"
+                        ),
+                        style="bold yellow",
+                    )
+            if self.debug:
+                input("Press Enter to continue...")
+
+        return recall_matrix
+
     def recall_matrix_ei_given_rj(
         self,
         normalize: bool,
@@ -497,6 +553,13 @@ class MIRM:
             )
         elif mutual_information_method == "rj_given_r0_to_rj_minus_1_and_ei":
             return self.recall_matrix_rj_given_r0_to_rj_minus_1_and_ei(
+                mutual_information_normalize,
+                story_segments,
+                recall_segments,
+                verbose,
+            )
+        elif mutual_information_method == "rj_given_r0_to_rj_minus_1_and_e0_to_ei":
+            return self.recall_matrix_rj_given_r0_to_rj_minus_1_and_e0_to_ei(
                 mutual_information_normalize,
                 story_segments,
                 recall_segments,

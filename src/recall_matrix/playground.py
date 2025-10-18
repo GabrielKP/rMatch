@@ -38,6 +38,18 @@ def playground(model_name: str | None = None):
 
     inputs = [
         (
+            """Your task is to predict what a human would recall about a story segment.
+The following is the story segment:
+"This is Tall Wood in the northeastern corner of Wonderland. Most animals can talk, some can't. Some can but don't bother, and some can't but try anyway. Anyway, if you head southwest, you can reach the Heart
+Kingdom. A long walk, mind you, but a wonderful city. By heading just south of here, you may find the village of Duchard, ruled by a most beautiful duchess. Close but quiet. What is it you're looking for?"
+The following is the matching recall segment:""",
+            """that we should go to Duchard before Heart Kingdom.""",
+        ),
+        (
+            """The following is a human recall segment:""",
+            """that we should go to Duchard before Heart Kingdom.""",
+        ),
+        (
             """Blackness. You're slowly waking from a dream. What was it about? It is already beginning to fade… Was there a mirror? A rabbit? I was having tea with someone… It all seemed so urgent! You try grasping for details, to try and hold onto the dream for just a little bit longer. Fading. It slips through your fingers and disappears. Like dreams often do. Slowly, whirling colors and shapes appear.""",  # noqa: E501
             """A rabbit is jumping around.""",
         ),
