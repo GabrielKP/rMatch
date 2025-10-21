@@ -83,6 +83,25 @@ The following is the matching recall segment:""",
         ),
     ]
 
+    # bird example
+    inputs = [
+        ("I was outside.", "The character was outside."),
+        ("A bird flew to me and set down on a tree.", "The character was outside."),
+        ("The bird chirped a few times", "The character was outside."),
+        (
+            "The bird took off from the tree and flew away.",
+            "The character was outside.",
+        ),
+        ("I was outside.", "A bird flew to a tree."),
+        ("A bird flew to me and set down on a tree.", "A bird flew to a tree."),
+        ("The bird chirped a few times", "A bird flew to a tree."),
+        ("The bird took off from the tree and flew away.", "A bird flew to a tree."),
+        ("I was outside.", "The bird flew away."),
+        ("A bird flew to me and set down on a tree.", "The bird flew away."),
+        ("The bird chirped a few times", "The bird flew away."),
+        ("The bird took off from the tree and flew away.", "The bird flew away."),
+    ]
+
     for input_y, input_x in inputs:
         H_R_j_given_E_i = mirm.cross_entropy_x_given_y(
             input_str_x=input_x,
