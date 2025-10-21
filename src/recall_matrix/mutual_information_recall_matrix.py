@@ -512,7 +512,7 @@ class MIRM:
 
         return recall_matrix
 
-    def compute_mutual_information_recall_matrix(
+    def compute_recall_matrix(
         self,
         story_segments: list[str],
         recall_segments: list[str],
