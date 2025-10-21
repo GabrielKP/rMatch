@@ -12,6 +12,7 @@ from recall_matrix import console
 from recall_matrix.load import (
     load_cyoa_recall_matrix_human_binary,
     load_cyoa_story_recall_segments,
+    load_nfrd_story_recall_segments,
 )
 from recall_matrix.mutual_information_recall_matrix import MIRM
 
@@ -23,6 +24,7 @@ def plot_recall_matrix_comparison(
     recall_matrix_mutual_information: np.ndarray,
     mutual_information_method: str,
     mutual_information_normalize: bool,
+    control_title: str,
     model_name: str,
 ):
     """Plot the recall matrices comparison"""
@@ -39,7 +41,7 @@ def plot_recall_matrix_comparison(
 
     # color_matrix = np.ones_like(rm)
     ax1.imshow(recall_matrix_human_binary, cmap="Reds")
-    ax1.set_title("Human binary recall matrix")
+    ax1.set_title(control_title)
     ax1.set_xlabel("Recall segments")
     ax1.set_ylabel("Story segments")
     ax1.set_aspect(1)
@@ -50,7 +52,11 @@ def plot_recall_matrix_comparison(
     ax2.set_ylabel("Story segments")
     ax2.set_aspect(1)
 
-    fig.colorbar(im2, ax=[ax1, ax2], label="Mutual information (bits)")
+    if mutual_information_normalize:
+        label = "Mutual information (normalized)"
+    else:
+        label = "Mutual information (bits)"
+    fig.colorbar(im2, ax=[ax1, ax2], label=label)
     fig.suptitle(
         (
             f"{story_name} | {sub_id} | {mutual_information_method} | {norm_str}"
@@ -67,6 +73,7 @@ def test_mutual_information_method(
     mutual_information_method: str,
     mutual_information_normalize: bool,
     model_name: str | None = None,
+    pieman: bool = False,
     verbose: bool = False,
     debug: bool = False,
 ):
@@ -74,10 +81,15 @@ def test_mutual_information_method(
         verbose = True
 
     # 1. load story & recall segments
-    story_names = ["alice_2", "alice_3", "monthiversary_3", "monthiversary_4"]
-    cyao_story_recall_segments = load_cyoa_story_recall_segments(
-        story_names=story_names
-    )
+    if pieman:
+        story_recall_segments = load_nfrd_story_recall_segments(
+            story_names=["pieman"],
+            story_segment_method="sentence",
+            sub_ids=["P1", "P2", "P3"],
+        )
+    else:
+        story_names = ["alice_2", "alice_3", "monthiversary_3", "monthiversary_4"]
+        story_recall_segments = load_cyoa_story_recall_segments(story_names=story_names)
 
     # 2. init mirm
     y_instruction = (
@@ -104,27 +116,34 @@ def test_mutual_information_method(
         sub_id,
         story_segments,
         recall_segments,
-    ) in tqdm(cyao_story_recall_segments, desc="(story/sub_ids)", disable=verbose):
-        # a) load human binary recall matrix
-        rm_human_binary = load_cyoa_recall_matrix_human_binary(
-            story_name=story_name, sub_id=sub_id
-        )
-        # b) compute mutual information recall matrix
+    ) in tqdm(story_recall_segments, desc="(story/sub_ids)", disable=verbose):
+        # a) compute mutual information recall matrix
         rm_mutual_information = mirm.compute_mutual_information_recall_matrix(
             story_segments=story_segments,
             recall_segments=recall_segments,
             verbose=verbose,
         )
 
+        # b) load control recall matrix
+        if pieman:
+            rm_control = rm_mutual_information
+            control_title = "Mutual information recall matrix"
+        else:
+            rm_control = load_cyoa_recall_matrix_human_binary(
+                story_name=story_name, sub_id=sub_id
+            )
+            control_title = "Human binary recall matrix"
+
         # c) plot both
         plot_recall_matrix_comparison(
             story_name=story_name,
             sub_id=sub_id,
-            recall_matrix_human_binary=rm_human_binary,
+            recall_matrix_human_binary=rm_control,
             recall_matrix_mutual_information=rm_mutual_information,
             mutual_information_method=mutual_information_method,
             mutual_information_normalize=mutual_information_normalize,
             model_name=model_name,
+            control_title=control_title,
         )
 
 
@@ -132,6 +151,7 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("-mm", "--mutual_information_method", type=str, required=True)
     parser.add_argument("-mn", "--mutual_information_normalize", action="store_true")
+    parser.add_argument("-p", "--pieman", action="store_true")
     parser.add_argument("-vm", "--verbose", action="store_true")
     parser.add_argument("-d", "--debug", action="store_true")
     args = parser.parse_args()
@@ -139,6 +159,7 @@ if __name__ == "__main__":
     test_mutual_information_method(
         mutual_information_method=args.mutual_information_method,
         mutual_information_normalize=args.mutual_information_normalize,
+        pieman=args.pieman,
         verbose=args.verbose,
         debug=args.debug,
     )
