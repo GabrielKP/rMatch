@@ -68,7 +68,11 @@ def test_mutual_information_method(
     mutual_information_normalize: bool,
     model_name: str | None = None,
     verbose: bool = False,
+    debug: bool = False,
 ):
+    if debug:
+        verbose = True
+
     # 1. load story & recall segments
     story_names = ["alice_2", "alice_3", "monthiversary_3", "monthiversary_4"]
     cyao_story_recall_segments = load_cyoa_story_recall_segments(
@@ -76,10 +80,21 @@ def test_mutual_information_method(
     )
 
     # 2. init mirm
+    y_instruction = (
+        "Your task is to predict what a human would recall about a"
+        " story segment."
+        "\nThe following is the story segment:\n"
+    )
+    x_instruction = "\nThe following is the matching recall segment:\n"
+    x_instruction_no_y = "\nThe following is a human recall segment:\n"
     mirm = MIRM(
         model_name=model_name,
         mutual_information_method=mutual_information_method,
         mutual_information_normalize=mutual_information_normalize,
+        y_instruction=y_instruction,
+        x_instruction=x_instruction,
+        x_instruction_no_y=x_instruction_no_y,
+        debug=debug,
     )
     model_name = mirm.model_name
 
@@ -118,10 +133,12 @@ if __name__ == "__main__":
     parser.add_argument("-mm", "--mutual_information_method", type=str, required=True)
     parser.add_argument("-mn", "--mutual_information_normalize", action="store_true")
     parser.add_argument("-vm", "--verbose", action="store_true")
+    parser.add_argument("-d", "--debug", action="store_true")
     args = parser.parse_args()
 
     test_mutual_information_method(
         mutual_information_method=args.mutual_information_method,
         mutual_information_normalize=args.mutual_information_normalize,
         verbose=args.verbose,
+        debug=args.debug,
     )
