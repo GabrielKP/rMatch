@@ -5,7 +5,7 @@ import pandas as pd
 from nltk.tokenize import sent_tokenize
 
 
-def generate_file(story_name: str, participant_id: str) -> None:
+def generate_file(story_name: str, participant_id: str, rater_name: str) -> None:
     base = Path(__file__).resolve().parents[2]
     story_path = base / "data" / "nfrd" / "transcripts" / f"{story_name}.txt"
     recall_path = (
@@ -37,9 +37,9 @@ def generate_file(story_name: str, participant_id: str) -> None:
 
     output_dir = base / "data" / "nfrd" / "human_ratings"
     output_dir.mkdir(parents=True, exist_ok=True)
-    output_path = output_dir / f"human_mi_{participant_id}_{story_name}"
+    output_path = output_dir / f"human_mi_{participant_id}_{story_name}_{rater_name}"
     df.to_csv(output_path, index=False)
 
 
-# if __name__ == "__main__":
-# generate_file("pieman", "P2")
+if __name__ == "__main__":
+    generate_file("pieman", "P2", "dhruva")
