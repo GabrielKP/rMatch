@@ -28,7 +28,7 @@ def generate_file(story_name: str, participant_id: str, rater_name: str) -> None
     recall_segments = sent_tokenize(recall)
 
     rows = [
-        {"recall_segment": r, "story segment": s, "mi": ""}
+        {"recall_segment": r, "story_segment": s, "mi": ""}
         for r in recall_segments
         for s in story_segments
     ]
@@ -37,9 +37,9 @@ def generate_file(story_name: str, participant_id: str, rater_name: str) -> None
 
     output_dir = base / "data" / "nfrd" / "human_ratings"
     output_dir.mkdir(parents=True, exist_ok=True)
-    output_path = output_dir / f"human_mi_{participant_id}_{story_name}_{rater_name}"
+    output_path = output_dir / f"{participant_id}_{story_name}_{rater_name}.csv"
     df.to_csv(output_path, index=False)
 
 
 if __name__ == "__main__":
-    generate_file("pieman", "P2", "dhruva")
+    generate_file("pieman", "P1", "dhruva")

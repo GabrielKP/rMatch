@@ -1,0 +1,10 @@
+recall_segment,story_segment,mi
+recall 1,story 1,1
+recall 1,story 2,2
+recall 1,story 3,3
+recall 2,story 1,4
+recall 2,story 2,5
+recall 2,story 3,6
+recall 3,story 1,7
+recall 3,story 2,8
+recall 3,story 3,9

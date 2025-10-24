@@ -158,9 +158,9 @@ def load_cyoa_recall_matrix_human_binary(story_name: str, sub_id: str) -> np.nda
                 continue
 
             # sanity check
-            assert idx_event == int(transcript_df.loc[idx_event, "event"]) - 1, (
-                "Event data not in order."
-            )
+            assert (
+                idx_event == int(transcript_df.loc[idx_event, "event"]) - 1
+            ), "Event data not in order."
             recall_matrix[idx_event, idx_recall] = 1
     return recall_matrix
 
@@ -223,7 +223,9 @@ def load_filmfest_recall_matrix_human_binary(
     return recall_matrix
 
 
-def load_nfrd_recall_matrix_human_quality(story_name: str, sub_id: str) -> np.ndarray:
+def load_nfrd_recall_matrix_human_quality(
+    story_name: str, sub_id: str, rater: str
+) -> np.ndarray:
     """Returns the recall matrix for the given story name and subject id.
 
     Parameters
@@ -232,6 +234,8 @@ def load_nfrd_recall_matrix_human_quality(story_name: str, sub_id: str) -> np.nd
         name of the story
     sub_id: str
         subject id
+    rater: str
+        who rated the file, all lowercase
 
     Returns
     -------
@@ -239,6 +243,26 @@ def load_nfrd_recall_matrix_human_quality(story_name: str, sub_id: str) -> np.nd
         recall matrix of shape (len(story_segments), len(recall_segments))
     """
 
-    # TODO: Dhruva!
+    base = Path(__file__).resolve().parents[2]
+    ratings_path = (
+        base / "data" / "nfrd" / "human_ratings" / f"{sub_id}_{story_name}_{rater}.csv"
+    )
 
-    raise NotImplementedError("Not implemented yet.")
+    df = pd.read_csv(ratings_path, dtype={"mi": int})
+    recall_segs = df["recall_segment"].unique().tolist()
+    story_segs = df["story_segment"].unique().tolist()
+
+    recall_matrix = np.full((len(story_segs), len(recall_segs)), 0)
+    for r_idx, r_seg in enumerate(recall_segs):
+        for s_idx, s_seg in enumerate(story_segs):
+            pair_mi = df.loc[
+                (df["recall_segment"] == r_seg) & (df["story_segment"] == s_seg), "mi"
+            ]
+            recall_matrix[s_idx, r_idx] = int(pair_mi.iat[0])
+
+    print(recall_matrix)
+    return recall_matrix
+
+
+if __name__ == "__main__":
+    load_nfrd_recall_matrix_human_quality("pieman", "P1", "dhruva")
