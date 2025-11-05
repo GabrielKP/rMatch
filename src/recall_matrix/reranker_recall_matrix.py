@@ -72,7 +72,22 @@ class RRRM:
 
         token = CONFIG.get("HF_TOKEN")
 
-        self.model = CrossEncoder(self.model_name, device=device, token=token)
+        trust_remote_code = self.model_name in [
+            "nvidia/llama-embed-nemotron-8b",
+            "jinaai/jina-reranker-v2-base-multilingual",
+        ]
+        self.model = CrossEncoder(
+            self.model_name,
+            device=device,
+            token=token,
+            trust_remote_code=trust_remote_code,
+        )
+        if "Qwen" in self.model_name:
+            self.model.config.pad_token_id = self.model.tokenizer.eos_token_id  # type: ignore
+            log.info(
+                f"Added tokenizer.eos_token_id as model.pad_token_id:"
+                f" {self.model.config.pad_token_id}"
+            )
 
         # get device
         self.device: torch.device = self.model.device

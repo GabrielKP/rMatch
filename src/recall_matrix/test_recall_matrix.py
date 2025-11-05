@@ -172,6 +172,7 @@ if __name__ == "__main__":
     parser.add_argument("-m", "--method", type=str, required=True)
     parser.add_argument("-mn", "--mi_normalize", action="store_true")
     parser.add_argument("-b", "--binary", action="store_true")
+    parser.add_argument("-M", "--model_name", type=str, default=None)
     parser.add_argument("-p", "--pieman", action="store_true")
     parser.add_argument("-vm", "--verbose", action="store_true")
     parser.add_argument("-d", "--debug", action="store_true")
@@ -181,6 +182,7 @@ if __name__ == "__main__":
         method=args.method,
         mi_normalize=args.mi_normalize,
         binary=args.binary,
+        model_name=args.model_name,
         pieman=args.pieman,
         verbose=args.verbose,
         debug=args.debug,
