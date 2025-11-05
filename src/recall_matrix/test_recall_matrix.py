@@ -16,6 +16,7 @@ from recall_matrix.load import (
 )
 from recall_matrix.mutual_information_recall_matrix import MIRM
 from recall_matrix.reranker_recall_matrix import RRRM
+from recall_matrix.reranker_recall_matrix_2 import RRRM2
 
 
 def plot_recall_matrix_comparison(
@@ -111,6 +112,17 @@ def test_recall_matrix_method(
         measure_label = (
             "Mutual information" if mi_normalize else "Mutual information (bits)"
         )
+        method_postfix = ""
+    elif method.startswith("rerank2"):
+        reranker_method = method[len("rerank2_") :]
+        rmo = RRRM2(
+            model_name=model_name,
+            reranker_method=reranker_method,
+            reranker_binary=binary,
+            debug=debug,
+        )
+        variant_str = "binary" if binary else "score"
+        measure_label = "Recalled" if binary else "Score"
         method_postfix = ""
     elif method.startswith("rerank"):
         reranker_method = method[len("rerank_") :]
