@@ -171,7 +171,7 @@ def load_nfrd_story_recall_segments(
                 "transcripts",
                 "segmentation",
                 "behavioral",
-                f"{story_name}_by_sentences.csv",
+                f"{story_name}_by_behavioral.csv",
             )
             sentence_df = pd.read_csv(data_path)
 

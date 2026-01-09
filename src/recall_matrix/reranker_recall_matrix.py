@@ -132,9 +132,10 @@ class RRRM:
         recall_segments: list[str],
         verbose: bool = False,
     ) -> np.ndarray:
-        """Compute the mutual information recall matrix
-
-        Can override the mutual information method by passing it as an argument."""
+        """Compute the reranker recall matrix.
+        Returns recall matrix (S x R)
+        S = # Story segments
+        R = # Recall segments"""
 
         if self.reranker_method == "thresholded":
             return self.recall_matrix_thresholded(
