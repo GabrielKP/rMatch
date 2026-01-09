@@ -1,0 +1,1 @@
+The following are pairs of the participant's recall and the story. Rate how much the recall segment refers to the story segment from 0-100, where 0 indicates no relation, and 100 indicates full capture of the details in the segment.

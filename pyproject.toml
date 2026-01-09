@@ -22,6 +22,7 @@ dependencies = [
     "spacy>=3.8.7,<4",
     "einops>=0.8.1",
     "scikit-learn>=1.7.2",
+    "nltk>=3.9.2",
 ]
 
 [build-system]

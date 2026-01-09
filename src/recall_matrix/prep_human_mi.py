@@ -14,7 +14,7 @@ def generate_file(story_name: str, participant_id: str, rater_name: str) -> None
         / "nfrd"
         / "recalls"
         / "text"
-        / "pieman"
+        / story_name
         / f"{participant_id}_{story_name}.txt"
     )
 
@@ -35,7 +35,7 @@ def generate_file(story_name: str, participant_id: str, rater_name: str) -> None
 
     df = pd.DataFrame(rows)
 
-    output_dir = base / "data" / "nfrd" / "human_ratings"
+    output_dir = base / "data" / "nfrd" / "recalls" / "human_mi" / story_name
     output_dir.mkdir(parents=True, exist_ok=True)
     output_path = output_dir / f"{participant_id}_{story_name}_{rater_name}.csv"
     df.to_csv(output_path, index=False)

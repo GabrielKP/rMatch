@@ -343,7 +343,7 @@ def load_filmfest_recall_matrix_human_binary(
     return recall_matrix
 
 
-def load_nfrd_recall_matrix_human_quality(
+def load_nfrd_recall_matrix_human_mi(
     story_name: str, sub_id: str, rater: str
 ) -> np.ndarray:
     """Returns the recall matrix for the given story name and subject id.
@@ -365,7 +365,13 @@ def load_nfrd_recall_matrix_human_quality(
 
     base = Path(__file__).resolve().parents[2]
     ratings_path = (
-        base / "data" / "nfrd" / "human_ratings" / f"{sub_id}_{story_name}_{rater}.csv"
+        base
+        / "data"
+        / "nfrd"
+        / "recalls"
+        / "human_mi"
+        / story_name
+        / f"{sub_id}_{story_name}_{rater}.csv"
     )
 
     df = pd.read_csv(ratings_path, dtype={"mi": int})
@@ -379,10 +385,11 @@ def load_nfrd_recall_matrix_human_quality(
                 (df["recall_segment"] == r_seg) & (df["story_segment"] == s_seg), "mi"
             ]
             recall_matrix[s_idx, r_idx] = int(pair_mi.iat[0])
+    recall_matrix = recall_matrix / 100
 
     print(recall_matrix)
     return recall_matrix
 
 
 if __name__ == "__main__":
-    load_nfrd_recall_matrix_human_quality("pieman", "P1", "dhruva")
+    load_nfrd_recall_matrix_human_mi("pieman", "P1", "dhruva")
