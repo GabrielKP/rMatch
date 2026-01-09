@@ -12,6 +12,7 @@ from recall_matrix import console
 from recall_matrix.load import (
     load_cyoa_recall_matrix_human_binary,
     load_cyoa_story_recall_segments,
+    load_nfrd_recall_matrix_human_mi,
     load_nfrd_story_recall_segments,
 )
 from recall_matrix.mutual_information_recall_matrix import MIRM
@@ -82,7 +83,7 @@ def test_recall_matrix_method(
         story_recall_segments = load_nfrd_story_recall_segments(
             story_names=["pieman"],
             story_segment_method="sentence",
-            sub_ids=["P1", "P2", "P3"],
+            sub_ids=["P1"],
         )
     else:
         story_names = ["alice_2", "alice_3", "monthiversary_3", "monthiversary_4"]
@@ -156,8 +157,10 @@ def test_recall_matrix_method(
 
         # b) load control recall matrix
         if pieman:
-            rm_control = rm_mutual_information
-            control_title = method
+            rm_control = load_nfrd_recall_matrix_human_mi(
+                story_name=story_name, sub_id=sub_id, rater="dhruva"
+            )
+            control_title = "Human MI recall matrix"
         else:
             rm_control = load_cyoa_recall_matrix_human_binary(
                 story_name=story_name, sub_id=sub_id
