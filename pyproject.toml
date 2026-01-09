@@ -1,31 +1,32 @@
-[tool.poetry]
+[project]
 name = "recall-matrix"
 version = "0.1.0"
 description = ""
-authors = ["Gabriel Kressin Palacios <gkressi1@jhu.edu>"]
-license = "MIT"
+authors = [{ name = "Gabriel Kressin Palacios", email = "gkressi1@jhu.edu" }]
+requires-python = ">=3.12,<3.14"
 readme = "README.md"
-
-[tool.poetry.dependencies]
-python = ">=3.12,<3.15"
-ruff = "^0.14.0"
-pandas = "^2.3.3"
-numpy = "^2.3.3"
-pre-commit = "^4.3.0"
-openpyxl = "^3.1.5"
-matplotlib = "^3.10.7"
-tqdm = "^4.67.1"
-transformers = "<4.57.0"
-python-dotenv = "^1.1.1"
-rich = "^14.2.0"
-accelerate = "^1.10.1"
-nltk = "^3.9.2"
-
+license = "MIT"
+dependencies = [
+    "ruff>=0.14.0,<0.15",
+    "pandas>=2.3.3,<3",
+    "numpy>=2.3.3,<3",
+    "pre-commit>=4.3.0,<5",
+    "openpyxl>=3.1.5,<4",
+    "matplotlib>=3.10.7,<4",
+    "tqdm>=4.67.1,<5",
+    "transformers<4.57.0",
+    "python-dotenv>=1.1.1,<2",
+    "rich>=14.2.0,<15",
+    "accelerate>=1.10.1,<2",
+    "sentence-transformers>=5.1.1,<6",
+    "spacy>=3.8.7,<4",
+    "einops>=0.8.1",
+    "scikit-learn>=1.7.2",
+]
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
-
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [tool.ruff]
 line-length = 88
