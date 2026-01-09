@@ -3,7 +3,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-import spacy
+from nltk.tokenize import sent_tokenize
 
 
 def load_cyoa_story_recall_segments(
@@ -137,13 +137,6 @@ def load_nfrd_story_recall_segments(
         - recall_segments: list of recall segments
     """
 
-    # set up spacy
-    try:
-        nlp = spacy.load("en_core_web_sm")
-    except OSError:
-        spacy.cli.download("en_core_web_sm")  # type: ignore
-        nlp = spacy.load("en_core_web_sm")
-
     # 1. prep story segments
     story_segments_dict: dict[str, list[str]] = dict()
     for story_name in story_names:
@@ -180,7 +173,7 @@ def load_nfrd_story_recall_segments(
             story_text = Path(
                 "data", "nfrd", "transcripts", "text", f"{story_name}.txt"
             ).read_text()
-            story_segments = [str(sent) for sent in nlp(story_text).sents]
+            story_segments = [sent for sent in sent_tokenize(story_text)]
         else:
             raise ValueError(f"Invalid story segment method: {story_segment_method}")
 
@@ -201,7 +194,7 @@ def load_nfrd_story_recall_segments(
 
         for recall_path in recall_paths:
             sub_id = recall_path.stem.split("_")[0]
-            recall_segments = [str(sent) for sent in nlp(recall_path.read_text()).sents]
+            recall_segments = [sent for sent in sent_tokenize(recall_path.read_text())]
             sub_id = recall_path.stem.split("_")[0]
 
             story_recall_segments.append(
@@ -387,9 +380,4 @@ def load_nfrd_recall_matrix_human_mi(
             recall_matrix[s_idx, r_idx] = int(pair_mi.iat[0])
     recall_matrix = recall_matrix / 100
 
-    print(recall_matrix)
     return recall_matrix
-
-
-if __name__ == "__main__":
-    load_nfrd_recall_matrix_human_mi("pieman", "P1", "dhruva")
