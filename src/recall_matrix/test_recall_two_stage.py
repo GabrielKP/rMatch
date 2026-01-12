@@ -100,7 +100,7 @@ def test_recall_matrix_method(
     x_instruction_no_y = "\nThe following is a human recall segment:\n"
 
     mi_rmo = MIRM(
-        model_name=model_name,
+        model_name="meta-llama/Meta-Llama-3-8B-Instruct",
         mutual_information_method="rj_given_ei",
         mutual_information_normalize=mi_normalize,
         y_instruction=y_instruction,
@@ -114,7 +114,7 @@ def test_recall_matrix_method(
     method_postfix = ""
 
     reranker_rmo = RRRM(
-        model_name=model_name,
+        model_name="BAAI/bge-reranker-v2-m3",
         reranker_method="thresholded",
         reranker_binary=True,
         debug=debug,
@@ -174,7 +174,6 @@ def test_recall_matrix_method(
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("-mn", "--mi_normalize", action="store_true")
-    parser.add_argument("-b", "--binary", action="store_true")
     parser.add_argument("-M", "--model_name", type=str, default=None)
     parser.add_argument("-p", "--pieman", action="store_true")
     parser.add_argument("-vm", "--verbose", action="store_true")
