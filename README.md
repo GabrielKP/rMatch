@@ -7,14 +7,14 @@
 git clone git@github.com:GabrielKP/recall_matrix.git
 cd recall_matrix
 
-# use poetry (https://python-poetry.org/docs/) to install package & dependencies
+# use uv (https://docs.astral.sh/uv/getting-started/installation/) to install package & dependencies
 poetry install
 
 # set up pre-commit
-poetry run pre-commit install
+uv run pre-commit install
 
 # Now you can run the project code!
-poetry run python src/recall_matrix/main.py
+uv run src/recall_matrix/test_recall_matrix.py -m reranker
 ```
 
 ## Data downloads
