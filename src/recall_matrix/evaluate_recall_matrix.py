@@ -15,9 +15,9 @@ from recall_matrix.load import (
     load_cyoa_story_recall_segments,
     load_nfrd_story_recall_segments,
 )
-from recall_matrix.mutual_information_recall_matrix import MIRM
-from recall_matrix.reranker_recall_matrix import RRRM
-from recall_matrix.reranker_recall_matrix_2 import RRRM2
+from recall_matrix.recall_matrix.mutual_information import MIRM
+from recall_matrix.recall_matrix.reranker import RRRM
+from recall_matrix.recall_matrix.reranker_2 import RRRM2
 
 
 def evaluate_recall_matrix_method(

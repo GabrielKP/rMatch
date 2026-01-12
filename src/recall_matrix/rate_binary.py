@@ -5,7 +5,7 @@ import numpy as np
 from tqdm import tqdm
 
 from recall_matrix.load import load_nfrd_story_recall_segments
-from recall_matrix.reranker_recall_matrix import RRRM
+from recall_matrix.recall_matrix.reranker import RRRM
 
 
 def rate_binary():

@@ -9,7 +9,7 @@ import numpy as np
 from tqdm import tqdm
 
 from recall_matrix import console
-from recall_matrix.mutual_information_recall_matrix import MIRM
+from recall_matrix.recall_matrix.mutual_information import MIRM
 
 
 def playground(model_name: str | None = None):
