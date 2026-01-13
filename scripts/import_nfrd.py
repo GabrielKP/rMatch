@@ -2,6 +2,7 @@
 
 import argparse
 import json
+import re
 from pathlib import Path
 
 import chardet
@@ -25,6 +26,56 @@ def read_recall_transcript(recall_transcript_path: Path) -> str:
     )
 
 
+def format_text(text: str) -> str:
+    """
+    from:
+    https://github.com/phoebsc/Naturalistic-Free-Recall-Dataset/blob/e1aea19210858b5ce6b32128e8df42b137effb8f/sherlock_helpers/functions.py#L20
+    from:
+    https://github.com/ContextLab/sherlock-topic-model-paper/
+    """
+
+    pattern = "[^.\\w\\s]+"  # fixed the syntax error on the escape characters \ -> \\
+
+    no_possessive = text.lower().replace("'s", "")
+    return re.sub(pattern, "", no_possessive)
+
+
+def parse_windows_reg(
+    textlist: list[str],
+    wsize: int,
+    stepsize: int,
+) -> tuple[list[str], list[tuple[int, int]]]:
+    """
+    from:
+    https://github.com/phoebsc/Naturalistic-Free-Recall-Dataset/blob/e1aea19210858b5ce6b32128e8df42b137effb8f/sherlock_helpers/functions.py#L60
+    """
+    windows = []
+    window_bounds = []
+    for ix in np.arange(0, len(textlist), stepsize):
+        start = ix
+        end = ix + wsize if ix + wsize <= len(textlist) else len(textlist)
+        window_bounds.append((start, end))
+        windows.append(" ".join(textlist[start:end]))
+
+    return windows, window_bounds
+
+
+def get_story_windows(story: str, window_size: int, step_size: int) -> list[str]:
+    """Returns the windows of each story used for the lda-hmm in Raccah et al.
+
+    This is a wrapper for the code from in
+    https://github.com/phoebsc/Naturalistic-Free-Recall-Dataset
+
+    Returns
+    """
+
+    story_fmt = format_text(story).replace("\n", " ").replace(".", "").strip()
+    story_fmt = " ".join(story_fmt.split()).split(" ")
+
+    windows, _ = parse_windows_reg(story_fmt, wsize=window_size, stepsize=step_size)
+    return windows
+
+
 def import_nfrd_data(nfrd_dir: Path):
     dim_topic_model = 40
     window_size = 55
@@ -41,6 +92,10 @@ def import_nfrd_data(nfrd_dir: Path):
         )
 
         # (A) load and save story segments
+        story_segmentes_output_dir = (
+            Path("data") / "stories-and-recalls" / story_id / "transcripts"
+        )
+        story_segmentes_output_dir.mkdir(parents=True, exist_ok=True)
         story_text_path = Path(
             nfrd_dir,
             "story_transcript",
@@ -55,26 +110,24 @@ def import_nfrd_data(nfrd_dir: Path):
             .replace("\n", " ")
             .strip()
         )
-        story_text_output = Path(
-            "data", "stories-and-recalls", story_id, "transcripts", "text.txt"
-        )
-        if not story_text_output.parent.exists():
-            story_text_output.parent.mkdir(parents=True)
 
         # original text
-        story_text_output.write_text(story_text + "\n")
+        (story_segmentes_output_dir / "text.txt").write_text(story_text + "\n")
 
         # sentence segments
         story_sentence_segments = [sent for sent in sent_tokenize(story_text)]
-        story_sentence_segments_output = Path(
-            "data",
-            "stories-and-recalls",
-            story_id,
-            "transcripts",
-            "sentences.txt",
-        )
-        story_sentence_segments_output.write_text(
+        (story_segmentes_output_dir / "sentences.txt").write_text(
             "\n".join(story_sentence_segments) + "\n"
+        )
+
+        # lda_hmm segments
+        window_size = 55
+        step_size = 21
+        lda_hmm_segments = get_story_windows(
+            story=story_text, window_size=window_size, step_size=step_size
+        )
+        (story_segmentes_output_dir / "lda_hmm.txt").write_text(
+            "\n".join(lda_hmm_segments) + "\n"
         )
 
         # (B) load recall segements
