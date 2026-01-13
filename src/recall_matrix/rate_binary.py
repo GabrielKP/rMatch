@@ -64,7 +64,7 @@ def rate_binary(
     )
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with open(output_path, "w") as f_out:
-        json.dump(output_dict, f_out)
+        f_out.write(json.dumps(output_dict) + "\n")
 
 
 if __name__ == "__main__":

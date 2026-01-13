@@ -163,7 +163,9 @@ def load_story_recall_segments(
 
     # load story segments
     story_segments = story_path / "transcripts" / f"{story_segment_method}.txt"
-    story_segments = story_segments.read_text().split("\n")
+    story_segments = [
+        seg for seg in story_segments.read_text().split("\n") if seg.strip()
+    ]
 
     # try to auto-select recall segment method
     if recall_segment_method is None:
@@ -190,7 +192,9 @@ def load_story_recall_segments(
         sub_id = recall_path.stem
         if sub_ids is not None and sub_id not in sub_ids:
             continue
-        recall_segments = recall_path.read_text().split("\n")
+        recall_segments = [
+            seg for seg in recall_path.read_text().split("\n") if seg.strip()
+        ]
         story_recall_segments.append((sub_id, story_segments, recall_segments))
 
     return story_recall_segments
