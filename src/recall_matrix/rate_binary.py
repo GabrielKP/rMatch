@@ -55,12 +55,20 @@ def rate_binary(
         "ratings": story_segment_indices_dict,
     }
     suffix_str = f"-{suffix}" if suffix else ""
+    recall_segment_method_str = f"-rsm_{recall_segment_method}"
+    story_segment_method_str = f"-ssm_{story_segment_method}"
+    param_str = (
+        f"reranker_thresholded_{reranker_threshold}"
+        f"{recall_segment_method_str}"
+        f"{story_segment_method_str}"
+        f"{suffix_str}"
+    )
     output_path = (
         Path("data")
         / "stories-and-recalls"
         / story_name
         / "ratings"
-        / f"reranker_thresholded-{reranker_threshold}{suffix_str}.json"
+        / f"{param_str}.json"
     )
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with open(output_path, "w") as f_out:
