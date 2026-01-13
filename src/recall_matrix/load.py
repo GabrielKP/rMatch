@@ -5,6 +5,10 @@ import numpy as np
 import pandas as pd
 from nltk.tokenize import sent_tokenize
 
+from recall_matrix import get_logger
+
+log = get_logger(__name__)
+
 
 def load_cyoa_story_recall_segments(
     story_names: list[str] | None = None,
@@ -112,94 +116,82 @@ def load_filmfest_story_recall_segments(
     return story_recall_segments
 
 
-def load_nfrd_story_recall_segments(
-    story_names: list[str],
-    story_segment_method: str,
+def load_story_recall_segments(
+    story_name: str,
+    story_segment_method: str | None = None,
+    recall_segment_method: str | None = None,
     sub_ids: list[str] | None = None,
-) -> list[tuple[str, str, list[str], list[str]]]:
-    """Returns the story segments and recall segments for the given story names.
+) -> list[tuple[str, list[str], list[str]]]:
+    """Returns the story segments and recall segments for the given story name.
 
     Parameters
     ----------
-    story_names: list[str]
-        list of story names
-    segment_method: "lda-hmm" | "behavioral" | "sentence"
-        method to use for segmenting the story
+    story_name: str | Path
+    story_segment_method: str | None
     sub_ids: list[str] | None
-        list of subject ids included
 
     Returns
     -------
-    story_recall_segments: list[tuple[str, str, list[str], list[str]]]
-        - story_name: name of the story
+    story_recall_segments: list[tuple[str, list[str], list[str]]]
         - sub_id: subject id
         - story_segments: list of story segments
         - recall_segments: list of recall segments
     """
-
-    # 1. prep story segments
-    story_segments_dict: dict[str, list[str]] = dict()
-    for story_name in story_names:
-        if story_segment_method == "lda-hmm":
-            data_path = Path(
-                "data",
-                "nfrd",
-                "transcripts",
-                "segmentation",
-                "lda-hmm",
-                f"{story_name}.csv",
-            )
-            event_df = pd.read_csv(data_path)
-            story_segments = (
-                event_df.groupby("event")["window_text"].apply(" ".join).tolist()
-            )
-        elif story_segment_method == "behavioral":
-            assert story_name == "pieman", (
-                "Behavioral segmentation only available for 'pieman'"
-            )
-
-            data_path = Path(
-                "data",
-                "nfrd",
-                "transcripts",
-                "segmentation",
-                "behavioral",
-                f"{story_name}_by_behavioral.csv",
-            )
-            sentence_df = pd.read_csv(data_path)
-
-            story_segments = sentence_df["event_text"].tolist()
-        elif story_segment_method == "sentence":
-            story_text = Path(
-                "data", "nfrd", "transcripts", "text", f"{story_name}.txt"
-            ).read_text()
-            story_segments = [sent for sent in sent_tokenize(story_text)]
-        else:
-            raise ValueError(f"Invalid story segment method: {story_segment_method}")
-
-        story_segments_dict[story_name] = story_segments
-
-    # 2. get recall segments
-    story_recall_segments: list[tuple[str, str, list[str], list[str]]] = list()
-    for story_name in story_names:
-        recall_paths = list(
-            Path("data", "nfrd", "recalls", "text", story_name).glob("*.txt")
+    story_path = Path("data") / "stories-and-recalls" / story_name
+    if not story_path.exists():
+        raise FileNotFoundError(
+            f"Story dir {story_path} for {story_name=} does not exist"
         )
-        if sub_ids is not None:
-            recall_paths = [
-                path for path in recall_paths if path.stem.split("_")[0] in sub_ids
-            ]
-            if len(recall_paths) == 0:
-                continue
 
-        for recall_path in recall_paths:
-            sub_id = recall_path.stem.split("_")[0]
-            recall_segments = [sent for sent in sent_tokenize(recall_path.read_text())]
-            sub_id = recall_path.stem.split("_")[0]
-
-            story_recall_segments.append(
-                (story_name, sub_id, story_segments_dict[story_name], recall_segments)
+    # try to auto-select story segment method
+    if story_segment_method is None:
+        # get all options
+        story_segment_methods_available = sorted(
+            [ssm.stem for ssm in (story_path / "transcripts").glob("*")]
+        )
+        assert len(story_segment_methods_available) > 0, (
+            f"No story data found: {story_path / 'transcripts'}"
+        )
+        if len(story_segment_methods_available) == 1:
+            story_segment_method = story_segment_methods_available[0]
+        elif "sentences" in story_segment_methods_available:
+            story_segment_method = "sentences"
+        else:
+            raise ValueError(
+                f"Choose --story_segment_method: {story_segment_methods_available}"
             )
+
+    # load story segments
+    story_segments = story_path / "transcripts" / f"{story_segment_method}.txt"
+    story_segments = story_segments.read_text().split("\n")
+
+    # try to auto-select recall segment method
+    if recall_segment_method is None:
+        # get all options
+        recall_segment_methods_available = sorted(
+            [ssm.stem for ssm in (story_path / "recalls").glob("*")]
+        )
+        assert len(recall_segment_methods_available) > 0, (
+            f"No recall data found: {story_path / 'recalls'}"
+        )
+        if len(recall_segment_methods_available) == 1:
+            recall_segment_method = recall_segment_methods_available[0]
+        elif "sentences" in recall_segment_methods_available:
+            recall_segment_method = "sentences"
+        else:
+            raise ValueError(
+                f"Choose --recall_segment_method: {recall_segment_methods_available}"
+            )
+
+    # load recall segments
+    recall_paths = (story_path / "recalls" / recall_segment_method).glob("*.txt")
+    story_recall_segments: list[tuple[str, list[str], list[str]]] = list()
+    for recall_path in recall_paths:
+        sub_id = recall_path.stem
+        if sub_ids is not None and sub_id not in sub_ids:
+            continue
+        recall_segments = recall_path.read_text().split("\n")
+        story_recall_segments.append((sub_id, story_segments, recall_segments))
 
     return story_recall_segments
 

@@ -23,6 +23,7 @@ dependencies = [
     "einops>=0.8.1",
     "scikit-learn>=1.7.2",
     "nltk>=3.9.2",
+    "chardet>=5.2.0",
 ]
 
 [build-system]

@@ -13,7 +13,7 @@ from recall_matrix.load import (
     load_cyoa_recall_matrix_human_binary,
     load_cyoa_story_recall_segments,
     load_nfrd_recall_matrix_human_mi,
-    load_nfrd_story_recall_segments,
+    load_story_recall_segments,
 )
 from recall_matrix.recall_matrix.mutual_information import MIRM
 from recall_matrix.recall_matrix.reranker import RRRM
@@ -67,11 +67,11 @@ def plot_recall_matrix_comparison(
 
 
 def test_recall_matrix_method(
+    story_name: str,
     method: str,
     mi_normalize: bool = False,
     binary: bool = False,
     model_name: str | None = None,
-    pieman: bool = False,
     verbose: bool = False,
     debug: bool = False,
 ):
@@ -79,15 +79,12 @@ def test_recall_matrix_method(
         verbose = True
 
     # 1. load story & recall segments
-    if pieman:
-        story_recall_segments = load_nfrd_story_recall_segments(
-            story_names=["pieman"],
-            story_segment_method="sentence",
-            sub_ids=["P1"],
-        )
-    else:
-        story_names = ["alice_2", "alice_3", "monthiversary_3", "monthiversary_4"]
-        story_recall_segments = load_cyoa_story_recall_segments(story_names=story_names)
+    story_recall_segments = load_story_recall_segments(
+        story_name=story_name,
+        story_segment_method="sentence",
+        recall_segment_method="sentence",
+        sub_ids=["sub-001"],
+    )
 
     # 2. init recall matrix object
     if method.startswith("mi"):
@@ -143,7 +140,6 @@ def test_recall_matrix_method(
 
     # 3. compute recall matrix and plot
     for (
-        story_name,
         sub_id,
         story_segments,
         recall_segments,
@@ -156,16 +152,10 @@ def test_recall_matrix_method(
         )
 
         # b) load control recall matrix
-        if pieman:
-            rm_control = load_nfrd_recall_matrix_human_mi(
-                story_name=story_name, sub_id=sub_id, rater="dhruva"
-            )
-            control_title = "Human MI recall matrix"
-        else:
-            rm_control = load_cyoa_recall_matrix_human_binary(
-                story_name=story_name, sub_id=sub_id
-            )
-            control_title = "Human binary recall matrix"
+        rm_control = load_nfrd_recall_matrix_human_mi(
+            story_name=story_name, sub_id=sub_id, rater="dhruva"
+        )
+        control_title = "Human MI recall matrix"
 
         # c) plot both
         plot_recall_matrix_comparison(
@@ -184,21 +174,21 @@ def test_recall_matrix_method(
 
 if __name__ == "__main__":
     parser = ArgumentParser()
+    parser.add_argument("-s", "--story_name", type=str, default="pieman")
     parser.add_argument("-m", "--method", type=str, required=True)
     parser.add_argument("-mn", "--mi_normalize", action="store_true")
     parser.add_argument("-b", "--binary", action="store_true")
     parser.add_argument("-M", "--model_name", type=str, default=None)
-    parser.add_argument("-p", "--pieman", action="store_true")
     parser.add_argument("-vm", "--verbose", action="store_true")
     parser.add_argument("-d", "--debug", action="store_true")
     args = parser.parse_args()
 
     test_recall_matrix_method(
+        story_name=args.story_name,
         method=args.method,
         mi_normalize=args.mi_normalize,
         binary=args.binary,
         model_name=args.model_name,
-        pieman=args.pieman,
         verbose=args.verbose,
         debug=args.debug,
     )
