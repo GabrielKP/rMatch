@@ -116,6 +116,84 @@ def load_filmfest_story_recall_segments(
     return story_recall_segments
 
 
+def load_story_segments(
+    story_name: str,
+    method: str | None = None,
+) -> list[str]:
+    """Returns the story segments for the given story name and method."""
+    story_path = Path("data") / "stories-and-recalls" / story_name
+    if not story_path.exists():
+        raise FileNotFoundError(
+            f"Story dir {story_path} for {story_name=} does not exist"
+        )
+
+    # try to auto-select story segment method
+    if method is None:
+        # get all options
+        methods_available = sorted(
+            [ssm.stem for ssm in (story_path / "transcripts").glob("*")]
+        )
+        assert len(methods_available) > 0, (
+            f"No story data found: {story_path / 'transcripts'}"
+        )
+        if len(methods_available) == 1:
+            method = methods_available[0]
+        elif "sentences" in methods_available:
+            method = "sentences"
+        else:
+            raise ValueError(f"Choose --method: {methods_available}")
+
+    # load story segments
+    story_segments = story_path / "transcripts" / f"{method}.txt"
+    story_segments = [
+        seg for seg in story_segments.read_text().split("\n") if seg.strip()
+    ]
+    return story_segments
+
+
+def load_recall_segments(
+    story_name: str,
+    method: str | None = None,
+    sub_ids: list[str] | None = None,
+) -> list[tuple[str, list[str]]]:
+    """Returns the recall segments for the given story name and method."""
+    story_path = Path("data") / "stories-and-recalls" / story_name
+    if not story_path.exists():
+        raise FileNotFoundError(
+            f"Story dir {story_path} for {story_name=} does not exist"
+        )
+
+    # try to auto-select recall segment method
+    if method is None:
+        # get all options
+        methods_available = sorted(
+            [ssm.stem for ssm in (story_path / "recalls").glob("*")]
+        )
+        assert len(methods_available) > 0, (
+            f"No recall data found: {story_path / 'recalls'}"
+        )
+        if len(methods_available) == 1:
+            method = methods_available[0]
+        elif "sentences" in methods_available:
+            method = "sentences"
+        else:
+            raise ValueError(f"Choose --method: {methods_available}")
+
+    # load recall segments
+    recall_paths = (story_path / "recalls" / method).glob("*.txt")
+    recall_segments_list: list[tuple[str, list[str]]] = list()
+    for recall_path in recall_paths:
+        sub_id = recall_path.stem
+        if sub_ids is not None and sub_id not in sub_ids:
+            continue
+        recall_segments = [
+            seg for seg in recall_path.read_text().split("\n") if seg.strip()
+        ]
+        recall_segments_list.append((sub_id, recall_segments))
+
+    return recall_segments_list
+
+
 def load_story_recall_segments(
     story_name: str,
     story_segment_method: str | None = None,
@@ -137,65 +215,22 @@ def load_story_recall_segments(
         - story_segments: list of story segments
         - recall_segments: list of recall segments
     """
-    story_path = Path("data") / "stories-and-recalls" / story_name
-    if not story_path.exists():
-        raise FileNotFoundError(
-            f"Story dir {story_path} for {story_name=} does not exist"
-        )
-
-    # try to auto-select story segment method
-    if story_segment_method is None:
-        # get all options
-        story_segment_methods_available = sorted(
-            [ssm.stem for ssm in (story_path / "transcripts").glob("*")]
-        )
-        assert len(story_segment_methods_available) > 0, (
-            f"No story data found: {story_path / 'transcripts'}"
-        )
-        if len(story_segment_methods_available) == 1:
-            story_segment_method = story_segment_methods_available[0]
-        elif "sentences" in story_segment_methods_available:
-            story_segment_method = "sentences"
-        else:
-            raise ValueError(
-                f"Choose --story_segment_method: {story_segment_methods_available}"
-            )
 
     # load story segments
-    story_segments = story_path / "transcripts" / f"{story_segment_method}.txt"
-    story_segments = [
-        seg for seg in story_segments.read_text().split("\n") if seg.strip()
-    ]
-
-    # try to auto-select recall segment method
-    if recall_segment_method is None:
-        # get all options
-        recall_segment_methods_available = sorted(
-            [ssm.stem for ssm in (story_path / "recalls").glob("*")]
-        )
-        assert len(recall_segment_methods_available) > 0, (
-            f"No recall data found: {story_path / 'recalls'}"
-        )
-        if len(recall_segment_methods_available) == 1:
-            recall_segment_method = recall_segment_methods_available[0]
-        elif "sentences" in recall_segment_methods_available:
-            recall_segment_method = "sentences"
-        else:
-            raise ValueError(
-                f"Choose --recall_segment_method: {recall_segment_methods_available}"
-            )
+    story_segments = load_story_segments(
+        story_name=story_name, method=story_segment_method
+    )
 
     # load recall segments
-    recall_paths = (story_path / "recalls" / recall_segment_method).glob("*.txt")
-    story_recall_segments: list[tuple[str, list[str], list[str]]] = list()
-    for recall_path in recall_paths:
-        sub_id = recall_path.stem
-        if sub_ids is not None and sub_id not in sub_ids:
-            continue
-        recall_segments = [
-            seg for seg in recall_path.read_text().split("\n") if seg.strip()
-        ]
-        story_recall_segments.append((sub_id, story_segments, recall_segments))
+    recall_segments_list = load_recall_segments(
+        story_name=story_name, method=recall_segment_method, sub_ids=sub_ids
+    )
+
+    # combine story and recall segments
+    story_recall_segments = [
+        (sub_id, story_segments, recall_segments)
+        for (sub_id, recall_segments) in recall_segments_list
+    ]
 
     return story_recall_segments
 
