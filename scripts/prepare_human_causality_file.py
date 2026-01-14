@@ -11,7 +11,7 @@ def prepare_human_causality_file(
     story_segment_method: str,
     rater_initials: str,
 ) -> None:
-    story_segments = load_story_segments(
+    story_segments, story_segment_method = load_story_segments(
         story_name=story_name, method=story_segment_method
     )
 
@@ -27,7 +27,8 @@ def prepare_human_causality_file(
         Path("data") / "stories-and-recalls" / story_name / "causality" / "human"
     )
     output_dir.mkdir(parents=True, exist_ok=True)
-    output_path = output_dir / f"{rater_initials}.csv"
+    param_str = f"{rater_initials}-ssm_{story_segment_method}"
+    output_path = output_dir / f"{param_str}.csv"
     df.to_csv(output_path, index=False)
     print(f"Generated {output_path}")
 

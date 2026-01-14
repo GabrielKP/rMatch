@@ -13,10 +13,10 @@ def generate_file(
     rater_initials: str,
 ) -> None:
     # load story and recall segments
-    story_segments = load_story_segments(
+    story_segments, story_segment_method = load_story_segments(
         story_name=story_name, method=story_segment_method
     )
-    recall_segments_list = load_recall_segments(
+    recall_segments_list, recall_segment_method = load_recall_segments(
         story_name=story_name, method=recall_segment_method, sub_ids=[participant_id]
     )
 
@@ -39,7 +39,10 @@ def generate_file(
         Path("data") / "stories-and-recalls" / story_name / "recall_quality" / "human"
     )
     output_dir.mkdir(parents=True, exist_ok=True)
-    output_path = output_dir / f"{rater_initials}.csv"
+    param_str = (
+        f"{rater_initials}-ssm_{story_segment_method}-rsm_{recall_segment_method}"
+    )
+    output_path = output_dir / f"{param_str}.csv"
     df.to_csv(output_path, index=False)
     print(f"Generated {output_path}")
 
@@ -49,7 +52,7 @@ if __name__ == "__main__":
     story_segment_method = "sentences_corrected"
     recall_segment_method = "sentences"
     participant_id = "sub-001"
-    rater_initials = "GKP"
+    rater_initials = "DA"
     generate_file(
         story_name,
         story_segment_method,

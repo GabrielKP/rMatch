@@ -73,7 +73,7 @@ def test_recall_matrix_method(
         verbose = True
 
     # 1. load story & recall segments
-    story_recall_segments = load_story_recall_segments(
+    story_recall_segments, _, _ = load_story_recall_segments(
         story_name=story_name,
         story_segment_method="sentence",
         recall_segment_method="sentence",

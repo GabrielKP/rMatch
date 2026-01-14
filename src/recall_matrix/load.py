@@ -119,7 +119,7 @@ def load_filmfest_story_recall_segments(
 def load_story_segments(
     story_name: str,
     method: str | None = None,
-) -> list[str]:
+) -> tuple[list[str], str]:
     """Returns the story segments for the given story name and method."""
     story_path = Path("data") / "stories-and-recalls" / story_name
     if not story_path.exists():
@@ -148,14 +148,14 @@ def load_story_segments(
     story_segments = [
         seg for seg in story_segments.read_text().split("\n") if seg.strip()
     ]
-    return story_segments
+    return story_segments, method
 
 
 def load_recall_segments(
     story_name: str,
     method: str | None = None,
     sub_ids: list[str] | None = None,
-) -> list[tuple[str, list[str]]]:
+) -> tuple[list[tuple[str, list[str]]], str]:
     """Returns the recall segments for the given story name and method."""
     story_path = Path("data") / "stories-and-recalls" / story_name
     if not story_path.exists():
@@ -191,7 +191,7 @@ def load_recall_segments(
         ]
         recall_segments_list.append((sub_id, recall_segments))
 
-    return recall_segments_list
+    return recall_segments_list, method
 
 
 def load_story_recall_segments(
@@ -199,7 +199,7 @@ def load_story_recall_segments(
     story_segment_method: str | None = None,
     recall_segment_method: str | None = None,
     sub_ids: list[str] | None = None,
-) -> list[tuple[str, list[str], list[str]]]:
+) -> tuple[list[tuple[str, list[str], list[str]]], str, str]:
     """Returns the story segments and recall segments for the given story name.
 
     Parameters
@@ -210,19 +210,22 @@ def load_story_recall_segments(
 
     Returns
     -------
-    story_recall_segments: list[tuple[str, list[str], list[str]]]
-        - sub_id: subject id
-        - story_segments: list of story segments
-        - recall_segments: list of recall segments
+    story_recall_segments: tuple[list[tuple[str, list[str], list[str]]], str, str]
+        - story_recall_segments: list of tuples of:
+            - sub_id: subject id
+            - story_segments: list of story segments
+            - recall_segments: list of recall segments
+        - story_segment_method: method used to segment the story
+        - recall_segment_method: method used to segment the recall
     """
 
     # load story segments
-    story_segments = load_story_segments(
+    story_segments, story_segment_method = load_story_segments(
         story_name=story_name, method=story_segment_method
     )
 
     # load recall segments
-    recall_segments_list = load_recall_segments(
+    recall_segments_list, recall_segment_method = load_recall_segments(
         story_name=story_name, method=recall_segment_method, sub_ids=sub_ids
     )
 
@@ -232,7 +235,7 @@ def load_story_recall_segments(
         for (sub_id, recall_segments) in recall_segments_list
     ]
 
-    return story_recall_segments
+    return story_recall_segments, story_segment_method, recall_segment_method
 
 
 def load_cyoa_recall_matrix_human_binary(story_name: str, sub_id: str) -> np.ndarray:

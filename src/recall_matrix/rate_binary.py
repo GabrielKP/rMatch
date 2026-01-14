@@ -11,16 +11,18 @@ from recall_matrix.recall_matrix.reranker import RRRM
 
 def rate_binary(
     story_name: str,
-    story_segment_method: str,
-    recall_segment_method: str,
     model_name: str,
     reranker_threshold: float,
+    story_segment_method: str | None = None,
+    recall_segment_method: str | None = None,
     suffix: str | None = None,
 ):
-    story_recall_segments = load_story_recall_segments(
-        story_name=story_name,
-        story_segment_method=story_segment_method,
-        recall_segment_method=recall_segment_method,
+    story_recall_segments, story_segment_method, recall_segment_method = (
+        load_story_recall_segments(
+            story_name=story_name,
+            story_segment_method=story_segment_method,
+            recall_segment_method=recall_segment_method,
+        )
     )
 
     reranker_rmo = RRRM(
