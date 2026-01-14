@@ -1,4 +1,4 @@
-from itertools import combinations
+from itertools import product
 from pathlib import Path
 
 import pandas as pd
@@ -16,8 +16,9 @@ def prepare_human_causality_file(
     )
 
     rows = [
-        {"cause_segment": cause, "effect_segment": effect, "causality_score": ""}
-        for (cause, effect) in combinations(story_segments, 2)
+        {"cause_segment": effect, "effect_segment": cause, "causality_score": ""}
+        for (cause, effect) in product(story_segments, story_segments)
+        if cause != effect
     ]
 
     df = pd.DataFrame(rows)

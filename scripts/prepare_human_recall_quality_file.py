@@ -28,7 +28,7 @@ def generate_file(
         raise ValueError(f"Participant {participant_id} not found")
 
     rows = [
-        {"recall_segment": r, "story_segment": s, "quality": ""}
+        {"recall_segment": r, "story_segment": s, "quality_score": ""}
         for r in recall_segments
         for s in story_segments
     ]
@@ -36,7 +36,7 @@ def generate_file(
     df = pd.DataFrame(rows)
 
     output_dir = (
-        Path("data") / "stories-and-recalls" / story_name / "ratings" / "human_quality"
+        Path("data") / "stories-and-recalls" / story_name / "recall_quality" / "human"
     )
     output_dir.mkdir(parents=True, exist_ok=True)
     output_path = output_dir / f"{rater_initials}.csv"

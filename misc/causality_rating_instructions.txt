@@ -1,0 +1,1 @@
+Rate how much the candidate cause A (left sentences) caused the candidate effect B (right sentence), between 0 (A did not cause B at all) and 7 (A caused B).
