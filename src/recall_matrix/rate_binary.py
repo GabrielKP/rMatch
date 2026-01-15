@@ -45,9 +45,12 @@ def rate_binary(
             recall_segments=recall_segments,
         )
         # convert to indices (preserving order)
+        n_recalls = rm_reranker.shape[1]
         story_segment_indices = []
-        for story_segment_vector in rm_reranker:
-            story_segment_indices.extend(np.where(story_segment_vector)[0].tolist())
+        for idx_recall in range(n_recalls):
+            story_segment_indices.extend(
+                np.where(rm_reranker[:, idx_recall])[0].tolist()
+            )
         story_segment_indices_dict[sub_id] = story_segment_indices
 
     output_dict = {
