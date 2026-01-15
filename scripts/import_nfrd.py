@@ -76,6 +76,49 @@ def get_story_windows(story: str, window_size: int, step_size: int) -> list[str]
     return windows
 
 
+def sentence_tokenize(text: str) -> list[str]:
+    initial_sentences = [sent for sent in sent_tokenize(text)]
+    # merge sentences that are within qoutes "..." and not too long
+    processed_sentences_1 = list()
+    idx_sentence = 0
+    open_quote = 0
+    while idx_sentence < len(initial_sentences):
+        sentence = initial_sentences[idx_sentence]
+        n_qoutes = sentence.count('"')
+        if (n_qoutes + open_quote) % 2 == 0:
+            processed_sentences_1.append(sentence)
+            idx_sentence += 1
+            open_quote = 0
+        else:
+            # need to merge sentences unless it becomes too long
+            max_length = 210
+            candidate_new_sentence = sentence
+            idx_sentence_next = idx_sentence + 1
+            while (
+                n_qoutes % 2 != 0
+                and len(candidate_new_sentence) < max_length
+                and idx_sentence_next < len(initial_sentences)
+            ):
+                candidate_new_sentence += " " + initial_sentences[idx_sentence_next]
+                n_qoutes = candidate_new_sentence.count('"')
+                idx_sentence_next += 1
+            if len(candidate_new_sentence) < max_length:
+                processed_sentences_1.append(candidate_new_sentence)
+                idx_sentence = idx_sentence_next
+                open_quote = 0
+            else:
+                processed_sentences_1.append(sentence)
+                idx_sentence += 1
+                open_quote = 1
+
+    # second step: remove small sentences
+    processed_sentences_2 = list()
+    for sentence in processed_sentences_1:
+        if len(sentence) > 9:
+            processed_sentences_2.append(sentence)
+    return processed_sentences_2
+
+
 def import_nfrd_data(nfrd_dir: Path):
     dim_topic_model = 40
     window_size = 55
@@ -161,7 +204,7 @@ def import_nfrd_data(nfrd_dir: Path):
             recall_text_output.write_text(recall_text + "\n")
 
             # sentence segments
-            recall_segments = [sent for sent in sent_tokenize(recall_text)]
+            recall_segments = sentence_tokenize(recall_text)
             recall_segments_output = Path(
                 "data",
                 "stories-and-recalls",
