@@ -48,8 +48,8 @@ def rate_binary(
         n_recalls = rm_reranker.shape[1]
         story_segment_indices = []
         for idx_recall in range(n_recalls):
-            story_segment_indices.extend(
-                np.where(rm_reranker[:, idx_recall])[0].tolist()
+            story_segment_indices.append(
+                {idx_recall: np.where(rm_reranker[:, idx_recall])[0].tolist()}
             )
         story_segment_indices_dict[sub_id] = story_segment_indices
 
