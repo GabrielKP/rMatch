@@ -21,6 +21,46 @@ def rate_binary(
     top_k: int = 5,
     device: str | None = None,
 ):
+    """
+
+    Output format if output_scores is False:
+    {
+        "sub-id-1": [
+            (recall_segment_id_1, [story_segment_id_x, story_segment_id_y, ..]),
+            (recall_segment_id_2, [story_segment_id_z, ...]),
+            ...
+        ],
+        "sub-id-2": [
+            (recall_segment_id_1, [story_segment_id_a, story_segment_id_b, ..]),
+            (recall_segment_id_2, [story_segment_id_c, ...]),
+            ...
+        ],
+        ...
+    }
+
+    Output format if output_scores is True:
+    {
+        "sub-id-1": [
+            (
+                recall_segment_id_1,
+                [
+                    (story_segment_id_x, score_x),
+                    (story_segment_id_y, score_y),
+                    ...
+                ]
+            ),
+            (
+                recall_segment_id_2,
+                [
+                    (story_segment_id_z, score_z),
+                    ...
+                ]
+            ),
+            ...
+        ],
+        ...
+    }
+    """
     story_recall_segments, story_segment_method, recall_segment_method = (
         load_story_recall_segments(
             story_name=story_name,
@@ -59,7 +99,7 @@ def rate_binary(
         model_name=model_name,
         reranker_method="thresholded",
         reranker_threshold=reranker_threshold,
-        reranker_binary=True,
+        reranker_binary=not output_scores,
         device=device,
         debug=False,
         top_k=top_k,
@@ -89,7 +129,7 @@ def rate_binary(
                     (
                         idx_recall,
                         [
-                            (idx, score)
+                            (int(idx), round(float(score), 4))
                             for idx, score in zip(
                                 topk_story_segment_indices, topk_story_segment_scores
                             )
