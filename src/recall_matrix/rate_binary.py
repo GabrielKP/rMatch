@@ -84,18 +84,19 @@ def rate_binary(
                     topk_story_segment_indices, idx_recall
                 ]
                 story_segment_indices.append(
-                    {
-                        idx_recall: {
-                            idx: score
+                    (
+                        idx_recall,
+                        [
+                            (idx, score)
                             for idx, score in zip(
                                 topk_story_segment_indices, topk_story_segment_scores
                             )
-                        }
-                    }
+                        ],
+                    )
                 )
             else:
                 story_segment_indices.append(
-                    {idx_recall: np.where(rm_reranker[:, idx_recall])[0].tolist()}
+                    (idx_recall, np.where(rm_reranker[:, idx_recall])[0].tolist())
                 )
         story_segment_indices_dict[sub_id] = story_segment_indices
 
