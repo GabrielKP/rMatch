@@ -1,4 +1,6 @@
+import json
 import logging
+from typing import Any
 
 from dotenv import dotenv_values
 from rich.console import Console
@@ -30,3 +32,8 @@ def get_logger(
         logger.addHandler(fh)
 
     return logger
+
+
+def print_config(config: dict):
+    """Pretty print the config."""
+    console.print_json(json.dumps(config, indent=4))

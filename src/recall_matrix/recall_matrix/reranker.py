@@ -20,6 +20,7 @@ class RRRM:
         x_instruction: str = "",
         x_instruction_no_y: str = "",
         debug: bool = False,
+        top_k: int = 5,
     ):
         """Initialize the ReRanker Recall Matrix (RRRM) object.
 
@@ -97,6 +98,8 @@ class RRRM:
         self.x_instruction = x_instruction
         self.x_instruction_no_y = x_instruction_no_y
 
+        self.top_k = top_k
+
         self.debug = debug
         log.info(f"Debug mode: {self.debug}")
 
@@ -109,12 +112,11 @@ class RRRM:
     ) -> np.ndarray:
         """Compute the recall matrix"""
 
-        top_k = 5
         threshold = self.reranker_threshold
 
         recall_matrix = np.zeros((len(story_segments), len(recall_segments)))
         for j, R_j in enumerate(tqdm(recall_segments, desc="(RM)")):
-            rankings = self.model.rank(R_j, story_segments, top_k=top_k)
+            rankings = self.model.rank(R_j, story_segments, top_k=self.top_k)
             for ranking in rankings:
                 score: float = ranking["score"]  #  type: ignore
                 corpus_id: int = ranking["corpus_id"]  #  type: ignore

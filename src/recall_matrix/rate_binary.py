@@ -5,6 +5,7 @@ from pathlib import Path
 import numpy as np
 from tqdm import tqdm
 
+from recall_matrix import print_config
 from recall_matrix.load import load_story_recall_segments
 from recall_matrix.recall_matrix.reranker import RRRM
 
@@ -16,6 +17,8 @@ def rate_binary(
     story_segment_method: str | None = None,
     recall_segment_method: str | None = None,
     suffix: str | None = None,
+    output_scores: bool = False,
+    top_k: int = 5,
 ):
     story_recall_segments, story_segment_method, recall_segment_method = (
         load_story_recall_segments(
@@ -25,12 +28,39 @@ def rate_binary(
         )
     )
 
+    suffix_str = f"-{suffix}" if suffix else ""
+    recall_segment_method_str = f"-rsm_{recall_segment_method}"
+    story_segment_method_str = f"-ssm_{story_segment_method}"
+    top_k_str = f"-tk_{top_k}"
+    output_scores_str = "-os" if output_scores else ""
+    param_str = (
+        f"reranker_thresholded_{reranker_threshold}"
+        f"{recall_segment_method_str}"
+        f"{story_segment_method_str}"
+        f"{top_k_str}"
+        f"{output_scores_str}"
+        f"{suffix_str}"
+    )
+
+    output_dict = {
+        "param_str": param_str,
+        "story_name": story_name,
+        "story_segment_method": story_segment_method,
+        "recall_segment_method": recall_segment_method,
+        "model_name": model_name,
+        "reranker_threshold": reranker_threshold,
+        "top_k": top_k,
+        "output_scores": output_scores,
+    }
+    print_config(output_dict)
+
     reranker_rmo = RRRM(
         model_name=model_name,
         reranker_method="thresholded",
         reranker_threshold=reranker_threshold,
         reranker_binary=True,
         debug=False,
+        top_k=top_k,
     )
 
     story_segment_indices_dict: dict[str, list[int]] = dict()
@@ -48,28 +78,29 @@ def rate_binary(
         n_recalls = rm_reranker.shape[1]
         story_segment_indices = []
         for idx_recall in range(n_recalls):
-            story_segment_indices.append(
-                {idx_recall: np.where(rm_reranker[:, idx_recall])[0].tolist()}
-            )
+            if output_scores:
+                topk_story_segment_indices = np.where(rm_reranker[:, idx_recall])[0]
+                topk_story_segment_scores = rm_reranker[
+                    topk_story_segment_indices, idx_recall
+                ]
+                story_segment_indices.append(
+                    {
+                        idx_recall: {
+                            idx: score
+                            for idx, score in zip(
+                                topk_story_segment_indices, topk_story_segment_scores
+                            )
+                        }
+                    }
+                )
+            else:
+                story_segment_indices.append(
+                    {idx_recall: np.where(rm_reranker[:, idx_recall])[0].tolist()}
+                )
         story_segment_indices_dict[sub_id] = story_segment_indices
 
-    output_dict = {
-        "story_name": story_name,
-        "story_segment_method": story_segment_method,
-        "recall_segment_method": recall_segment_method,
-        "model_name": model_name,
-        "reranker_threshold": reranker_threshold,
-        "ratings": story_segment_indices_dict,
-    }
-    suffix_str = f"-{suffix}" if suffix else ""
-    recall_segment_method_str = f"-rsm_{recall_segment_method}"
-    story_segment_method_str = f"-ssm_{story_segment_method}"
-    param_str = (
-        f"reranker_thresholded_{reranker_threshold}"
-        f"{recall_segment_method_str}"
-        f"{story_segment_method_str}"
-        f"{suffix_str}"
-    )
+    output_dict["ratings"] = story_segment_indices_dict
+
     output_path = (
         Path("data")
         / "stories-and-recalls"
@@ -88,7 +119,30 @@ if __name__ == "__main__":
     args.add_argument("-ssm", "--story_segment_method", type=str, default=None)
     args.add_argument("-rsm", "--recall_segment_method", type=str, default=None)
     args.add_argument("-m", "--model_name", type=str, default="BAAI/bge-reranker-v2-m3")
-    args.add_argument("-rt", "--reranker_threshold", type=float, default=0.09)
+    args.add_argument(
+        "-rt",
+        "--reranker_threshold",
+        type=float,
+        default=0.09,
+        help="threshold above which a story-segment score counts as recalled.",
+    )
+    args.add_argument(
+        "--output_scores",
+        action="store_true",
+        default=False,
+        help=(
+            "Outputs the scores of the story segments for each recall segment."
+            " The output dict then contains for each recall segment a dict with"
+            " story_segment_index -> score."
+        ),
+    )
+    args.add_argument(
+        "-tk",
+        "--top_k",
+        type=int,
+        default=5,
+        help="Picks top k candidate story segments for each recall segment.",
+    )
     args.add_argument(
         "--suffix", type=str, default=None, help="Suffix for the output file"
     )
@@ -99,5 +153,7 @@ if __name__ == "__main__":
         recall_segment_method=args.recall_segment_method,
         model_name=args.model_name,
         reranker_threshold=args.reranker_threshold,
+        top_k=args.top_k,
+        output_scores=args.output_scores,
         suffix=args.suffix,
     )
