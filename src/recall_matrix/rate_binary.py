@@ -19,6 +19,7 @@ def rate_binary(
     suffix: str | None = None,
     output_scores: bool = False,
     top_k: int = 5,
+    device: str | None = None,
 ):
     story_recall_segments, story_segment_method, recall_segment_method = (
         load_story_recall_segments(
@@ -59,6 +60,7 @@ def rate_binary(
         reranker_method="thresholded",
         reranker_threshold=reranker_threshold,
         reranker_binary=True,
+        device=device,
         debug=False,
         top_k=top_k,
     )
@@ -147,6 +149,12 @@ if __name__ == "__main__":
     args.add_argument(
         "--suffix", type=str, default=None, help="Suffix for the output file"
     )
+    args.add_argument(
+        "--device",
+        type=str,
+        default=None,
+        help="Device to use for the reranker. If None, will be autoselected.",
+    )
     args = args.parse_args()
     rate_binary(
         story_name=args.story_name,
@@ -157,4 +165,5 @@ if __name__ == "__main__":
         top_k=args.top_k,
         output_scores=args.output_scores,
         suffix=args.suffix,
+        device=args.device,
     )
