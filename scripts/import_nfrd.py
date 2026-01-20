@@ -228,13 +228,19 @@ def import_nfrd_data(nfrd_dir: Path):
         story_recall_models_ids_path = Path(
             nfrd_dir, "result_models", f"{subfolder_name}.npy"
         )
-        _, _, p_ids = np.load(story_recall_models_ids_path, allow_pickle=True)
+        _, _, recall_transcript_paths = np.load(
+            story_recall_models_ids_path, allow_pickle=True
+        )
 
         recalled_events = dict()
-        for p_id, recall in zip(p_ids, recalled_events_list):
+        for recall_tanscript_path, recall in zip(
+            recall_transcript_paths, recalled_events_list
+        ):
             # skip None events -> recalls which were not matched to
             # any story event. Not sure why this happens.
-            sub_id = f"sub-{int(Path(p_id).stem.split('_')[0][1:]):03d}"
+            sub_id = (
+                f"sub-{int(Path(recall_tanscript_path).stem.split('_')[0][1:]):03d}"
+            )
             recalled_events[sub_id] = [
                 int(event) for event in recall if not np.isnan(event)
             ]
