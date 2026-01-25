@@ -1,15 +1,18 @@
 import re
 
 import numpy as np
+from dotenv import dotenv_values
 from openai import OpenAI
 
-# TODO: LINK TO GPT
 from recall_matrix.load import (
     load_cyoa_recall_matrix_human_binary,
     load_cyoa_story_recall_segments,
 )
 
 # TODO: figure data out lol
+# TODO: look @ rate_binary for output format
+# TODO: look @ test_recall_matrix for graphing matrix
+# 5 nano, 4o mini, 4.1 nano (cheap ones)
 STORY = "story name smth smth smth"
 SUBJECT = "sample subject name"
 
@@ -59,10 +62,17 @@ def parse(raw: str) -> set[int]:
 
 
 def compute_matrix() -> np.ndarray:
+    api = dotenv_values(".env")["OPENAI_API_KEY"]
+    client = OpenAI(api_key=api)
+
     data = load_cyoa_story_recall_segments([STORY])
 
-    for story_name, subj, story_segments, recall_segments in data:
+    recall_segments = []
+    story_segments = []
+    for story_name, subj, story_segs, recall_segs in data:
         if story_name == STORY and subj == SUBJECT:
+            recall_segments = recall_segs
+            story_segments = story_segs
             break
 
     story = format_story(story_segments)
@@ -75,9 +85,8 @@ def compute_matrix() -> np.ndarray:
 
     for col, recall in enumerate(recall_segments):
         query = build_message(recall, story, story_segments_formatted)
-        # TODO: contact llm here
-        response = model.message(query)
-        parsed_response = parse(response)
+        response = client.responses.create(model="gpt-5-nano", input=query)
+        parsed_response = parse(response.output_text)
 
         for row in parsed_response:
             recall_matrix[row - 1, col] = 1
