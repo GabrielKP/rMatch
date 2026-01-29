@@ -1,20 +1,18 @@
 import re
+from pathlib import Path
 
 import numpy as np
 from dotenv import dotenv_values
+from matplotlib import pyplot as plt
 from openai import OpenAI
+from tqdm import tqdm
 
-from recall_matrix.load import (
-    load_cyoa_recall_matrix_human_binary,
-    load_cyoa_story_recall_segments,
-)
+from recall_matrix.load import load_story_recall_segments
 
-# TODO: figure data out lol
 # TODO: look @ rate_binary for output format
-# TODO: look @ test_recall_matrix for graphing matrix
 # 5 nano, 4o mini, 4.1 nano (cheap ones)
-STORY = "story name smth smth smth"
-SUBJECT = "sample subject name"
+STORY = "pieman"
+SUBJECT = "sub-001"
 
 
 def build_message(recall_segment: str, story: str, story_segments: str) -> str:
@@ -65,15 +63,14 @@ def compute_matrix() -> np.ndarray:
     api = dotenv_values(".env")["OPENAI_API_KEY"]
     client = OpenAI(api_key=api)
 
-    data = load_cyoa_story_recall_segments([STORY])
+    data = load_story_recall_segments(
+        story_name=STORY,
+        story_segment_method="sentences_corrected",
+        recall_segment_method="sentences",
+        sub_ids=[SUBJECT],
+    )[0]
 
-    recall_segments = []
-    story_segments = []
-    for story_name, subj, story_segs, recall_segs in data:
-        if story_name == STORY and subj == SUBJECT:
-            recall_segments = recall_segs
-            story_segments = story_segs
-            break
+    sub_id, story_segments, recall_segments = data[0]
 
     story = format_story(story_segments)
     story_segments_formatted = format_story_segments(story_segments)
@@ -83,12 +80,47 @@ def compute_matrix() -> np.ndarray:
 
     recall_matrix = np.zeros((num_story, num_recall), dtype=int)
 
-    for col, recall in enumerate(recall_segments):
+    for col, recall in enumerate(
+        tqdm(recall_segments, desc="Rating recalls", unit="clause")
+    ):
         query = build_message(recall, story, story_segments_formatted)
         response = client.responses.create(model="gpt-5-nano", input=query)
+        # tqdm.write(str(response.output_text))
         parsed_response = parse(response.output_text)
 
         for row in parsed_response:
             recall_matrix[row - 1, col] = 1
 
     return recall_matrix
+
+
+def plot_recall_matrix(
+    story_name: str,
+    sub_id: str,
+    recall_matrix: np.ndarray,
+    title: str,
+    output_dir: Path,
+    measure_label: str = "binary",
+):
+    m, n = recall_matrix.shape
+    fig, ax = plt.subplots(figsize=(int((n / m + 1) * 9), 9))
+
+    im = ax.imshow(recall_matrix, cmap="Reds")
+    ax.set_title(title)
+    ax.set_xlabel("Recall segments")
+    ax.set_ylabel("Story segments")
+    ax.set_aspect(1)
+
+    fig.colorbar(im, ax=ax, label=measure_label)
+    fig.suptitle(f"{story_name} | {sub_id}")
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    fig.savefig(output_dir / f"{story_name}_{sub_id}.png", bbox_inches="tight")
+    plt.close(fig)
+
+
+if __name__ == "__main__":
+    matrix = compute_matrix()
+    plot_recall_matrix(
+        STORY, SUBJECT, matrix, "LLM Recall Proto", Path("outputs/tests/llm")
+    )
