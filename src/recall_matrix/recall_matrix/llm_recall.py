@@ -1,3 +1,4 @@
+import json
 import re
 from pathlib import Path
 
@@ -59,37 +60,79 @@ def parse(raw: str) -> set[int]:
     return parsed_set
 
 
-def compute_matrix() -> np.ndarray:
+def rate_llm_binary(story_name: str, model_name: str = "gpt-5-nano") -> dict:
     api = dotenv_values(".env")["OPENAI_API_KEY"]
     client = OpenAI(api_key=api)
 
-    data = load_story_recall_segments(
-        story_name=STORY,
+    data, story_segment_method, recall_segment_method = load_story_recall_segments(
+        story_name=story_name,
         story_segment_method="sentences_corrected",
         recall_segment_method="sentences",
         sub_ids=[SUBJECT],
-    )[0]
+    )
 
-    sub_id, story_segments, recall_segments = data[0]
+    output_dict = {
+        "param_str": f"llm_binary_{model_name}",
+        "story_name": story_name,
+        "story_segment_method": story_segment_method,
+        "recall_segment_method": recall_segment_method,
+        "model_name": model_name,
+        "output_scores": False,
+    }
 
-    story = format_story(story_segments)
-    story_segments_formatted = format_story_segments(story_segments)
+    first_sub_id, segs, _ = data[0]
+    output_dict["num_story_segments"] = len(segs)
 
-    num_story = len(story_segments)
-    num_recall = len(recall_segments)
+    ratings: dict[str, dict] = {}
 
-    recall_matrix = np.zeros((num_story, num_recall), dtype=int)
+    for sub_id, story_segments, recall_segments in data:
+        story = format_story(story_segments)
+        story_segments_formatted = format_story_segments(story_segments)
 
-    for col, recall in enumerate(
-        tqdm(recall_segments, desc="Rating recalls", unit="clause")
-    ):
-        query = build_message(recall, story, story_segments_formatted)
-        response = client.responses.create(model="gpt-5-nano", input=query)
-        # tqdm.write(str(response.output_text))
-        parsed_response = parse(response.output_text)
+        sub_ratings = []
 
-        for row in parsed_response:
-            recall_matrix[row - 1, col] = 1
+        for recall_idx, recall in enumerate(
+            tqdm(recall_segments, desc="Rating recalls", unit="clause")
+        ):
+            query = build_message(recall, story, story_segments_formatted)
+            response = client.responses.create(model=model_name, input=query)
+            # tqdm.write(str(response.output_text))
+            parsed_response = parse(response.output_text)
+
+            story_indicies = sorted(idx - 1 for idx in parsed_response)
+            sub_ratings.append((recall_idx, story_indicies))
+
+        ratings[sub_id] = {
+            "num_recall_segments": len(recall_segments),
+            "ratings": sub_ratings,
+        }
+
+    output_dict["ratings"] = ratings
+
+    output_path = (
+        Path("data")
+        / "stories-and-recalls"
+        / story_name
+        / "ratings"
+        / f"{output_dict['param_str']}.json"
+    )
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    with open(output_path, "w") as f:
+        json.dump(output_dict, f)
+        f.write("\n")
+
+    return output_dict
+
+
+def ratings_to_matrix(data: dict, sub_id: str) -> np.ndarray:
+    num_story_segs = data["num_story_segments"]
+    num_recall_segs = data["ratings"][sub_id]["num_recall_segments"]
+    recall_matrix = np.zeros((num_story_segs, num_recall_segs), dtype=int)
+
+    for recall_idx, story_indicies in data["ratings"][sub_id]["ratings"]:
+        for story_idx in story_indicies:
+            recall_matrix[story_idx, recall_idx] = 1
 
     return recall_matrix
 
@@ -120,7 +163,8 @@ def plot_recall_matrix(
 
 
 if __name__ == "__main__":
-    matrix = compute_matrix()
+    ratings = rate_llm_binary(STORY)
+    matrix = ratings_to_matrix(ratings, SUBJECT)
     plot_recall_matrix(
         STORY, SUBJECT, matrix, "LLM Recall Proto", Path("outputs/tests/llm")
     )
