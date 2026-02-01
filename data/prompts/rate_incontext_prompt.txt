@@ -1,0 +1,11 @@
+This is the original text:
+{narrative}
+
+It can be broken down into the following independent pieces of information:
+{segmentation}
+
+Here is an alternative version of the original text where some of the above pieces of information may be missing:
+{recall}
+
+For each of the numbered information pieces of the list above, evaluate whether the information of each piece is given in the alternative version of the story,
+stating the number and showing the corresponding passage from the alternative story it is given in.

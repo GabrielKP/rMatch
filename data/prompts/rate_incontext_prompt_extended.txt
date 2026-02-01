@@ -1,0 +1,15 @@
+Now produce a line-by-line reference map for the alternative version.
+
+Instructions:
+- Enumerate each line of the alternative version in order, starting from line 1.
+- For each alternative line, list the numbers of the information pieces (from the segmentation list above) whose content is expressed or referenced in that line.
+- Order the listed information piece numbers by relevance to that line, with the most relevant or primary information piece first, followed by less relevant or secondary ones.
+- Use square brackets [] to list the referenced information piece numbers.
+- If a line does not reference any information pieces, use empty brackets [].
+- If the referenced numbers form a continuous range, write the full range explicitly (e.g., 2-5), even when ordered by relevance.
+
+Output format (one line per alternative line, no extra text):
+line_number: [information_piece_numbers]
+
+Begin immediately with line 1.
+Do not include explanations, headings, or any additional output.
