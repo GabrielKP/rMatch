@@ -1,68 +1,67 @@
-The following are pairs of the participant's recall and the story. Rate how much the recall segment refers to the story segment from 0-8, where 1 indicates no relation, and 9 indicates full capture of the details in the story segment.
-If a recall segment is a summarizing statement, mark it as 'summary' and use the descriptions.
-Compared to pure lack of information, in a summary information which the description implies, or plausibly contains the story-segment.
-
+The following are pairs of the participant's recall and the story. Rate how much the recall segment refers to the story segment from 0-6, where 1 indicates no relation, and 6 indicates full capture of the details in the story segment.
 
 Normal segments
 0 - information is not present in story segment
-1 - single piece of information of story segment        / recall segment broadly summarizes this story segment
-2 - a few details from the story segment                / recall segment summarizes story segment well.
-3 - significant chunks from the story segment missing   / although summary, captures story segment with not too much ambiguity (?).
-4 - 'half' of the information in story segment is present.
-5 - more than half information is there, but also more than just a part missing.
-6 - a part of the story segment missing.
-7 - almost all details captured, just minor information missing (e.g. exact names)
-8 - all details captured
+1 - very little information of story segment is captured (minimal capture)
+2 - a few details from the story segment are captured
+3 - 'half' of the information in story segment is present.
+4 - more than half information is there, but still largely shy of fully capturing the details.
+5 - almost all details captured, just minor information missing
+6 - all details captured (need not be verbatim but captured)
+
+Important Notes:
+* Do not worry about excess information in the recall, only look at what overlaps
+* Ignore incorrect information, only focus on the information that is overlapping, and how much overlaps
 
 
+Remaining major unclear situation: what to do with rhetorical cases where there is meta commentary in the story (see example 8)
+   - For now, follow the example, and treat rhetorical moments like any other part of the story
 
 
 
 Example 1:
 * Story segment: Alice went running at sunset in New York.
 * Recall segment: A character named alice went running in New York at sunset.
-* Rating: 8
+* Rating: 6
 
 
 Example 2:
 * Story segment: Alice went running at sunset in New York.
 * Recall segment: A character named alice went running at sunset.
-* Rating: 5
+* Rating: 4
 
 
 Example 3:
 * Story segment: Alice went running at sunset in New York.
 * Recall segment: A character named alice went running in New York at sunset and saw an old friend of hers.
-* Rating: 8
+* Rating: 6
 
 
 Example 4:
 * Story segment: Alice went running at sunset in New York.
-* Story segment: There was a character called Alice.
+* Recall segment: There was a character called Alice.
 * Rating: 2
 
 
 Example 5:
 * Story segment: Alice went outside, started running for 30 minutes, passing other runners and enjoying the fresh air and returning home after an intense sprint.
-* Story segment: There is exactly one bobcat in New York.
+* Recall segment: There is exactly one bobcat in New York.
 * Rating: 0
 
 
 Example 6:
 * Story segment: Alice went outside, started running for 30 minutes, passing other runners and enjoying the fresh air and returning home after an intense sprint.
-* Story segment: Alice went running.
+* Recall segment: Alice went running.
 * Rating: 1
 
 
 Example 7:
 * Story segment: Alice went outside, started running for 30 minutes, passing other runners and enjoying the fresh air and returning home after an intense sprint.
-* Story segment: Alice passed other runners.
+* Recall segment: Alice passed other runners.
 * Rating: 1
 
-
-
-
-(need more examples, e.g. what about wrong information? What about non-verbatim matches - do they still get a 10?)
-(0 - 10 still feels too large, maybe 1 - 9?)
-
-It feels like there is a qualitative difference between, example 6 and 7 - both have the same rating but one is a summary, one is just a single piece of information.
+Example 8:
+* Story segment: Though in fact he'd been capeless.
+* Recall segment: So, the guy starts writing up the story and when he's writing up the story, he starts to add some fake, not true parts to the story, and he basically gave the name to the guy with the pie, and he was Pie Man, PM, and he was wearing a cape, and as he was leaving, he did something with his feet and he said something in Latin and it meant like, "I'm not an animal."
+* Rating: 0
+Note that although the recall segment seems to imply that Pie Man was actually capeless, the subject never actually said that. Be vigilant about not "filling in the gaps" with your own assumptions.
