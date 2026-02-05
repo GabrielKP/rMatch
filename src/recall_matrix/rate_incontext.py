@@ -92,20 +92,36 @@ def parse_events_from_second_output(model_output):
     
     return parsed_events
 
+def validate_and_store_results(output_path, incontext_output_dict, overwrite_existing, store_results):
+    if store_results:
+        # If the file exists and we are not overwriting, update existing results
+        if output_path.exists() and not overwrite_existing:
+            print(f"Results already exist at {output_path}. Updating additional results.")
+            with open(output_path, "r") as f_in:
+                existing_dict = json.load(f_in)
+            existing_dict["ratings"].update(incontext_output_dict["ratings"])
+            with open(output_path, "w") as f_out:
+                f_out.write(json.dumps(existing_dict))
+        else:
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(output_path, "w") as f_out:
+                f_out.write(json.dumps(incontext_output_dict))
+            if overwrite_existing:
+                print(f"Overwrote existing results at {output_path}.")
+    return incontext_output_dict
 
 def rate_incontext(
     story_name: str,
     model_id: str,
     story_segment_method: str,
     recall_segment_method: str,
-    total_subjects: int,
+    subjects: list | None = [],
     first_prompt_path: str | None = None,
     second_prompt_path: str | None = None,
     store_results: bool = True,
     overwrite_existing: bool = False
 ):
     # Define some variables for later use
-    subjects = [i for i in range(1, total_subjects+1)]
     subject_ids = [f"sub-{str(i).zfill(3)}" for i in subjects]
     ratings_dict = {}
 
@@ -136,9 +152,19 @@ def rate_incontext(
         print(f"Skipping {len(completed_subjects)} subjects already present in existing results.")
         print(f"The following subjects will be processed: {subject_ids}")
 
+    # Aggregate information and dump to .json
+    ## reranker_threshold, top_k, output_scores all removed.
+    incontext_output_dict = {
+        "param_str": param_str,
+        "story_name": story_name,
+        "story_segment_method": story_segment_method,
+        "recall_segment_method": recall_segment_method,
+        "model_id": model_id,
+    }
+
     # Handle each subject in turn
     pipeline = create_pipeline(model_id)
-    for subj_no in range(1, total_subjects+1):
+    for subj_no in subjects:
         print(f"\n\n\nProcessing subject {subj_no}...\n\n\n")
 
         # Pull out the recall and original story
@@ -160,33 +186,8 @@ def rate_incontext(
         parsed_events = parse_events_from_second_output(second_model_output)
 
         ratings_dict[subject_ids[subj_no-1]] = parsed_events
-
-    # Aggregate information and dump to .json
-    ## reranker_threshold, top_k, output_scores all removed.
-    incontext_output_dict = {
-        "param_str": param_str,
-        "story_name": story_name,
-        "story_segment_method": story_segment_method,
-        "recall_segment_method": recall_segment_method,
-        "model_id": model_id,
-        "ratings": ratings_dict
-    }
-
-    if store_results:
-        # If the file exists and we are not overwriting, update existing results
-        if output_path.exists() and not overwrite_existing:
-            print(f"Results already exist at {output_path}. Updating additional results.")
-            with open(output_path, "r") as f_in:
-                existing_dict = json.load(f_in)
-            existing_dict["ratings"].update(incontext_output_dict["ratings"])
-            with open(output_path, "w") as f_out:
-                f_out.write(json.dumps(existing_dict))
-        else:
-            output_path.parent.mkdir(parents=True, exist_ok=True)
-            with open(output_path, "w") as f_out:
-                f_out.write(json.dumps(incontext_output_dict))
-            if overwrite_existing:
-                print(f"Overwrote existing results at {output_path}.")
+        incontext_output_dict["ratings"] = ratings_dict
+        incontext_output_dict = validate_and_store_results(output_path, incontext_output_dict, overwrite_existing, store_results)
     
     return incontext_output_dict
 
@@ -195,8 +196,9 @@ if __name__ == "__main__":
     args.add_argument("-s", "--story_name", type=str, default="pieman")
     args.add_argument("-ssm", "--story_segment_method", type=str, default=None)  # sentences_corrected
     args.add_argument("-rsm", "--recall_segment_method", type=str, default=None)  # sentences
-    args.add_argument("-m", "--model_id", type=str, default="meta-llama/Llama-3.1-70B-Instruct")
-    args.add_argument("-ts", "--total_subjects", type=int, default=3)
+    args.add_argument("-m", "--model_id", type=str, default="meta-llama/Llama-3.1-8B-Instruct")
+    args.add_argument("-fs", "--first_subject", type=int, default=1)
+    args.add_argument("-ls", "--last_subject", type=int, default=3)
     args.add_argument("-fpp", "--first_prompt_path", type=str, default="data/prompts/rate_incontext_prompt.txt")
     args.add_argument("-spp", "--second_prompt_path", type=str, default="data/prompts/rate_incontext_prompt_extended.txt")
     args.add_argument("-dsr", "--dont_save_results", action="store_false", default=True)
@@ -208,10 +210,10 @@ if __name__ == "__main__":
         model_id= args.model_id,
         story_segment_method= args.story_segment_method,
         recall_segment_method= args.recall_segment_method,
-        total_subjects= args.total_subjects,
+        subjects= list(range(args.first_subject, args.last_subject+1)),
         first_prompt_path= args.first_prompt_path,
         second_prompt_path= args.second_prompt_path,
         store_results= args.dont_save_results,
     )
 
-    # uv run src/recall_matrix/rate_incontext.py -ssm sentences_corrected -rsm sentences -ts 2 -o
+    # uv run src/recall_matrix/rate_incontext.py -ssm sentences_corrected -rsm sentences -fs 1 -ls 3 -o
