@@ -16,9 +16,8 @@ def number_and_split_statements(statements_ls):
         numbered_statements.append(f"{idx}. {statement}")
     return "\n".join(numbered_statements)
 
-
-# Define a function to evaluate LLM output
-def eval_LLM_output(final_prompt, model_id):
+# Define a function to create the pipeline
+def create_pipeline(model_id):
     # Create the text generation pipeline
     pipeline = transformers.pipeline(
         "text-generation",
@@ -27,9 +26,14 @@ def eval_LLM_output(final_prompt, model_id):
         device_map="auto",
     )
 
+    return pipeline
+
+
+# Define a function to evaluate LLM output
+def eval_LLM_output(pipeline, prompt):
     # Define the message to be sent to the model.
     messages = [
-        {"role": "user", "content": final_prompt},
+        {"role": "user", "content": prompt},
     ]
 
     # Generate the output
@@ -105,42 +109,6 @@ def rate_incontext(
     subject_ids = [f"sub-{str(i).zfill(3)}" for i in subjects]
     ratings_dict = {}
 
-    # Load the story recall segments
-    all_recall_ls = load_story_recall_segments(story_name=story_name, story_segment_method=story_segment_method, recall_segment_method=recall_segment_method, sub_ids=subject_ids)
-    
-    # Identify subjects that have already been calculated
-    if output_path.exists() and not overwrite_existing:
-        with open(output_path, "r") as f_in:
-            existing_dict = json.load(f_in)
-        completed_subjects = set(existing_dict["ratings"].keys())
-        subject_ids = [sub_id for sub_id in subject_ids if sub_id not in completed_subjects]
-        print(f"Skipping {len(completed_subjects)} subjects already present in existing results.")
-        print(f"The following subjects will be processed: {subject_ids}")
-
-    # Handle each subject in turn
-    for subj_no in range(1, total_subjects+1):
-        print(f"\n\n\nProcessing subject {subj_no}...\n\n\n")
-
-        # Pull out the recall and original story
-        raw_recall = all_recall_ls[0][subj_no-1][2]
-        raw_segmentation = all_recall_ls[0][subj_no-1][1]
-
-        # Format the first prompt and define the model ID
-        data_dict, first_prompt = initialise_prompt(raw_recall, raw_segmentation, prompt_path=first_prompt_path)
-
-        # Get the model output
-        model_output = eval_LLM_output(first_prompt, model_id)
-
-        # Construct the second prompt
-        prompt_extension = read_txt(second_prompt_path)
-        second_prompt = first_prompt + "\n" + model_output + "\n" + prompt_extension
-
-        # Get the second model output and parse it
-        second_model_output = eval_LLM_output(second_prompt, model_id)
-        parsed_events = parse_events_from_second_output(second_model_output)
-
-        ratings_dict[subject_ids[subj_no-1]] = parsed_events
-
     # Aggregate information to dump to .json
     param_str = (
         f"model-{model_id}_"
@@ -155,6 +123,43 @@ def rate_incontext(
         / "ratings"
         / f"{param_str}.json"
     )
+
+    # Load the story recall segments
+    all_recall_ls = load_story_recall_segments(story_name=story_name, story_segment_method=story_segment_method, recall_segment_method=recall_segment_method, sub_ids=subject_ids)
+    
+    # Identify subjects that have already been calculated
+    if output_path.exists() and not overwrite_existing:
+        with open(output_path, "r") as f_in:
+            existing_dict = json.load(f_in)
+        completed_subjects = set(existing_dict["ratings"].keys())
+        subject_ids = [sub_id for sub_id in subject_ids if sub_id not in completed_subjects]
+        print(f"Skipping {len(completed_subjects)} subjects already present in existing results.")
+        print(f"The following subjects will be processed: {subject_ids}")
+
+    # Handle each subject in turn
+    pipeline = create_pipeline(model_id)
+    for subj_no in range(1, total_subjects+1):
+        print(f"\n\n\nProcessing subject {subj_no}...\n\n\n")
+
+        # Pull out the recall and original story
+        raw_recall = all_recall_ls[0][subj_no-1][2]
+        raw_segmentation = all_recall_ls[0][subj_no-1][1]
+
+        # Format the first prompt and define the model ID
+        data_dict, first_prompt = initialise_prompt(raw_recall, raw_segmentation, prompt_path=first_prompt_path)
+
+        # Get the model output
+        model_output = eval_LLM_output(pipeline, first_prompt)
+
+        # Construct the second prompt
+        prompt_extension = read_txt(second_prompt_path)
+        second_prompt = first_prompt + "\n" + model_output + "\n" + prompt_extension
+
+        # Get the second model output and parse it
+        second_model_output = eval_LLM_output(second_prompt, model_id)
+        parsed_events = parse_events_from_second_output(second_model_output)
+
+        ratings_dict[subject_ids[subj_no-1]] = parsed_events
 
     # Aggregate information and dump to .json
     ## reranker_threshold, top_k, output_scores all removed.
@@ -190,7 +195,7 @@ if __name__ == "__main__":
     args.add_argument("-s", "--story_name", type=str, default="pieman")
     args.add_argument("-ssm", "--story_segment_method", type=str, default=None)  # sentences_corrected
     args.add_argument("-rsm", "--recall_segment_method", type=str, default=None)  # sentences
-    args.add_argument("-m", "--model_id", type=str, default="meta-llama/Meta-Llama-3.1-8B-Instruct")
+    args.add_argument("-m", "--model_id", type=str, default="meta-llama/Llama-3.1-70B-Instruct")
     args.add_argument("-ts", "--total_subjects", type=int, default=3)
     args.add_argument("-fpp", "--first_prompt_path", type=str, default="data/prompts/rate_incontext_prompt.txt")
     args.add_argument("-spp", "--second_prompt_path", type=str, default="data/prompts/rate_incontext_prompt_extended.txt")
