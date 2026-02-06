@@ -10,8 +10,9 @@ from tqdm import tqdm
 
 from recall_matrix.load import load_story_recall_segments
 
-# TODO: look @ rate_binary for output format
-# 5 nano, 4o mini, 4.1 nano (cheap ones)
+# TODO: test diff models 5 nano, 4o mini, 4.1 nano (cheap ones)
+# TODO: give recall context in prompt
+# TODO: try prompt w/ recall context
 STORY = "pieman"
 SUBJECT = "sub-001"
 
@@ -83,13 +84,13 @@ def rate_llm_binary(story_name: str, model_name: str = "gpt-5-nano") -> dict:
     first_sub_id, segs, _ = data[0]
     output_dict["num_story_segments"] = len(segs)
 
-    ratings: dict[str, dict] = {}
+    ratings: dict[str, list[tuple[int, list[int]]]] = {}
 
     for sub_id, story_segments, recall_segments in data:
         story = format_story(story_segments)
         story_segments_formatted = format_story_segments(story_segments)
 
-        sub_ratings = []
+        sub_ratings: list[tuple[int, list[int]]] = []
 
         for recall_idx, recall in enumerate(
             tqdm(recall_segments, desc="Rating recalls", unit="clause")
@@ -102,10 +103,7 @@ def rate_llm_binary(story_name: str, model_name: str = "gpt-5-nano") -> dict:
             story_indicies = sorted(idx - 1 for idx in parsed_response)
             sub_ratings.append((recall_idx, story_indicies))
 
-        ratings[sub_id] = {
-            "num_recall_segments": len(recall_segments),
-            "ratings": sub_ratings,
-        }
+        ratings[sub_id] = sub_ratings
 
     output_dict["ratings"] = ratings
 
@@ -127,10 +125,10 @@ def rate_llm_binary(story_name: str, model_name: str = "gpt-5-nano") -> dict:
 
 def ratings_to_matrix(data: dict, sub_id: str) -> np.ndarray:
     num_story_segs = data["num_story_segments"]
-    num_recall_segs = data["ratings"][sub_id]["num_recall_segments"]
+    num_recall_segs = len(data["ratings"][sub_id])
     recall_matrix = np.zeros((num_story_segs, num_recall_segs), dtype=int)
 
-    for recall_idx, story_indicies in data["ratings"][sub_id]["ratings"]:
+    for recall_idx, story_indicies in data["ratings"][sub_id]:
         for story_idx in story_indicies:
             recall_matrix[story_idx, recall_idx] = 1
 
@@ -162,8 +160,9 @@ def plot_recall_matrix(
     plt.close(fig)
 
 
+# TODO: smth smth smth argparse, yoink from rate_binary (main)
 if __name__ == "__main__":
-    ratings = rate_llm_binary(STORY)
+    ratings = rate_llm_binary(STORY, model_name="gpt-4.1")
     matrix = ratings_to_matrix(ratings, SUBJECT)
     plot_recall_matrix(
         STORY, SUBJECT, matrix, "LLM Recall Proto", Path("outputs/tests/llm")

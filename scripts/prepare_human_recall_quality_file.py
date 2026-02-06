@@ -56,8 +56,8 @@ if __name__ == "__main__":
     story_name = "pieman"
     story_segment_method = "sentences_corrected"
     recall_segment_method = "sentences"
-    sub_ids = ["sub-001", "sub-002", "sub-003", "sub-004", "sub-005", "sub-006"]
-    rater_initials = "GKP"
+    sub_ids = ["sub-002"]
+    rater_initials = "DA"
     generate_file(
         story_name=story_name,
         story_segment_method=story_segment_method,
