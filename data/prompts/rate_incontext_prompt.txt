@@ -4,8 +4,11 @@ This is the original text:
 It can be broken down into the following independent pieces of information:
 {segmentation}
 
-Here is an alternative version of the original text where some of the above pieces of information may be missing:
-{recall}
+Here is a single clause from an alternative version of the story:
+"{alternative}"
 
-For each of the numbered information pieces of the list above, evaluate whether the information of each piece is given in the alternative version of the story,
-stating the number and showing the corresponding passage from the alternative story it is given in.
+Which of the numbered information pieces above are expressed by this alternative clause?
+List all applicable numbers. If none apply, return the string "<>".
+
+Return ONLY a set of numbers in <>, for example:
+<3, 7, 12>

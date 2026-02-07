@@ -2,6 +2,8 @@
 import argparse
 import ast
 import json
+import re
+import time
 from pathlib import Path
 
 import torch
@@ -55,19 +57,19 @@ def read_txt(txt_path):
     return content
 
 
-def initialise_prompt(raw_recall, raw_segmentation, prompt_path):
+def initialise_prompt(raw_segmentation, recall_statement, prompt_path):
     # Assemble them into required formats for injection into prompt
     data_dict = {
         "narrative": " ".join(raw_segmentation),
         "segmentation": number_and_split_statements(raw_segmentation),
-        "recall": number_and_split_statements(raw_recall),
+        "alternative": recall_statement,
     }
 
     # Read the prompt template
     template = read_txt(prompt_path)
 
     prompt_out = template.format(**data_dict)
-    return data_dict, prompt_out
+    return prompt_out, data_dict
 
 
 def parse_events_from_second_output(model_output, recall_segments, story_segments):
@@ -124,14 +126,55 @@ def validate_and_store_results(
     return incontext_output_dict
 
 
+def dump_to_txt(output_path, string):
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(output_path, "w") as f_out:
+        f_out.write(string)
+
+
+def add_to_txt(output_path, string):
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(output_path, "a") as f_out:
+        f_out.write(string)
+
+
+def parse_events_from_output(raw: str) -> list[int]:
+    raw = raw.strip()
+
+    if "<NONE>" in raw:
+        return []
+
+    match = re.search(r"<([0-9,\s]+)>", raw)
+    if not match:
+        return []  # silent fail?
+
+    parsed_list = [
+        int(x.strip()) for x in match.group(1).split(",") if x.strip().isdigit()
+    ]
+
+    return parsed_list
+
+
+def extract_date():
+    time_ls = time.ctime(time.time()).split()
+    time_ls2 = time_ls[1:3] + [time_ls[4]]
+    return "_".join(time_ls2)
+
+
+def extract_date_time():
+    time_ls = time.ctime(time.time()).split()
+    time_ls2 = time_ls[1:3] + [time_ls[4]] + [time_ls[3]]
+    return "_".join(time_ls2)
+
+
 def rate_incontext(
     story_name: str,
     model_id: str,
     story_segment_method: str,
     recall_segment_method: str,
     subjects: list | None = [],
-    first_prompt_path: str | None = None,
-    second_prompt_path: str | None = None,
+    prompt_path: str | None = None,
+    output_txt_path: str | None = None,
     store_results: bool = True,
     overwrite_existing: bool = False,
 ):
@@ -144,7 +187,7 @@ def rate_incontext(
         f"model-{model_id}_rsm-{recall_segment_method}_ssm-{story_segment_method}_"
     )
 
-    output_path = (
+    json_output_path = (
         Path("data")
         / "stories-and-recalls"
         / story_name
@@ -161,8 +204,8 @@ def rate_incontext(
     )
 
     # Identify subjects that have already been calculated
-    if output_path.exists() and not overwrite_existing:
-        with open(output_path, "r") as f_in:
+    if json_output_path.exists() and not overwrite_existing:
+        with open(json_output_path, "r") as f_in:
             existing_dict = json.load(f_in)
         completed_subjects = set(existing_dict["ratings"].keys())
         subjects = [
@@ -188,6 +231,7 @@ def rate_incontext(
         "recall_segment_method": recall_segment_method,
         "model_id": model_id,
     }
+    date_today = extract_date()
 
     # Handle each subject in turn
     pipeline = create_pipeline(model_id)
@@ -197,28 +241,50 @@ def rate_incontext(
         # Pull out the recall and original story
         _, story_segments, recall_segments = story_and_recall_segments[subj_no - 1]
 
-        # Format the first prompt and define the model ID
-        data_dict, first_prompt = initialise_prompt(
-            recall_segments, story_segments, prompt_path=first_prompt_path
+        parsed_events = []
+        current_segment = 0
+
+        add_to_txt(
+            Path(
+                output_txt_path
+                / f"{subject_ids[subj_no - 1]}-output_prompt-{date_today}.txt"
+            ),
+            f"Subject #{subj_no} - {extract_date_time().replace('_', ' ')}\n\n\n",
         )
+        for single_recall_segment in recall_segments:
+            print(f"Processing segment {current_segment + 1}... for subject #{subj_no}")
 
-        # Get the model output
-        model_output = eval_LLM_output(pipeline, first_prompt)
+            prompt, __ = initialise_prompt(
+                story_segments, single_recall_segment, prompt_path
+            )
 
-        # Construct the second prompt
-        prompt_extension = read_txt(second_prompt_path)
-        second_prompt = first_prompt + "\n" + model_output + "\n" + prompt_extension
+            # Get the model output
+            model_output = eval_LLM_output(pipeline, prompt)
+            parsed_single_recall = parse_events_from_output(model_output)
+            print(f"Parsed events: {parsed_single_recall}")
+            print(f"Model output: {model_output}")
+            parsed_events.append([current_segment, parsed_single_recall])
 
-        # Get the second model output and parse it
-        second_model_output = eval_LLM_output(pipeline, second_prompt)
-        parsed_events = parse_events_from_second_output(
-            second_model_output, recall_segments, story_segments
-        )
+            if output_txt_path is not None:
+                add_to_txt(
+                    Path(
+                        output_txt_path
+                        / f"{subject_ids[subj_no - 1]}-output_prompt-{date_today}.txt"
+                    ),
+                    f"""{extract_date_time().replace("_", " ")}\n
+                    Prompt #{current_segment + 1}:\n
+                    {prompt}\n\n
+                    Model output:\n
+                    {model_output}\n\n\n""",
+                )
+
+            current_segment += 1
+            print("\n\n\n")
 
         ratings_dict[subject_ids[subj_no - 1]] = parsed_events
         incontext_output_dict["ratings"] = ratings_dict
         incontext_output_dict = validate_and_store_results(
-            output_path, incontext_output_dict, overwrite_existing, store_results
+            json_output_path, incontext_output_dict, overwrite_existing, store_results
         )
 
     return incontext_output_dict
@@ -234,25 +300,21 @@ if __name__ == "__main__":
         "-rsm", "--recall_segment_method", type=str, default=None
     )  # sentences
     args.add_argument(
-        "-m", "--model_id", type=str, default="meta-llama/Llama-3.1-70B-Instruct"
+        "-m", "--model_id", type=str, default="meta-llama/Llama-3.1-8B-Instruct"
     )
     args.add_argument("-fs", "--first_subject", type=int, default=1)
     args.add_argument("-ls", "--last_subject", type=int, default=3)
     args.add_argument(
-        "-fpp",
-        "--first_prompt_path",
+        "-pp",
+        "--prompt_path",
         type=str,
         default="data/prompts/rate_incontext_prompt.txt",
-    )
-    args.add_argument(
-        "-spp",
-        "--second_prompt_path",
-        type=str,
-        default="data/prompts/rate_incontext_prompt_extended.txt",
     )
     args.add_argument("-dsr", "--dont_save_results", action="store_false", default=True)
     args.add_argument("-o", "--overwrite_existing", action="store_true", default=False)
     args = args.parse_args()
+
+    prompt_dump_path = Path("data") / "stories-and-recalls" / args.story_name / "debug"
 
     rate_incontext(
         story_name=args.story_name,
@@ -260,9 +322,10 @@ if __name__ == "__main__":
         story_segment_method=args.story_segment_method,
         recall_segment_method=args.recall_segment_method,
         subjects=list(range(args.first_subject, args.last_subject + 1)),
-        first_prompt_path=args.first_prompt_path,
-        second_prompt_path=args.second_prompt_path,
+        prompt_path=args.prompt_path,
+        output_txt_path=prompt_dump_path,
         store_results=args.dont_save_results,
+        overwrite_existing=args.overwrite_existing,
     )
 
     # uv run src/recall_matrix/rate_incontext.py -ssm sentences_corrected -rsm sentences -fs 1 -ls 3 -o # noqa: E501
