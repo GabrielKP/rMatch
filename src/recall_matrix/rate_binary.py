@@ -1,7 +1,7 @@
 import argparse
 
 from recall_matrix.plot_single_sub import plot_single_sub
-from recall_matrix.raters import RaterHuggingFace, RaterOpenAI, RaterReranker
+from recall_matrix.raters import initialize_rater
 
 
 def rate_binary(
@@ -44,14 +44,9 @@ def rate_binary(
     device: str | None
         [reranker] Device to use for the reranker. If None, will be autoselected.
     """
-    if rater_name == "reranker":
-        rater = RaterReranker(model_name=model_name, device=device)
-    elif rater_name == "openai":
-        rater = RaterOpenAI(model_name=model_name)
-    elif rater_name == "huggingface":
-        rater = RaterHuggingFace(model_name=model_name)
-    else:
-        raise ValueError(f"Invalid argument: {rater_name=}")
+    rater = initialize_rater(
+        rater_name=rater_name, model_name=model_name, device=device
+    )
 
     output_dict = rater.rate(
         story_name=story_name,
