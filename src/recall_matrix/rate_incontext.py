@@ -57,6 +57,30 @@ def read_txt(txt_path):
     return content
 
 
+def dump_to_txt(output_path, string):
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(output_path, "w") as f_out:
+        f_out.write(string)
+
+
+def add_to_txt(output_path, string):
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(output_path, "a") as f_out:
+        f_out.write(string)
+
+
+def extract_date():
+    time_ls = time.ctime(time.time()).split()
+    time_ls2 = time_ls[1:3] + [time_ls[4]]
+    return "_".join(time_ls2)
+
+
+def extract_date_time():
+    time_ls = time.ctime(time.time()).split()
+    time_ls2 = time_ls[1:3] + [time_ls[4]] + [time_ls[3]]
+    return "_".join(time_ls2)
+
+
 def initialise_prompt(raw_segmentation, recall_statement, prompt_path):
     # Assemble them into required formats for injection into prompt
     data_dict = {
@@ -70,37 +94,6 @@ def initialise_prompt(raw_segmentation, recall_statement, prompt_path):
 
     prompt_out = template.format(**data_dict)
     return prompt_out, data_dict
-
-
-def parse_events_from_second_output(model_output, recall_segments, story_segments):
-    # Split the output into lines
-    lines = model_output.split("\n")
-
-    # Initialize a list to hold the parsed events
-    parsed_events = []
-
-    for idx_recall, recall_segment in enumerate(recall_segments):
-        # parse model output
-        pass
-
-    # Iterate through each line and extract numbered events
-    for line in lines:
-        line = line.strip()
-        if line == "" or not (line[0].isdigit() and ":" in line):
-            continue
-
-        line_split_ls = line.split(":")
-        line_split_ls[1] = line_split_ls[1].split("]")[0] + "]"
-        for i in range(len(line_split_ls)):
-            try:
-                line_split_ls[i] = ast.literal_eval(line_split_ls[i].strip())
-            except ValueError:
-                print("ValueError occurred.")
-                print(line_split_ls[i].strip(), "\n")
-
-        parsed_events.append(line_split_ls)
-
-    return parsed_events
 
 
 def validate_and_store_results(
@@ -126,22 +119,10 @@ def validate_and_store_results(
     return incontext_output_dict
 
 
-def dump_to_txt(output_path, string):
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    with open(output_path, "w") as f_out:
-        f_out.write(string)
-
-
-def add_to_txt(output_path, string):
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    with open(output_path, "a") as f_out:
-        f_out.write(string)
-
-
 def parse_events_from_output(raw: str) -> list[int]:
     raw = raw.strip()
 
-    if "<NONE>" in raw:
+    if "<>" in raw:
         return []
 
     match = re.search(r"<([0-9,\s]+)>", raw)
@@ -153,18 +134,6 @@ def parse_events_from_output(raw: str) -> list[int]:
     ]
 
     return parsed_list
-
-
-def extract_date():
-    time_ls = time.ctime(time.time()).split()
-    time_ls2 = time_ls[1:3] + [time_ls[4]]
-    return "_".join(time_ls2)
-
-
-def extract_date_time():
-    time_ls = time.ctime(time.time()).split()
-    time_ls2 = time_ls[1:3] + [time_ls[4]] + [time_ls[3]]
-    return "_".join(time_ls2)
 
 
 def rate_incontext(
@@ -241,9 +210,6 @@ def rate_incontext(
         # Pull out the recall and original story
         _, story_segments, recall_segments = story_and_recall_segments[subj_no - 1]
 
-        parsed_events = []
-        current_segment = 0
-
         add_to_txt(
             Path(
                 output_txt_path
@@ -251,6 +217,9 @@ def rate_incontext(
             ),
             f"Subject #{subj_no} - {extract_date_time().replace('_', ' ')}\n\n\n",
         )
+
+        parsed_events = []
+        current_segment = 0
         for single_recall_segment in recall_segments:
             print(f"Processing segment {current_segment + 1}... for subject #{subj_no}")
 
@@ -261,8 +230,6 @@ def rate_incontext(
             # Get the model output
             model_output = eval_LLM_output(pipeline, prompt)
             parsed_single_recall = parse_events_from_output(model_output)
-            print(f"Parsed events: {parsed_single_recall}")
-            print(f"Model output: {model_output}")
             parsed_events.append([current_segment, parsed_single_recall])
 
             if output_txt_path is not None:
