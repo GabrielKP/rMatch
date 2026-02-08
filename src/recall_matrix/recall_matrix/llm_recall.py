@@ -67,8 +67,8 @@ def rate_llm_binary(story_name: str, model_name: str = "gpt-5-nano") -> dict:
 
     data, story_segment_method, recall_segment_method = load_story_recall_segments(
         story_name=story_name,
-        story_segment_method="sentences_corrected",
-        recall_segment_method="sentences",
+        story_segmentation_method="sentences_corrected",
+        recall_segmentation_method="sentences",
         sub_ids=[SUBJECT],
     )
 
