@@ -115,6 +115,11 @@ def import_memsearch(memsearch_path: Path | str):
         print(f"   > SEG-C: {transcript_segc_path}")
         print(f"   > SEG-B: {transcript_segb_path}")
 
+        # make a file to mark this as audiovisual
+        (
+            Path("data") / "stories-and-recalls" / story_name / ".is_audiovisual"
+        ).write_text("")
+
         # 2 & 3 import recall segmentation & ratings
         output_dict_segc = {
             "rater_name": "human",
