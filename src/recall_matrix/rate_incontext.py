@@ -210,7 +210,7 @@ def rate_incontext(
         # Pull out the recall and original story
         _, story_segments, recall_segments = story_and_recall_segments[subj_no - 1]
 
-        add_to_txt(
+        dump_to_txt(
             Path(
                 output_txt_path
                 / f"{subject_ids[subj_no - 1]}-output_prompt-{date_today}.txt"

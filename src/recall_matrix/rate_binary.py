@@ -72,8 +72,8 @@ if __name__ == "__main__":
         "-r",
         "--rater_name",
         choices=["reranker", "openai", "huggingface"],
-        default="reranker",
-        help="Name of the rater to use. Default is 'reranker'.",
+        default="huggingface",
+        help="Name of the rater to use. Default is 'huggingface'.",
     )
     args.add_argument(
         "-s",
@@ -124,7 +124,7 @@ if __name__ == "__main__":
         "-m",
         "--model_name",
         type=str,
-        default="BAAI/bge-reranker-v2-m3",
+        default="meta-llama/Llama-3.1-70B-Instruct",
         help=(
             "[reranker, openai, huggingface] Name of the model to use for the reranker."
         ),
