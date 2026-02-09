@@ -1,9 +1,9 @@
+import json
 from numbers import Number
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from nltk.tokenize import sent_tokenize
 
 from recall_matrix import get_logger
 
@@ -419,3 +419,25 @@ def load_nfrd_recall_matrix_human_mi(
     recall_matrix = recall_matrix / 100
 
     return recall_matrix
+
+
+def load_ratings_dict(
+    story_name: str,
+    rater_name: str,
+    story_segmentation_method: str,
+    recall_segmentation_method: str,
+) -> dict:
+    ratings_path = (
+        Path("data")
+        / "stories-and-recalls"
+        / story_name
+        / "ratings"
+        / (
+            f"{rater_name}"
+            f"-ssm_{story_segmentation_method}"
+            f"-rsm_{recall_segmentation_method}.json"
+        )
+    )
+    with open(ratings_path, "r") as f:
+        ratings_dict = json.load(f)
+    return ratings_dict
