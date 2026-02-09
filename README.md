@@ -21,9 +21,24 @@ uv run src/recall_matrix/rate_binary.py --sub-ids sub-001
 # 3. Run rating code
 
 # single subject
-uv run src/recall_matrix/rate_binary.py --story_name pieman --sub_ids sub-001
+uv run src/recall_matrix/rate_binary.py -rater reranker --story_name pieman --sub_ids sub-001
 # all subjects
-uv run src/recall_matrix/rate_binary.py --story_name pieman
+uv run src/recall_matrix/rate_binary.py -rater reranker --story_name pieman
+```
+
+### Running with openai API
+
+1. Create an .env file in the root directory of the project.
+2. Log in / Create an account at [platform.openai.com](platform.openai.com)
+3. Put money into the account ~0.10$ for one recall.
+4. Create an API key under settings > API keys. The key needs to have at least permissions for `Model capabilities > Responses (/v1/responses) > Write`.
+5. Paste the API key exactly like this into the .env under the field `OPENAI_API_KEY`:
+```sh
+OPENAI_API_KEY="your_api_key"
+```
+6. Now you can run:
+```sh
+uv run src/recall_matrix/rate_binary.py -rater openai --story_name pieman --sub_ids sub-001
 ```
 
 ### Inputs

@@ -44,7 +44,7 @@ Return ONLY a set of numbers in <>, for example:
 
     def format_story_segments(self, story_segments: list[str]) -> str:
         return "\n".join(
-            f"{i+1}. {seg.strip()}" for i, seg in enumerate(story_segments)
+            f"{i + 1}. {seg.strip()}" for i, seg in enumerate(story_segments)
         )
 
     def format_story(self, story_segments: list[str]) -> str:
@@ -67,7 +67,7 @@ Return ONLY a set of numbers in <>, for example:
 
         return parsed_set
 
-    def compute_ratings_single_sub(
+    def compute_ratings_single_sub(  # type: ignore
         self,
         story_segments: list[str],
         recall_segments: list[str],

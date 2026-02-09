@@ -72,8 +72,8 @@ if __name__ == "__main__":
         "-r",
         "--rater_name",
         choices=["reranker", "openai", "huggingface"],
-        default="reranker",
-        help="Name of the rater to use. Default is 'reranker'.",
+        default="openai",
+        help="Name of the rater to use. Default is 'openai'.",
     )
     args.add_argument(
         "-s",
@@ -124,19 +124,14 @@ if __name__ == "__main__":
         "-m",
         "--model_name",
         type=str,
-        default="BAAI/bge-reranker-v2-m3",
-        help=(
-            "[reranker, openai, huggingface] Name of the model to use for the reranker."
-        ),
+        default=None,
+        help=("[reranker, openai, huggingface] Name of the model to use."),
     )
     args.add_argument(
         "--device",
         type=str,
         default=None,
-        help=(
-            "[reranker, huggingface] Device to use for the reranker."
-            "If None, will be autoselected."
-        ),
+        help=("[reranker, huggingface] Device to use. If None, will be autoselected."),
     )
     args.add_argument(
         "-rt",

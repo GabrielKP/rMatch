@@ -23,17 +23,18 @@ from recall_matrix.utils import ratings_single_sub_to_matrix
 
 def eval_param_str(
     rater_name: str,
-    model_name: str,
+    model_name: str | None,
     seed: int,
     random_mode: str | None,
 ) -> str:
     """Get the param string for the evaluation."""
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     random_mode_str = f"-random_mode_{random_mode}" if random_mode is not None else ""
-    model_name_str = model_name.replace("/", "_")
-    param_str = (
-        f"{timestamp}-{rater_name}-m_{model_name_str}-seed_{seed}{random_mode_str}"
-    )
+
+    model_name_str = ""
+    if model_name is not None:
+        model_name_str = f"-m_{model_name.replace('/', '_')}"
+    param_str = f"{timestamp}-{rater_name}{model_name_str}-seed_{seed}{random_mode_str}"
     return param_str
 
 
@@ -43,7 +44,7 @@ def accuracy(array_1: np.ndarray, array_2: np.ndarray) -> float:
 
 def evaluate(
     rater_name: str,
-    model_name: str,
+    model_name: str | None,
     testset: str,
     device: str | None = None,
     seed: int = 42,
@@ -55,6 +56,10 @@ def evaluate(
     rater = initialize_rater(
         rater_name=rater_name, model_name=model_name, device=device
     )
+    if hasattr(rater, "model_name"):
+        model_name = rater.model_name  # type: ignore
+    else:
+        model_name = None
 
     output_dir = (
         Path("data")
@@ -250,8 +255,8 @@ if __name__ == "__main__":
         "-r",
         "--rater_name",
         choices=["reranker", "openai", "huggingface"],
-        default="reranker",
-        help="Name of the rater to use. Default is 'reranker'.",
+        default="openai",
+        help="Name of the rater to use. Default is 'openai'.",
     )
     args.add_argument(
         "-t",
@@ -264,19 +269,14 @@ if __name__ == "__main__":
         "-m",
         "--model_name",
         type=str,
-        default="BAAI/bge-reranker-v2-m3",
-        help=(
-            "[reranker, openai, huggingface] Name of the model to use for the reranker."
-        ),
+        default=None,
+        help=("[reranker, openai, huggingface] Name of the model to use."),
     )
     args.add_argument(
         "--device",
         type=str,
         default=None,
-        help=(
-            "[reranker, huggingface] Device to use for the reranker."
-            "If None, will be autoselected."
-        ),
+        help=("[reranker, huggingface] Device to use. If None, will be autoselected."),
     )
     args.add_argument(
         "--random_mode",
