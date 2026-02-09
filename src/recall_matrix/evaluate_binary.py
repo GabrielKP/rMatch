@@ -145,6 +145,12 @@ def evaluate(
         else:
             rm_comparison = ratings_dicts_memsearch[story_name][sub_id]  # type: ignore
 
+        if (rm_comparison == 0).all():
+            console.print(
+                f"Skipping {story_name=} {sub_id=} : comparison matrix is all zero"
+            )
+            continue
+
         # b) get model ratings
         if random_mode == "full_shuffle":
             flat = rng.permutation(rm_comparison.flatten())
