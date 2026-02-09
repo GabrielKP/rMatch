@@ -130,3 +130,9 @@ uv run src/recall_matrix/test_recall_matrix.py -m reranker
 1. Download monthiversary data into `downloads/cyoa/monthiversary` so that you have `downloads/cyoa/monthiversary/3_pasv`
 2. Download alice data into `downloads/cyoa/alice` so that you have `downloads/cyoa/alice/3_pasv`
 3. Run `python scripts/import_cyoa`
+
+
+### memsearch (private)
+
+1. Download the folders "Completed Scene-Matched Files" and "Trimmed Movies Annotations" and unzip them into the directory `downloads/memsearch`
+2. Run `uv run scripts/import_memsearch.py`
