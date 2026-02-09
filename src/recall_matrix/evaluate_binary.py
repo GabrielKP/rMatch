@@ -2,17 +2,20 @@ import argparse
 import datetime
 import json
 import pickle
+from collections import defaultdict
 from pathlib import Path
 
 import numpy as np
 from scipy.stats import pearsonr
-from sklearn.metrics import f1_score, precision_score, recall_score
+from sklearn.metrics import precision_score, recall_score
 from tqdm import tqdm
 
 from recall_matrix import console
 from recall_matrix.load import (
     load_cyoa_recall_matrix_human_binary,
     load_cyoa_story_recall_segments,
+    load_ratings_dict,
+    load_story_recall_segments,
 )
 from recall_matrix.raters import initialize_rater
 from recall_matrix.utils import ratings_single_sub_to_matrix
@@ -41,6 +44,7 @@ def accuracy(array_1: np.ndarray, array_2: np.ndarray) -> float:
 def evaluate(
     rater_name: str,
     model_name: str,
+    testset: str,
     device: str | None = None,
     seed: int = 42,
     random_mode: str | None = None,
@@ -59,7 +63,65 @@ def evaluate(
     )
     output_dir.mkdir(parents=True, exist_ok=True)
     # load story recall segments
-    story_recall_segments = load_cyoa_story_recall_segments()
+    if testset == "cyoa":
+        story_recall_segments = load_cyoa_story_recall_segments()
+    elif testset == "memsearch":
+        story_names_memsearch = [
+            "breadland",
+            "ednora",
+            "from_dad_to_son",
+            "heartstrings",
+            "hollow",
+            "i_love_death",
+            "ichthys",
+            "laundry",
+            "mismatched",
+            "mop",
+            "my_cat_lucy",
+            "numb",
+            "queen_of_basketball",
+            "stapler",
+            "synesthesia",
+            "the_docks",
+            "the_gift",
+            "the_port",
+            "the_soup",
+            "thief",
+        ]
+        story_recall_segments_memsearch = list()
+        for story_name in story_names_memsearch:
+            story_recall_segments_single, _, _ = load_story_recall_segments(
+                story_name=story_name,
+                story_segmentation_method="seg_c",
+                recall_segmentation_method="sentences",
+            )
+            story_recall_segments_memsearch.extend(
+                [
+                    (story_name, sub_id, story_segs, recall_segs)
+                    for sub_id, story_segs, recall_segs in story_recall_segments_single
+                ]
+            )
+
+        story_recall_segments = story_recall_segments_memsearch
+
+        # pre load rating dicts for memsearch
+        ratings_dicts_memsearch = defaultdict(dict)
+        for story_name in story_names_memsearch:
+            ratings_dict = load_ratings_dict(
+                story_name=story_name,
+                rater_name="human",
+                story_segmentation_method="seg_c",
+                recall_segmentation_method="sentences",
+            )
+            n_story_segments = ratings_dict["n_story_segments"]
+            # convert to matrix
+            for sub_id, single_sub_ratings in ratings_dict["ratings"].items():
+                rm_memsearch = ratings_single_sub_to_matrix(
+                    single_sub_ratings, n_story_segments
+                )
+                ratings_dicts_memsearch[story_name][sub_id] = rm_memsearch
+    else:
+        raise ValueError(f"Invalid testset: {testset}")
 
     rng = np.random.default_rng(seed)
 
@@ -68,7 +130,7 @@ def evaluate(
     pearsonrs = list()
     accuracies = list()
     recall_matrices_model: list[np.ndarray] = list()
-    recall_matrices_cyoa: list[np.ndarray] = list()
+    recall_matrices_comparison: list[np.ndarray] = list()
     for (
         story_name,
         sub_id,
@@ -76,16 +138,19 @@ def evaluate(
         recall_segments,
     ) in tqdm(story_recall_segments, desc="(eval)"):
         # a) get ground truth
-        rm_cyoa = load_cyoa_recall_matrix_human_binary(
-            story_name=story_name, sub_id=sub_id
-        )
+        if testset == "cyoa":
+            rm_comparison = load_cyoa_recall_matrix_human_binary(
+                story_name=story_name, sub_id=sub_id
+            )
+        else:
+            rm_comparison = ratings_dicts_memsearch[story_name][sub_id]  # type: ignore
 
         # b) get model ratings
         if random_mode == "full_shuffle":
-            flat = rng.permutation(rm_cyoa.flatten())
-            rm_model = flat.reshape(rm_cyoa.shape)
+            flat = rng.permutation(rm_comparison.flatten())
+            rm_model = flat.reshape(rm_comparison.shape)
         elif random_mode == "row_shuffle":
-            rm_model = rng.permutation(rm_cyoa)
+            rm_model = rng.permutation(rm_comparison)
         else:
             if rater_name == "reranker":
                 single_sub_ratings = rater.compute_ratings_single_sub(
@@ -108,14 +173,20 @@ def evaluate(
 
         # b) evaluate
         recall_matrices_model.append(rm_model)
-        recall_matrices_cyoa.append(rm_cyoa)
+        recall_matrices_comparison.append(rm_comparison)
 
-        rm_model_flat = rm_model.flatten()
-        rm_cyoa_flat = rm_cyoa.flatten()
-        precision = precision_score(rm_cyoa_flat, rm_model_flat)
-        recall = recall_score(rm_cyoa_flat, rm_model_flat)
-        pearsonr_score = pearsonr(rm_cyoa_flat, rm_model_flat)[0]  # type: ignore
-        accuracy_score = accuracy(rm_cyoa_flat, rm_model_flat)
+        if (rm_model == 0).all():
+            precision = 0
+            recall = 0
+            pearsonr_score = 0
+            accuracy_score = 0
+        else:
+            rm_model_flat = rm_model.flatten()
+            rm_comparison_flat = rm_comparison.flatten()
+            precision = precision_score(rm_comparison_flat, rm_model_flat)
+            recall = recall_score(rm_comparison_flat, rm_model_flat)
+            pearsonr_score = pearsonr(rm_comparison_flat, rm_model_flat)[0]  # type: ignore
+            accuracy_score = accuracy(rm_comparison_flat, rm_model_flat)
 
         precisions.append(precision)
         recalls.append(recall)
@@ -165,12 +236,12 @@ def evaluate(
 
     # save recall matrices
     recall_matrices_model_path = output_dir / "recall_matrices_model.pkl"
-    recall_matrices_cyoa_path = output_dir / "recall_matrices_cyoa.pkl"
+    recall_matrices_comparison_path = output_dir / f"recall_matrices_{testset}.pkl"
 
     with open(recall_matrices_model_path, "wb") as f:
         pickle.dump(recall_matrices_model, f)
-    with open(recall_matrices_cyoa_path, "wb") as f:
-        pickle.dump(recall_matrices_cyoa, f)
+    with open(recall_matrices_comparison_path, "wb") as f:
+        pickle.dump(recall_matrices_comparison_path, f)
 
 
 if __name__ == "__main__":
@@ -181,6 +252,13 @@ if __name__ == "__main__":
         choices=["reranker", "openai", "huggingface"],
         default="reranker",
         help="Name of the rater to use. Default is 'reranker'.",
+    )
+    args.add_argument(
+        "-t",
+        "--testset",
+        choices=["memsearch", "cyoa"],
+        default="cyoa",
+        help="Name of the testset to use. Default is 'cyoa'.",
     )
     args.add_argument(
         "-m",
@@ -228,6 +306,7 @@ if __name__ == "__main__":
     args = args.parse_args()
     evaluate(
         rater_name=args.rater_name,
+        testset=args.testset,
         model_name=args.model_name,
         device=args.device,
         random_mode=args.random_mode,
