@@ -68,8 +68,33 @@ def evaluate(
     )
     output_dir.mkdir(parents=True, exist_ok=True)
     # load story recall segments
-    if testset == "cyoa":
-        story_recall_segments = load_cyoa_story_recall_segments()
+    if testset.startswith("cyoa"):
+        if testset == "cyoa_alice10":
+            story_names = [
+                "alice_2",
+                "alice_3",
+                "alice_4",
+                "alice_5",
+                "alice_6",
+                "alice_7",
+                "alice_8",
+                "alice_11",
+                "alice_12",
+                "alice_13",
+            ]
+        elif testset == "cyoa_monthiversary6":
+            story_names = [
+                "monthiversary_3",
+                "monthiversary_4",
+                "monthiversary_10",
+                "monthiversary_14",
+                "monthiversary_19",
+                "monthiversary_23",
+                "monthiversary_25",
+            ]
+        else:
+            story_names = None
+        story_recall_segments = load_cyoa_story_recall_segments(story_names=story_names)
     elif testset == "memsearch":
         story_names_memsearch = [
             "breadland",
@@ -143,7 +168,7 @@ def evaluate(
         recall_segments,
     ) in tqdm(story_recall_segments, desc="(eval)"):
         # a) get ground truth
-        if testset == "cyoa":
+        if testset.startswith("cyoa"):
             rm_comparison = load_cyoa_recall_matrix_human_binary(
                 story_name=story_name, sub_id=sub_id
             )
@@ -267,7 +292,7 @@ if __name__ == "__main__":
     args.add_argument(
         "-t",
         "--testset",
-        choices=["memsearch", "cyoa"],
+        choices=["memsearch", "cyoa", "cyoa_alice10", "cyoa_monthiversary6"],
         default="cyoa",
         help="Name of the testset to use. Default is 'cyoa'.",
     )
