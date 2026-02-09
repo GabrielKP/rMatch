@@ -99,29 +99,44 @@ def evaluate(
         else:
             story_names = None
         story_recall_segments = load_cyoa_story_recall_segments(story_names=story_names)
-    elif testset == "memsearch":
-        story_names_memsearch = [
-            "breadland",
-            "ednora",
-            "from_dad_to_son",
-            "heartstrings",
-            "hollow",
-            "i_love_death",
-            "ichthys",
-            "laundry",
-            "mismatched",
-            "mop",
-            "my_cat_lucy",
-            "numb",
-            "queen_of_basketball",
-            "stapler",
-            "synesthesia",
-            "the_docks",
-            "the_gift",
-            "the_port",
-            "the_soup",
-            "thief",
-        ]
+    elif testset.startswith("memsearch"):
+        if testset == "memsearch10":
+            story_names_memsearch = [
+                "breadland",
+                "ednora",
+                "from_dad_to_son",
+                "heartstrings",
+                "hollow",
+                "i_love_death",
+                "ichthys",
+                "laundry",
+                "mismatched",
+                "mop",
+            ]
+        else:
+            story_names_memsearch = [
+                "breadland",
+                "ednora",
+                "from_dad_to_son",
+                "heartstrings",
+                "hollow",
+                "i_love_death",
+                "ichthys",
+                "laundry",
+                "mismatched",
+                "mop",
+                "my_cat_lucy",
+                "numb",
+                "queen_of_basketball",
+                "stapler",
+                "synesthesia",
+                "the_docks",
+                "the_gift",
+                "the_port",
+                "the_soup",
+                "thief",
+            ]
+
         story_recall_segments_memsearch = list()
         for story_name in story_names_memsearch:
             story_recall_segments_single, _, _ = load_story_recall_segments(
@@ -297,7 +312,13 @@ if __name__ == "__main__":
     args.add_argument(
         "-t",
         "--testset",
-        choices=["memsearch", "cyoa", "cyoa_alice10", "cyoa_monthiversary6"],
+        choices=[
+            "cyoa",
+            "cyoa_alice10",
+            "cyoa_monthiversary6",
+            "memsearch",
+            "memsearch10",
+        ],
         default="cyoa",
         help="Name of the testset to use. Default is 'cyoa'.",
     )
