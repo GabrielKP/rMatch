@@ -22,6 +22,7 @@ from recall_matrix.utils import ratings_single_sub_to_matrix
 
 
 def eval_param_str(
+    testset: str,
     rater_name: str,
     model_name: str | None,
     seed: int,
@@ -34,7 +35,10 @@ def eval_param_str(
     model_name_str = ""
     if model_name is not None:
         model_name_str = f"-m_{model_name.replace('/', '_')}"
-    param_str = f"{timestamp}-{rater_name}{model_name_str}-seed_{seed}{random_mode_str}"
+    param_str = (
+        f"{timestamp}-{testset}"
+        f"-{rater_name}{model_name_str}-seed_{seed}{random_mode_str}"
+    )
     return param_str
 
 
@@ -64,7 +68,7 @@ def evaluate(
     output_dir = (
         Path("data")
         / "eval"
-        / eval_param_str(rater_name, model_name, seed, random_mode)
+        / eval_param_str(testset, rater_name, model_name, seed, random_mode)
     )
     output_dir.mkdir(parents=True, exist_ok=True)
     # load story recall segments
@@ -255,6 +259,7 @@ def evaluate(
     console.print(f"Pearsonr: {pearsonr_macro:.3f}")
 
     results_dict = {
+        "testset": testset,
         "rater_name": rater_name,
         "model_name": model_name,
         "device": device,
