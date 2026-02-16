@@ -11,8 +11,8 @@ def get_param_str(output_dict: dict) -> str:
 
     param_str = (
         f"{rater_name}"
-        f"-rsm_{recall_segmentation_method}"
         f"-ssm_{story_segmentation_method}"
+        f"-rsm_{recall_segmentation_method}"
         f"{output_scores_str}"
     )
     return param_str

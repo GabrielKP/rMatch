@@ -21,9 +21,24 @@ uv run src/recall_matrix/rate_binary.py --sub-ids sub-001
 # 3. Run rating code
 
 # single subject
-uv run src/recall_matrix/rate_binary.py --story_name pieman --sub_ids sub-001
+uv run src/recall_matrix/rate_binary.py -rater reranker --story_name pieman --sub_ids sub-001
 # all subjects
-uv run src/recall_matrix/rate_binary.py --story_name pieman
+uv run src/recall_matrix/rate_binary.py -rater reranker --story_name pieman
+```
+
+### Running with openai API
+
+1. Create an .env file in the root directory of the project.
+2. Log in / Create an account at [platform.openai.com](platform.openai.com)
+3. Put money into the account ~0.10$ for one recall.
+4. Create an API key under settings > API keys. The key needs to have at least permissions for `Model capabilities > Responses (/v1/responses) > Write`.
+5. Paste the API key exactly like this into the .env under the field `OPENAI_API_KEY`:
+```sh
+OPENAI_API_KEY="your_api_key"
+```
+6. Now you can run:
+```sh
+uv run src/recall_matrix/rate_binary.py -rater openai --story_name pieman --sub_ids sub-001
 ```
 
 ### Inputs
@@ -130,3 +145,9 @@ uv run src/recall_matrix/test_recall_matrix.py -m reranker
 1. Download monthiversary data into `downloads/cyoa/monthiversary` so that you have `downloads/cyoa/monthiversary/3_pasv`
 2. Download alice data into `downloads/cyoa/alice` so that you have `downloads/cyoa/alice/3_pasv`
 3. Run `python scripts/import_cyoa`
+
+
+### memsearch (private)
+
+1. Download the folders "Completed Scene-Matched Files" and "Trimmed Movies Annotations" and unzip them into the directory `downloads/memsearch`
+2. Run `uv run scripts/import_memsearch.py`

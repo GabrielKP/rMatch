@@ -133,10 +133,7 @@ if __name__ == "__main__":
         "--device",
         type=str,
         default=None,
-        help=(
-            "[reranker, huggingface] Device to use for the reranker."
-            "If None, will be autoselected."
-        ),
+        help=("[reranker, huggingface] Device to use. If None, will be autoselected."),
     )
     args.add_argument(
         "-rt",
