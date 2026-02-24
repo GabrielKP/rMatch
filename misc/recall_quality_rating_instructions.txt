@@ -1,7 +1,7 @@
-The following are pairs of the participant's recall and the story. Rate how much the recall segment refers to the story segment from 0-6, where 1 indicates no relation, and 6 indicates full capture of the details in the story segment.
+The following are pairs of the participant's recall and the story. Rate how much the recall segment refers to the story segment from 0-6, where 0 indicates no relation, and 6 indicates full capture of the details in the story segment.
 
 Normal segments
-0 - information is not present in story segment
+0 - information is not present in story segment (potentially: it's clear that this recall seg refers to the specific story seg but it doesn't capture much of note)
 1 - very little information of story segment is captured (minimal capture)
 2 - a few details from the story segment are captured
 3 - 'half' of the information in story segment is present.
