@@ -1,9 +1,16 @@
 from recall_matrix.raters.rater import Rater
+from recall_matrix.raters.rater_anthropic import RaterAnthropic
 from recall_matrix.raters.rater_huggingface import RaterHuggingFace
 from recall_matrix.raters.rater_openai import RaterOpenAI
 from recall_matrix.raters.rater_reranker import RaterReranker
 
-__all__ = ["Rater", "RaterReranker", "RaterOpenAI", "RaterHuggingFace"]
+__all__ = [
+    "Rater",
+    "RaterReranker",
+    "RaterOpenAI",
+    "RaterHuggingFace",
+    "RaterAnthropic",
+]
 
 
 def initialize_rater(
@@ -22,6 +29,10 @@ def initialize_rater(
         )
     elif rater_name == "huggingface":
         rater = RaterHuggingFace(model_name=model_name)
+    elif rater_name == "anthropic":
+        rater = RaterAnthropic(
+            model_name=model_name, use_context=use_context, window_size=window_size
+        )
     else:
         raise ValueError(f"Invalid argument: {rater_name=}")
     return rater

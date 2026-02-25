@@ -13,13 +13,13 @@ from recall_matrix.utils import (
 )
 
 STORY = "pieman"
-SUBJECT = "sub-002"
+SUBJECT = "sub-003"
 
 
 if __name__ == "__main__":
     rater = initialize_rater(
-        rater_name="openai",
-        model_name="gpt-5.2",
+        rater_name="anthropic",
+        model_name="claude-opus-4-6",
         use_context=True,
         window_size=5,
     )
@@ -68,7 +68,7 @@ if __name__ == "__main__":
         SUBJECT,
         llm_matrix,
         "LLM Binary Ratings",
-        Path("outputs/tests/openai/llm"),
+        Path("outputs/tests/anthropic/llm"),
     )
 
     plot_recall_matrix(
@@ -76,7 +76,7 @@ if __name__ == "__main__":
         f"{SUBJECT}-diff",
         diff,
         "Difference (Human vs LLM)",
-        Path("outputs/tests/openai/comparison"),
+        Path("outputs/tests/anthropic/comparison"),
         measure_label="|human - model|",
     )
 
@@ -85,6 +85,6 @@ if __name__ == "__main__":
         sub_id=f"{SUBJECT}-human",
         recall_matrix=human_matrix_norm,
         title="Human Ratings (Normalized)",
-        output_dir=Path("outputs/tests/openai/human"),
+        output_dir=Path("outputs/tests/anthropic/human"),
         measure_label="normalized score (0-1)",
     )

@@ -1,31 +1,31 @@
 import re
 
-from openai import OpenAI
+import anthropic
 from tqdm import tqdm
 
-from recall_matrix import ENV, get_logger
+from recall_matrix import get_logger
 from recall_matrix.raters.rater import Rater
 
 log = get_logger(__name__)
 
 
-class RaterOpenAI(Rater):
+class RaterAnthropic(Rater):
     def __init__(
         self,
         model_name: str | None = None,
         use_context: bool = True,
         window_size: int = 5,
     ):
-        self.rater_name = "openai"
+        self.rater_name = "anthropic"
 
         if model_name is None:
-            self.model_name = "gpt-4.1"
+            self.model_name = "claude-opus-4-6"
             log.info(f"Initializing model to default: {self.model_name}")
         else:
             self.model_name = model_name
             log.info(f"Initializing model: {self.model_name}")
 
-        self.client = OpenAI(api_key=ENV["OPENAI_API_KEY"])
+        self.client = anthropic.Anthropic()
         self.use_context = use_context
         self.window_size = window_size
 
@@ -128,7 +128,7 @@ class RaterOpenAI(Rater):
     ) -> list[tuple[int, list[int]]]:
         if output_scores:
             raise NotImplementedError(
-                "OpenAI rater currently does not support output_scores = True"
+                "Anthropic rater currently does not support output_scores = True"
             )
 
         story = self.format_story(story_segments)
@@ -148,9 +148,13 @@ class RaterOpenAI(Rater):
                 window = None
 
             query = self.build_message(recall_seg, story, story_segs_formatted, window)
-            response = self.client.responses.create(model=self.model_name, input=query)
+            response = self.client.messages.create(
+                model=self.model_name,
+                max_tokens=1024,
+                messages=[{"role": "user", "content": query}],
+            )
 
-            parsed_response = self.parse(response.output_text)
+            parsed_response = self.parse(response.content[0].text)  # type: ignore
             story_indices = sorted(idx - 1 for idx in parsed_response)
             ratings.append((idx, story_indices))
 
