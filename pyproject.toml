@@ -29,6 +29,7 @@ dependencies = [
     "nltk>=3.9.2",
     "chardet>=5.2.0",
     "openai>=2.15.0",
+    "flash-attn>=2.8.3",
 ]
 
 [tool.ruff]
@@ -40,3 +41,19 @@ ignore = ["F401"]
 
 [tool.uv.extra-build-dependencies]
 recall-matrix = ["hatchling", "editables"]
+flash-attn = ["torch", "setuptools", "ninja", "packaging"]
+vllm = ["torch", "setuptools", "ninja", "packaging", "cmake"]
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu128" }
+torchvision = { index = "pytorch-cu128" }
+xformers = { index = "pytorch-cu128" }
+vllm = { index = "pytorch-cu128" }
+
+[tool.uv]
+no-build-isolation-package = ["flash-attn", "vllm", "xformers"]
