@@ -10,7 +10,12 @@ log = get_logger(__name__)
 
 
 class RaterOpenAI(Rater):
-    def __init__(self, model_name: str | None = None):
+    def __init__(
+        self,
+        model_name: str | None = None,
+        use_context: bool = True,
+        window_size: int = 5,
+    ):
         self.rater_name = "openai"
 
         if model_name is None:
@@ -21,26 +26,73 @@ class RaterOpenAI(Rater):
             log.info(f"Initializing model: {self.model_name}")
 
         self.client = OpenAI(api_key=ENV["OPENAI_API_KEY"])
+        self.use_context = use_context
+        self.window_size = window_size
 
     def build_message(
-        self, recall_segment: str, story: str, story_segments: str
+        self, recall_segment: str, story: str, story_segments: str, window: str | None
     ) -> str:
-        message = f"""This is the original text:
-{story}
+        if window is None:
+            message = f"""This is the original story:
+        {story}
 
-It can be broken down into the following independent pieces of information:
-{story_segments}
+        It can be broken down into the following independent pieces of information:
+        {story_segments}
 
-Here is a single clause from a participant's recall of the story:
-"{recall_segment}"
+        Here is a single clause from a participant's recall of the story:
+        "{recall_segment}"
 
-Which of the numbered information pieces above are expressed by this recall clause?
-List all applicable numbers. If none apply, return the string "<NONE>".
+        Which of the numbered information pieces above
+        are expressed by this recall clause?
+        List all applicable numbers. If none apply, return the string "<NONE>".
 
-Return ONLY a set of numbers in <>, for example:
-<3, 7, 12>
-"""
+        Return ONLY a set of numbers in <>, for example:
+        <3, 7, 12>
+        """
+        else:
+            message = f"""This is the original story:
+        {story}
+
+        It can be broken down into the following independent pieces of information:
+        {story_segments}
+
+        Below is a window of consecutive clauses from a participant's recall.
+        The TARGET clause is marked with >>> <<<.
+        The other clauses are provided _only as context_.
+
+        Recall window:
+        {window}
+
+        Which of the numbered information pieces are
+        expressed by the >>> TARGET <<< clause?
+
+        Use the surrounding clauses only to resolve references (e.g., pronouns),
+        but DO NOT attribute information expressed only in neighboring clauses.
+        If a numbered information piece is not explicitly expressed in the TARGET
+        clause itself, do NOT include it.
+
+        If none apply, return "<NONE>".
+
+        Return ONLY a set of numbers in angle brackets, for example:
+        <3, 7, 12>"""
+
         return message
+
+    def build_recall_window(
+        self, recall_segments: list[str], idx: int, window_size: int
+    ) -> str:
+        start = max(0, idx - window_size)
+        end = min(len(recall_segments), idx + window_size + 1)
+
+        lines = []
+        for i in range(start, end):
+            clause = recall_segments[i].strip()
+            if i == idx:
+                lines.append(f">>> {clause} <<<")
+            else:
+                lines.append(f"{clause}")
+
+        return "\n".join(lines)
 
     def format_story_segments(self, story_segments: list[str]) -> str:
         return "\n".join(
@@ -72,6 +124,7 @@ Return ONLY a set of numbers in <>, for example:
         story_segments: list[str],
         recall_segments: list[str],
         output_scores: bool = False,
+        **kwargs,
     ) -> list[tuple[int, list[int]]]:
         if output_scores:
             raise NotImplementedError(
@@ -85,7 +138,16 @@ Return ONLY a set of numbers in <>, for example:
         for idx, recall_seg in enumerate(
             tqdm(recall_segments, desc="(rating recall segments)", position=1)
         ):
-            query = self.build_message(recall_seg, story, story_segs_formatted)
+            if self.use_context:
+                window = self.build_recall_window(
+                    recall_segments,
+                    idx,
+                    self.window_size,
+                )
+            else:
+                window = None
+
+            query = self.build_message(recall_seg, story, story_segs_formatted, window)
             response = self.client.responses.create(model=self.model_name, input=query)
 
             parsed_response = self.parse(response.output_text)
