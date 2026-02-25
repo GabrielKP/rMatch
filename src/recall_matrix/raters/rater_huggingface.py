@@ -6,11 +6,11 @@ import torch
 import transformers
 from transformers import BitsAndBytesConfig
 
+# from vllm import LLM, SamplingParams
 from recall_matrix.raters.rater import Rater
 
 
 def create_pipeline(model_id):
-    #
     quant_config = BitsAndBytesConfig(
         load_in_4bit=True,
         bnb_4bit_quant_type="nf4",
@@ -25,6 +25,7 @@ def create_pipeline(model_id):
         model_kwargs={
             "quantization_config": quant_config,
             "dtype": torch.bfloat16,
+            "attn_implementation": "flash_attention_2",
         },
         device_map="auto",
     )
@@ -47,6 +48,10 @@ def eval_LLM_output(pipeline, prompt):
 
     # Return the output
     return outputs[0]["generated_text"][-1]["content"]
+
+
+def vllm_initialise_engine(model_id):
+    pass
 
 
 def read_txt(txt_path):
