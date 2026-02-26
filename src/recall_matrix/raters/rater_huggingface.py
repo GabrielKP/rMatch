@@ -151,7 +151,7 @@ class RaterHuggingFace(Rater):
 
         hf_token_login()
 
-        self.pipeline = create_pipeline(model_name, batch_size=8)
+        self.pipeline = create_pipeline(model_name, batch_size=4)
 
     def compute_ratings_single_sub(
         self,
