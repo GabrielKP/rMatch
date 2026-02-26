@@ -41,6 +41,21 @@ OPENAI_API_KEY="your_api_key"
 uv run src/recall_matrix/rate_binary.py -rater openai --story_name pieman --sub_ids sub-001
 ```
 
+### Running with HuggingFace
+
+1. Create an .env file in the root directory of the project (or use the existing from previous steps).
+2. Log in / Create an account at [huggingface.co](huggingface.co).
+3. Request access to the model/s you intend to use (usually ~1hr to receive access).
+4. Create an access token under Access tokens > Create new token. A simple read token suffices.
+5. Paste the access token into the .env as `HF_TOKEN=<your token>`.
+6. Now you can run:
+```sh
+uv run src/recall_matrix/rate_binary.py -rater huggingface --story_name pieman --sub_ids sub-001
+```
+
+#### Alternate setup (using `~/.bashrc`)
+The code will also run if you have setup your HuggingFace token as an environment variable in your `~/.bashrc`. You can also use `export HF_TOKEN="<your token>"` on Linux/macOS or `set HF_TOKEN="<your token>"` on Windows to set a temporary token for your current session (not recommended).
+
 ### Inputs
 
 To rate your own stories and recalls, they need to be in a specific format in the `data/stories-and-recalls` directory.

@@ -306,8 +306,8 @@ if __name__ == "__main__":
         "-r",
         "--rater_name",
         choices=["reranker", "openai", "huggingface"],
-        default="openai",
-        help="Name of the rater to use. Default is 'openai'.",
+        default="huggingface",
+        help="Name of the rater to use. Default is 'huggingface'.",
     )
     args.add_argument(
         "-t",
@@ -326,7 +326,7 @@ if __name__ == "__main__":
         "-m",
         "--model_name",
         type=str,
-        default=None,
+        default="meta-llama/Llama-3.1-70B-Instruct",
         help=("[reranker, openai, huggingface] Name of the model to use."),
     )
     args.add_argument(

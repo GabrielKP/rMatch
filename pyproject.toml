@@ -31,7 +31,7 @@ dependencies = [
     "openai>=2.15.0",
     "flash-attn>=2.8.3",
     "bitsandbytes>=0.49.1",
-    "vllm>=0.7.2",
+    "torchvision",
 ]
 
 [tool.ruff]
@@ -44,7 +44,6 @@ ignore = ["F401"]
 [tool.uv.extra-build-dependencies]
 recall-matrix = ["hatchling", "editables"]
 flash-attn = ["torch", "setuptools", "ninja", "packaging"]
-vllm = ["torch", "setuptools", "ninja", "packaging", "cmake"]
 
 [[tool.uv.index]]
 name = "pytorch-cu128"
@@ -55,7 +54,6 @@ explicit = true
 torch = { index = "pytorch-cu128" }
 torchvision = { index = "pytorch-cu128" }
 xformers = { index = "pytorch-cu128" }
-vllm = { index = "pytorch-cu128" }
 
 [tool.uv]
-no-build-isolation-package = ["flash-attn", "vllm", "xformers"]
+no-build-isolation-package = ["flash-attn", "xformers"]

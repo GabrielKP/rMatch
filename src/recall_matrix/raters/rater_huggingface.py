@@ -1,16 +1,19 @@
+import os
 import re
-import time
 from pathlib import Path
 
 import torch
 import transformers
+from dotenv import load_dotenv
+from huggingface_hub import login
 from transformers import BitsAndBytesConfig
 
 # from vllm import LLM, SamplingParams
 from recall_matrix.raters.rater import Rater
 
 
-def create_pipeline(model_id):
+def create_pipeline(model_id, batch_size=8):
+    # Use BitsAndBytes for quantization to reduce memory usage and speed up inference
     quant_config = BitsAndBytesConfig(
         load_in_4bit=True,
         bnb_4bit_quant_type="nf4",
@@ -18,36 +21,41 @@ def create_pipeline(model_id):
         bnb_4bit_compute_dtype=torch.bfloat16,
     )
 
+    # Load the tokenizer and set padding token
+    tokenizer = transformers.AutoTokenizer.from_pretrained(model_id)
+    tokenizer.pad_token = tokenizer.eos_token
+    tokenizer.padding_side = "left"
+
     # Create the text generation pipeline
     pipeline = transformers.pipeline(
         "text-generation",
         model=model_id,
+        tokenizer=tokenizer,
         model_kwargs={
             "quantization_config": quant_config,
             "dtype": torch.bfloat16,
             "attn_implementation": "flash_attention_2",
         },
         device_map="auto",
+        batch_size=batch_size,
     )
 
     return pipeline
 
 
 # Define a function to evaluate LLM output
-def eval_LLM_output(pipeline, prompt):
+def eval_LLM_output(pipeline, prompts):
     # Define the message to be sent to the model.
-    messages = [
-        {"role": "user", "content": prompt},
-    ]
+    all_messages = [[{"role": "user", "content": p}] for p in prompts]
 
     # Generate the output
     outputs = pipeline(
-        messages,
+        all_messages,
         max_new_tokens=1024,
     )
 
     # Return the output
-    return outputs[0]["generated_text"][-1]["content"]
+    return [output[0]["generated_text"][-1]["content"] for output in outputs]
 
 
 def vllm_initialise_engine(model_id):
@@ -95,6 +103,17 @@ def parse_events_from_output(raw: str) -> list[int]:
     return [y - 1 for y in parsed_list]
 
 
+def hf_token_login():
+    load_dotenv()
+    token = os.environ.get("HF_TOKEN")
+    token = token if token else os.getenv("HF_TOKEN")
+    if token:
+        login(token=token)
+    else:
+        print("Error: HF_TOKEN not found in .env file or in environment variables.")
+        quit()
+
+
 ### Only necessary if we want to save the prompts and outputs for debugging
 """
 def dump_to_txt(output_path, string):
@@ -130,7 +149,9 @@ class RaterHuggingFace(Rater):
         if model_name is None:
             self.model_name = "meta-llama/Llama-3.1-8B-Instruct"
 
-        self.pipeline = create_pipeline(model_name)
+        hf_token_login()
+
+        self.pipeline = create_pipeline(model_name, batch_size=8)
 
     def compute_ratings_single_sub(
         self,
@@ -160,17 +181,18 @@ class RaterHuggingFace(Rater):
 
         prompt_path = Path("data") / "prompts" / "rate_incontext_prompt.txt"
 
-        current_segment = 0
         parsed_events = []
+        all_prompts = []
         for single_recall_segment in recall_segments:
             prompt, __ = initialise_prompt(
                 story_segments, single_recall_segment, prompt_path
             )
+            all_prompts.append(prompt)
 
-            # Get the model output
-            model_output = eval_LLM_output(self.pipeline, prompt)
-            parsed_single_recall = parse_events_from_output(model_output)
-            parsed_events.append([current_segment, parsed_single_recall])
+        model_output = eval_LLM_output(self.pipeline, all_prompts)
+        for i, output in enumerate(model_output):
+            parsed_single_recall = parse_events_from_output(output)
+            parsed_events.append([i, parsed_single_recall])
 
             ### Only necessary if we want to save the prompts and outputs for debugging
             """
@@ -188,5 +210,4 @@ class RaterHuggingFace(Rater):
                 )
             """
 
-            current_segment += 1
         return parsed_events
