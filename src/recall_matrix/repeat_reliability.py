@@ -395,6 +395,8 @@ def evaluate(
         "accuracy_macro": accuracy_macro,
         "cosine_similarity_mean": cosine_sim_mean,
         "cosine_similarity_std": cosine_sim_std,
+        "mean_f1": mean_f1,
+        "std_f1": std_f1,
         "krippendorff_alpha": kripp_alpha,
         "fleiss_kappa": fleiss_kappa,
     }
@@ -440,7 +442,7 @@ if __name__ == "__main__":
         "-m",
         "--model_name",
         type=str,
-        default="meta-llama/Llama-3.1-8B-Instruct",
+        default="meta-llama/Llama-3.1-70B-Instruct",
         help=("[reranker, openai, huggingface] Name of the model to use."),
     )
     args.add_argument(
