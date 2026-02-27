@@ -14,6 +14,7 @@ log = get_logger(__name__)
 class Rater:
     def __init__(self):
         self.additional_metadata = dict()
+        self.cost = float
 
     def rate(
         self,

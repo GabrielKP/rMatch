@@ -1,6 +1,7 @@
 import re
 
 import anthropic
+from litellm import cost_per_token
 from tqdm import tqdm
 
 from recall_matrix import get_logger
@@ -28,6 +29,7 @@ class RaterAnthropic(Rater):
         self.client = anthropic.Anthropic()
         self.use_context = use_context
         self.window_size = window_size
+        self.cost = 0
 
     def build_message(
         self, recall_segment: str, story: str, story_segments: str, window: str | None
@@ -154,8 +156,16 @@ class RaterAnthropic(Rater):
                 messages=[{"role": "user", "content": query}],
             )
 
+            in_cost, out_cost = cost_per_token(
+                model=self.model_name,
+                prompt_tokens=response.usage.input_tokens,
+                completion_tokens=response.usage.output_tokens,
+            )
+
+            self.cost += in_cost + out_cost
+
             parsed_response = self.parse(response.content[0].text)  # type: ignore
-            story_indices = sorted(idx - 1 for idx in parsed_response)
+            story_indices = sorted(i - 1 for i in parsed_response)
             ratings.append((idx, story_indices))
 
         return ratings

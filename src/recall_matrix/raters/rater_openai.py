@@ -1,5 +1,6 @@
 import re
 
+from litellm import cost_per_token
 from openai import OpenAI
 from tqdm import tqdm
 
@@ -28,6 +29,7 @@ class RaterOpenAI(Rater):
         self.client = OpenAI(api_key=ENV["OPENAI_API_KEY"])
         self.use_context = use_context
         self.window_size = window_size
+        self.cost = 0
 
     def build_message(
         self, recall_segment: str, story: str, story_segments: str, window: str | None
@@ -150,8 +152,17 @@ class RaterOpenAI(Rater):
             query = self.build_message(recall_seg, story, story_segs_formatted, window)
             response = self.client.responses.create(model=self.model_name, input=query)
 
+            assert response.usage is not None
+            in_cost, out_cost = cost_per_token(
+                model=self.model_name,
+                prompt_tokens=response.usage.input_tokens,
+                completion_tokens=response.usage.output_tokens,
+            )
+
+            self.cost += in_cost + out_cost
+
             parsed_response = self.parse(response.output_text)
-            story_indices = sorted(idx - 1 for idx in parsed_response)
+            story_indices = sorted(i - 1 for i in parsed_response)
             ratings.append((idx, story_indices))
 
         return ratings

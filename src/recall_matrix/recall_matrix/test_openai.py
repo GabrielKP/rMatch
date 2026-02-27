@@ -88,3 +88,6 @@ if __name__ == "__main__":
         output_dir=Path("outputs/tests/openai/human"),
         measure_label="normalized score (0-1)",
     )
+
+    print("THIS IS A TEST OF RATER COST TRACKING")
+    print(rater.cost)
