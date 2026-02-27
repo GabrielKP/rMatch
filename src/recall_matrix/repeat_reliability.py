@@ -51,45 +51,58 @@ def accuracy(array_1: np.ndarray, array_2: np.ndarray) -> float:
 
 
 def get_average_pairwise_f1(matrix_list):
-    flat_matrices = [m.flatten() for m in matrix_list]
-    scores = []
+    f1_scores = []
+    for matrices in matrix_list:
+        flat_matrices = [m.flatten() for m in matrices]
+        scores = []
 
-    for m_i, m_j in combinations(flat_matrices, 2):
-        score = f1_score(m_i, m_j, average="binary")
-        scores.append(score)
+        for m_i, m_j in combinations(flat_matrices, 2):
+            score = f1_score(m_i, m_j, average="binary")
+            scores.append(score)
 
-    mean_f1 = np.mean(scores)
-    std_f1 = np.std(scores)
+        mean_f1 = np.mean(scores)
+        f1_scores.append(mean_f1)
 
-    return mean_f1, std_f1
+    return np.mean(f1_scores), np.std(f1_scores)
 
 
 def get_average_pairwise_cosine_similarity(matrix_list):
-    flattened = np.array(matrix_list).reshape(len(matrix_list), -1)
+    cos_sim_scores = []
+    for matrices in matrix_list:
+        flattened = np.array(matrices).reshape(len(matrices), -1)
 
-    sim_matrix = cosine_similarity(flattened + 1e-11)
+        sim_matrix = cosine_similarity(flattened + 1e-11)
 
-    upper_tri_indices = np.triu_indices(len(matrix_list), k=1)
-    pairwise_similarities = sim_matrix[upper_tri_indices]
+        upper_tri_indices = np.triu_indices(len(matrices), k=1)
+        pairwise_similarities = sim_matrix[upper_tri_indices]
 
-    cos_mean = np.mean(pairwise_similarities)
-    cos_std = np.std(pairwise_similarities)
-    return cos_mean, cos_std
+        cos_mean = np.mean(pairwise_similarities)
+        cos_sim_scores.append(cos_mean)
+
+    return np.mean(cos_sim_scores), np.std(cos_sim_scores)
 
 
 def get_krippendorff_alpha(matrix_list):
-    data = np.array([m.flatten() for m in matrix_list])
+    pooled_data = []
 
-    data = data.T
+    for matrices in matrix_list:
+        subject_flattened = np.array([m.flatten() for m in matrices])
+        pooled_data.append(subject_flattened)
+    pooled_data = np.concatenate(pooled_data, axis=1)
 
-    alpha = krippendorff.alpha(reliability_data=data, level_of_measurement="nominal")
+    alpha = krippendorff.alpha(
+        reliability_data=pooled_data, level_of_measurement="nominal"
+    )
     return alpha
 
 
 def get_fleiss_kappa(matrix_list):
-    data = np.array(matrix_list).reshape(len(matrix_list), -1).T
+    flattened_matrices = [
+        np.array(matrices).reshape(len(matrices), -1).T for matrices in matrix_list
+    ]
+    pooled_data = np.vstack(flattened_matrices)
 
-    table, _ = aggregate_raters(data)
+    table, _ = aggregate_raters(pooled_data)
     kappa = fleiss_kappa(table)
     return kappa
 
@@ -359,6 +372,7 @@ def evaluate(
     mean_f1, std_f1 = get_average_pairwise_f1(repeat_reliability_results)
     console.print(f"Average pairwise F1: {mean_f1:.3f} ± {std_f1:.3f}")
 
+    # Implement pooling for Krippendorff's alpha and Fleiss' kappa
     kripp_alpha = get_krippendorff_alpha(repeat_reliability_results)
     console.print(f"Krippendorff's alpha: {kripp_alpha:.3f}")
 

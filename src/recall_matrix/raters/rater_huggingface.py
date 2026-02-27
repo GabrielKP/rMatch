@@ -147,11 +147,11 @@ class RaterHuggingFace(Rater):
         self.rater_name = "huggingface"
 
         if model_name is None:
-            self.model_name = "meta-llama/Llama-3.1-8B-Instruct"
+            self.model_name = "meta-llama/Llama-3.1-70B-Instruct"
 
         hf_token_login()
 
-        self.pipeline = create_pipeline(model_name, batch_size=4)
+        self.pipeline = create_pipeline(model_name, batch_size=8)
 
     def compute_ratings_single_sub(
         self,
