@@ -3,11 +3,15 @@ import datetime
 import json
 import pickle
 from collections import defaultdict
+from itertools import combinations
 from pathlib import Path
 
+import krippendorff
 import numpy as np
 from scipy.stats import pearsonr
-from sklearn.metrics import precision_score, recall_score
+from sklearn.metrics import f1_score, precision_score, recall_score
+from sklearn.metrics.pairwise import cosine_similarity
+from statsmodels.stats.inter_rater import aggregate_raters, fleiss_kappa
 from tqdm import tqdm
 
 from recall_matrix import console
@@ -44,6 +48,50 @@ def eval_param_str(
 
 def accuracy(array_1: np.ndarray, array_2: np.ndarray) -> float:
     return np.sum(array_1 == array_2) / len(array_1)
+
+
+def get_average_pairwise_f1(matrix_list):
+    flat_matrices = [m.flatten() for m in matrix_list]
+    scores = []
+
+    for m_i, m_j in combinations(flat_matrices, 2):
+        score = f1_score(m_i, m_j, average="binary")
+        scores.append(score)
+
+    mean_f1 = np.mean(scores)
+    std_f1 = np.std(scores)
+
+    return mean_f1, std_f1
+
+
+def get_average_pairwise_cosine_similarity(matrix_list):
+    flattened = np.array(matrix_list).reshape(len(matrix_list), -1)
+
+    sim_matrix = cosine_similarity(flattened + 1e-11)
+
+    upper_tri_indices = np.triu_indices(len(matrix_list), k=1)
+    pairwise_similarities = sim_matrix[upper_tri_indices]
+
+    cos_mean = np.mean(pairwise_similarities)
+    cos_std = np.std(pairwise_similarities)
+    return cos_mean, cos_std
+
+
+def get_krippendorff_alpha(matrix_list):
+    data = np.array([m.flatten() for m in matrix_list])
+
+    data = data.T
+
+    alpha = krippendorff.alpha(reliability_data=data, level_of_measurement="nominal")
+    return alpha
+
+
+def get_fleiss_kappa(matrix_list):
+    data = np.array(matrix_list).reshape(len(matrix_list), -1).T
+
+    table, _ = aggregate_raters(data)
+    kappa = fleiss_kappa(table)
+    return kappa
 
 
 def evaluate(
@@ -302,6 +350,21 @@ def evaluate(
         repeat_reliability_results.append(temp)
 
         repeat_subs -= 1
+
+    cosine_sim_mean, cosine_sim_std = get_average_pairwise_cosine_similarity(
+        repeat_reliability_results
+    )
+    console.print(f"Cosine similarity: {cosine_sim_mean:.3f} ± {cosine_sim_std:.3f}")
+
+    mean_f1, std_f1 = get_average_pairwise_f1(repeat_reliability_results)
+    console.print(f"Average pairwise F1: {mean_f1:.3f} ± {std_f1:.3f}")
+
+    kripp_alpha = get_krippendorff_alpha(repeat_reliability_results)
+    console.print(f"Krippendorff's alpha: {kripp_alpha:.3f}")
+
+    fleiss_kappa = get_fleiss_kappa(repeat_reliability_results)
+    console.print(f"Fleiss' kappa: {fleiss_kappa:.3f}")
+
     # END OF REPEAT RELIABILITY
 
     """
@@ -316,6 +379,10 @@ def evaluate(
         "precision_macro": precision_macro,
         "recall_macro": recall_macro,
         "accuracy_macro": accuracy_macro,
+        "cosine_similarity_mean": cosine_sim_mean,
+        "cosine_similarity_std": cosine_sim_std,
+        "krippendorff_alpha": kripp_alpha,
+        "fleiss_kappa": fleiss_kappa,
     }
     results_path = output_dir / "results.json"
     with open(results_path, "w") as f:

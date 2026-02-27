@@ -32,6 +32,8 @@ dependencies = [
     "flash-attn>=2.8.3",
     "bitsandbytes>=0.49.1",
     "torchvision",
+    "krippendorff>=0.8.2",
+    "statsmodels>=0.14.6",
 ]
 
 [tool.ruff]
