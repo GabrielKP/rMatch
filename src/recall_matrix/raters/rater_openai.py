@@ -1,6 +1,6 @@
 import re
 
-from litellm import cost_per_token
+import tiktoken
 from openai import OpenAI
 from tqdm import tqdm
 
@@ -9,13 +9,15 @@ from recall_matrix.raters.rater import Rater
 
 log = get_logger(__name__)
 
+OPENAI_PRICES: dict[str, tuple[float, float]] = {"gpt-5.2": (1.75, 14)}
+
 
 class RaterOpenAI(Rater):
     def __init__(
         self,
         model_name: str | None = None,
-        use_context: bool = True,
         window_size: int = 5,
+        dry_run: bool = False,
     ):
         self.rater_name = "openai"
 
@@ -27,9 +29,34 @@ class RaterOpenAI(Rater):
             log.info(f"Initializing model: {self.model_name}")
 
         self.client = OpenAI(api_key=ENV["OPENAI_API_KEY"])
-        self.use_context = use_context
+        self.use_context = window_size > 0
         self.window_size = window_size
-        self.cost = 0
+        self.usage_metrics = {"in_tokens": 0, "out_tokens": 0, "cost": 0.0}
+        self.estimated_usage_metrics = {
+            "est_in_tokens": 0,
+            "est_out_tokens": 0,
+            "est_cost": 0.0,
+        }
+        self.dry_run = dry_run
+
+    def get_usage(self) -> dict | None:
+        if self.dry_run:
+            return self.estimated_usage_metrics
+        return self.usage_metrics
+
+    def _calculate_cost(self, in_tokens: int, out_tokens: int) -> float:
+        if self.model_name not in OPENAI_PRICES:
+            log.warning(f"No pricing found for {self.model_name}, cost set to 0")
+            return 0.0
+        prices = OPENAI_PRICES[self.model_name]
+        return (in_tokens * prices[0] + out_tokens * prices[1]) / 1_000_000
+
+    def _estimate_tokens(self, query: str) -> int:
+        try:
+            enc = tiktoken.encoding_for_model(self.model_name)
+        except KeyError:
+            enc = tiktoken.get_encoding("cl100k_base")
+        return len(enc.encode(query))
 
     def build_message(
         self, recall_segment: str, story: str, story_segments: str, window: str | None
@@ -138,7 +165,12 @@ class RaterOpenAI(Rater):
         ratings: list[tuple[int, list[int]]] = []
 
         for idx, recall_seg in enumerate(
-            tqdm(recall_segments, desc="(rating recall segments)", position=1)
+            tqdm(
+                recall_segments,
+                desc="(rating recall segments)",
+                position=1,
+                disable=self.dry_run,
+            )
         ):
             if self.use_context:
                 window = self.build_recall_window(
@@ -150,18 +182,31 @@ class RaterOpenAI(Rater):
                 window = None
 
             query = self.build_message(recall_seg, story, story_segs_formatted, window)
-            response = self.client.responses.create(model=self.model_name, input=query)
 
-            assert response.usage is not None
-            in_cost, out_cost = cost_per_token(
-                model=self.model_name,
-                prompt_tokens=response.usage.input_tokens,
-                completion_tokens=response.usage.output_tokens,
-            )
+            if self.dry_run:
+                parsed_response: set[int] = set()  # empty dummy
+                estimated_in_tokens = self._estimate_tokens(query)
+                estimated_out_tokens = self._estimate_tokens("<8, 9, 10>")
+                self.estimated_usage_metrics["est_in_tokens"] += estimated_in_tokens
+                self.estimated_usage_metrics["est_out_tokens"] += estimated_out_tokens
+                self.estimated_usage_metrics["est_cost"] += self._calculate_cost(
+                    estimated_in_tokens, estimated_out_tokens
+                )
+            else:
+                response = self.client.responses.create(
+                    model=self.model_name, input=query
+                )
 
-            self.cost += in_cost + out_cost
+                assert response.usage is not None
+                in_tokens = response.usage.input_tokens
+                out_tokens = response.usage.output_tokens
+                self.usage_metrics["in_tokens"] += in_tokens
+                self.usage_metrics["out_tokens"] += out_tokens
+                self.usage_metrics["cost"] += self._calculate_cost(
+                    in_tokens, out_tokens
+                )
+                parsed_response = self.parse(response.output_text)
 
-            parsed_response = self.parse(response.output_text)
             story_indices = sorted(i - 1 for i in parsed_response)
             ratings.append((idx, story_indices))
 

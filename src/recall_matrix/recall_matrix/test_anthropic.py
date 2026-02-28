@@ -20,7 +20,6 @@ if __name__ == "__main__":
     rater = initialize_rater(
         rater_name="anthropic",
         model_name="claude-opus-4-6",
-        use_context=True,
         window_size=5,
     )
 
@@ -90,4 +89,4 @@ if __name__ == "__main__":
     )
 
     print("THIS IS A TEST OF THE COST TRACKING")
-    print(rater.cost)
+    print(rater.get_usage())

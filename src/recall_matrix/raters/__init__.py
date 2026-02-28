@@ -17,21 +17,25 @@ def initialize_rater(
     rater_name: str,
     model_name: str | None,
     device: str | None = None,
-    use_context: bool = True,
     window_size: int = 5,
+    dry_run: bool = False,
 ) -> Rater:
     """Initialize the rater."""
     if rater_name == "reranker":
         rater = RaterReranker(model_name=model_name, device=device)
     elif rater_name == "openai":
         rater = RaterOpenAI(
-            model_name=model_name, use_context=use_context, window_size=window_size
+            model_name=model_name,
+            window_size=window_size,
+            dry_run=dry_run,
         )
     elif rater_name == "huggingface":
         rater = RaterHuggingFace(model_name=model_name)
     elif rater_name == "anthropic":
         rater = RaterAnthropic(
-            model_name=model_name, use_context=use_context, window_size=window_size
+            model_name=model_name,
+            window_size=window_size,
+            dry_run=dry_run,
         )
     else:
         raise ValueError(f"Invalid argument: {rater_name=}")

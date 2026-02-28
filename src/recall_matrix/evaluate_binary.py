@@ -55,11 +55,17 @@ def evaluate(
     random_mode: str | None = None,
     reranker_threshold: float | None = None,
     top_k: int = 5,
+    window_size: int = 5,
+    dry_run: bool = False,
 ):
     """Evaluate the rater."""
     rater = initialize_rater(
-        rater_name=rater_name, model_name=model_name, device=device
+        rater_name=rater_name,
+        model_name=model_name,
+        window_size=window_size,
+        dry_run=dry_run,
     )
+
     if hasattr(rater, "model_name"):
         model_name = rater.model_name  # type: ignore
     else:
@@ -171,6 +177,17 @@ def evaluate(
                 ratings_dicts_memsearch[story_name][sub_id] = rm_memsearch
     else:
         raise ValueError(f"Invalid testset: {testset}")
+
+    if dry_run:
+        for story_name, sub_id, story_segments, recall_segments in tqdm(
+            story_recall_segments, desc="(estimating cost)"
+        ):
+            rater.compute_ratings_single_sub(
+                story_segments=story_segments,
+                recall_segments=recall_segments,
+            )
+        console.print(f"[DRY RUN] Estimated Usage: {rater.get_usage()}")
+        return
 
     rng = np.random.default_rng(seed)
 
@@ -285,6 +302,11 @@ def evaluate(
         "recall_macro": recall_macro,
         "accuracy_macro": accuracy_macro,
     }
+
+    if rater.get_usage() is not None:
+        console.print(f"Total API usage: {rater.get_usage()}")
+        results_dict["usage"] = rater.get_usage()
+
     results_path = output_dir / "results.json"
     with open(results_path, "w") as f:
         json.dump(results_dict, f)
@@ -305,7 +327,7 @@ if __name__ == "__main__":
     args.add_argument(
         "-r",
         "--rater_name",
-        choices=["reranker", "openai", "huggingface"],
+        choices=["reranker", "openai", "huggingface", "anthropic"],
         default="openai",
         help="Name of the rater to use. Default is 'openai'.",
     )
@@ -360,6 +382,17 @@ if __name__ == "__main__":
             " for each recall segment."
         ),
     )
+
+    args.add_argument(
+        "--dry_run",
+        action="store_true",
+        default=False,
+        help="Estimate cost without calling the API",
+    )
+
+    args.add_argument(
+        "--window_size", type=int, default=5, help="Size of recall context window (+/-)"
+    )
     args = args.parse_args()
     evaluate(
         rater_name=args.rater_name,
@@ -369,4 +402,6 @@ if __name__ == "__main__":
         random_mode=args.random_mode,
         reranker_threshold=args.reranker_threshold,
         top_k=args.top_k,
+        window_size=args.window_size,
+        dry_run=args.dry_run,
     )

@@ -14,7 +14,18 @@ log = get_logger(__name__)
 class Rater:
     def __init__(self):
         self.additional_metadata = dict()
-        self.cost = float
+        self.usage_metrics = dict
+        self.estimated_usage_metrics = dict
+        self.dry_run = bool
+
+    def get_usage(self) -> dict | None:
+        raise NotImplementedError("Subclasses must implement this method")
+
+    def _estimate_tokens(self, query: str) -> int:
+        raise NotImplementedError("Subclasses must implement this method")
+
+    def _calculate_cost(self, in_tokens: int, out_tokens: int) -> float:
+        raise NotImplementedError("Subclasses must implement this method")
 
     def rate(
         self,
