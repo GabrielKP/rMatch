@@ -3,11 +3,13 @@ import datetime
 import json
 import pickle
 from collections import defaultdict
+from itertools import combinations
 from pathlib import Path
 
 import numpy as np
+from krippendorff import krippendorff
 from scipy.stats import pearsonr
-from sklearn.metrics import precision_score, recall_score
+from sklearn.metrics import f1_score, precision_score, recall_score
 from tqdm import tqdm
 
 from recall_matrix import console
@@ -44,6 +46,36 @@ def eval_param_str(
 
 def accuracy(array_1: np.ndarray, array_2: np.ndarray) -> float:
     return np.sum(array_1 == array_2) / len(array_1)
+
+
+def get_average_pairwise_f1(matrix_list):
+    f1_scores = []
+    for matrices in matrix_list:
+        flat_matrices = [m.flatten() for m in matrices]
+        scores = []
+
+        for m_i, m_j in combinations(flat_matrices, 2):
+            score = f1_score(m_i, m_j, average="binary")
+            scores.append(score)
+
+        mean_f1 = np.mean(scores)
+        f1_scores.append(mean_f1)
+
+    return np.mean(f1_scores), np.std(f1_scores)
+
+
+def get_krippendorff_alpha(matrix_list):
+    pooled_data = []
+
+    for matrices in matrix_list:
+        subject_flattened = np.array([m.flatten() for m in matrices])
+        pooled_data.append(subject_flattened)
+    pooled_data = np.concatenate(pooled_data, axis=1)
+
+    alpha = krippendorff.alpha(
+        reliability_data=pooled_data, level_of_measurement="nominal"
+    )
+    return alpha
 
 
 def evaluate(
@@ -273,6 +305,39 @@ def evaluate(
     pearsonr_macro = np.mean(pearsonrs)
     console.print(f"Pearsonr: {pearsonr_macro:.3f}")
 
+    num_repeats = 10
+    repeat_subs = 3
+    repeat_reliability_results = []
+    for (
+        story_name,
+        sub_id,
+        story_segments,
+        recall_segments,
+    ) in tqdm(story_recall_segments, desc="(eval)"):
+        if repeat_subs <= 0:
+            break
+        temp = []
+        for repeat in range(num_repeats):
+            single_sub_ratings = rater.compute_ratings_single_sub(
+                story_segments=story_segments,
+                recall_segments=recall_segments,
+                output_scores=False,
+            )
+            rm_model = ratings_single_sub_to_matrix(
+                single_sub_ratings,  # type: ignore
+                len(story_segments),
+            )
+            temp.append(rm_model)
+        repeat_reliability_results.append(temp)
+
+        repeat_subs -= 1
+
+    mean_f1, std_f1 = get_average_pairwise_f1(repeat_reliability_results)
+    console.print(f"Average pairwise F1: {mean_f1:.3f} ± {std_f1:.3f}")
+
+    kripp_alpha = get_krippendorff_alpha(repeat_reliability_results)
+    console.print(f"Krippendorff's alpha: {kripp_alpha:.3f}")
+
     results_dict = {
         "testset": testset,
         "rater_name": rater_name,
@@ -284,6 +349,9 @@ def evaluate(
         "precision_macro": precision_macro,
         "recall_macro": recall_macro,
         "accuracy_macro": accuracy_macro,
+        "mean_f1": mean_f1,
+        "std_f1": std_f1,
+        "krippendorff_alpha": kripp_alpha,
     }
     results_path = output_dir / "results.json"
     with open(results_path, "w") as f:
