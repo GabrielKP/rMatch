@@ -41,7 +41,7 @@ def eval_param_str(
     if model_name is not None:
         model_name_str = f"-m_{model_name.replace('/', '_')}"
     param_str = (
-        f"{timestamp}-{rr_str}-{testset}"
+        f"{timestamp}{rr_str}-{testset}"
         f"-{rater_name}{model_name_str}-seed_{seed}{random_mode_str}"
     )
     return param_str
@@ -347,7 +347,7 @@ def evaluate(
     output_dir.mkdir(parents=True, exist_ok=True)  # make again, in case user deleted it
     results_path = output_dir / "results.json"
     with open(results_path, "w") as f:
-        json.dump(results_dict, f)
+        json.dump(results_dict, f, indent=4)
     console.print(f"Saved results to {results_path}")
 
     # save recall matrices
@@ -625,19 +625,20 @@ def evaluate_repeat_reliability(
     overall_mean_recall = np.mean(mean_recalls)
     overall_mean_pearsonr = np.mean(mean_pearsonrs)
 
+    console.print(f"\nRater: {rater_str} | N recalls: {len(story_recall_segments)}")
     console.print(
         f"[yellow]Overall[/yellow] (compared to human annotations)"
         f"\n mean pearsonr={overall_mean_pearsonr:.3f}"
         f"\n mean f1={overall_mean_f1:.3f}"
-        f"\n mean precision={overall_mean_precision:.3f}"
-        f"\n mean recall={overall_mean_recall:.3f}"
+        f", mean precision={overall_mean_precision:.3f}"
+        f", mean recall={overall_mean_recall:.3f}"
     )
 
     # compare repeat reliability with itself
     mean_pairwise_f1 = get_average_pairwise_f1(recall_matrices_model_dct)
     kripp_alpha = get_krippendorff_alpha(recall_matrices_model_dct)
     console.print(
-        f"[yellow]Overall[/yellow] (compared to itself)"
+        f"\n[yellow]Overall[/yellow] (compared to itself)"
         f"\n mean pairwise f1={mean_pairwise_f1:.3f}"
         f"\n krippendorff alpha={kripp_alpha:.3f}"
     )
@@ -664,7 +665,7 @@ def evaluate_repeat_reliability(
     output_dir.mkdir(parents=True, exist_ok=True)  # make again, in case user deleted it
     results_path = output_dir / "results.json"
     with open(results_path, "w") as f:
-        json.dump(results_dict, f)
+        json.dump(results_dict, f, indent=4)
     console.print(f"Saved results to {results_path}")
 
     # save recall matrices
