@@ -3,7 +3,7 @@ import re
 import anthropic
 from tqdm import tqdm
 
-from recall_matrix import get_logger
+from recall_matrix import ENV, get_logger
 from recall_matrix.raters.rater import Rater
 
 log = get_logger(__name__)
@@ -30,7 +30,7 @@ class RaterAnthropic(Rater):
             self.model_name = model_name
             log.info(f"Initializing model: {self.model_name}")
 
-        self.client = anthropic.Anthropic()
+        self.client = anthropic.Anthropic(api_key=ENV["ANTHROPIC_API_KEY"])
         self.use_context = window_size > 0
         self.window_size = window_size
         self.usage_metrics = {"in_tokens": 0, "out_tokens": 0, "cost": 0.0}
@@ -40,6 +40,8 @@ class RaterAnthropic(Rater):
             "est_cost": 0.0,
         }
         self.dry_run = dry_run
+        if self.dry_run:
+            log.info("RUNNING IN DRY RUN MODE")
 
     def get_usage(self) -> dict | None:
         if self.dry_run:
