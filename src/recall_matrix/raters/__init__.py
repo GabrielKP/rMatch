@@ -7,11 +7,20 @@ __all__ = ["Rater", "RaterReranker", "RaterOpenAI", "RaterHuggingFace"]
 
 
 def initialize_rater(
-    rater_name: str, model_name: str | None, device: str | None = None
+    rater_name: str,
+    model_name: str | None,
+    device: str | None = None,
+    reranker_threshold: float | None = None,
+    top_k: int | None = None,
 ) -> Rater:
     """Initialize the rater."""
     if rater_name == "reranker":
-        rater = RaterReranker(model_name=model_name, device=device)
+        rater = RaterReranker(
+            model_name=model_name,
+            device=device,
+            threshold=reranker_threshold,
+            top_k=top_k,
+        )
     elif rater_name == "openai":
         rater = RaterOpenAI(model_name=model_name)
     elif rater_name == "huggingface":

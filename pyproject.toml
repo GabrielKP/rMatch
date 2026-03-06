@@ -25,6 +25,7 @@ dependencies = [
     "nltk>=3.9.2",
     "chardet>=5.2.0",
     "openai>=2.15.0",
+    "krippendorff>=0.8.2",
 ]
 
 [build-system]

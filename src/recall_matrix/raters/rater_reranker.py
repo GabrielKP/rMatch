@@ -14,6 +14,8 @@ class RaterReranker(Rater):
         self,
         model_name: str | None = None,
         device: str | None = None,
+        threshold: float | None = None,
+        top_k: int | None = None,
     ):
         self.rater_name = "reranker"
 
@@ -36,6 +38,9 @@ class RaterReranker(Rater):
         self.device: torch.device = self.model.device
         log.info(f"Using device: {self.device}")
 
+        self.threshold = threshold
+        self.top_k = top_k
+
     def compute_ratings_single_sub(
         self,
         story_segments: list[str],
@@ -45,9 +50,15 @@ class RaterReranker(Rater):
         top_k: int | None = None,
     ) -> list[tuple[int, list[int] | list[tuple[int, float]]]]:
         if threshold is None:
-            threshold = 0.09
+            if self.threshold is not None:
+                threshold = self.threshold
+            else:
+                threshold = 0.09
         if top_k is None:
-            top_k = 5
+            if self.top_k is not None:
+                top_k = self.top_k
+            else:
+                top_k = 5
 
         ratings_single_sub = list()
         for idx_recall, recall_segment in enumerate(
