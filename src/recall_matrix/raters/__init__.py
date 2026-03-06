@@ -19,10 +19,17 @@ def initialize_rater(
     device: str | None = None,
     window_size: int = 5,
     dry_run: bool = False,
+    reranker_threshold: float | None = None,
+    top_k: int | None = None,
 ) -> Rater:
     """Initialize the rater."""
     if rater_name == "reranker":
-        rater = RaterReranker(model_name=model_name, device=device)
+        rater = RaterReranker(
+            model_name=model_name,
+            device=device,
+            threshold=reranker_threshold,
+            top_k=top_k,
+        )
     elif rater_name == "openai":
         rater = RaterOpenAI(
             model_name=model_name,

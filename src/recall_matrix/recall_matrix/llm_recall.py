@@ -84,7 +84,7 @@ def build_recall_window(
 
 
 def format_story_segments(story_segments: list[str]) -> str:
-    return "\n".join(f"{i+1}. {seg.strip()}" for i, seg in enumerate(story_segments))
+    return "\n".join(f"{i + 1}. {seg.strip()}" for i, seg in enumerate(story_segments))
 
 
 def format_story(story_segments: list[str]) -> str:
