@@ -19,6 +19,7 @@ def initialize_rater(
     device: str | None = None,
     window_size: int = 5,
     dry_run: bool = False,
+    movie_mode: bool = False,
     reranker_threshold: float | None = None,
     top_k: int | None = None,
 ) -> Rater:
@@ -43,6 +44,7 @@ def initialize_rater(
             model_name=model_name,
             window_size=window_size,
             dry_run=dry_run,
+            movie_mode=movie_mode,
         )
     else:
         raise ValueError(f"Invalid argument: {rater_name=}")

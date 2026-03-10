@@ -208,6 +208,7 @@ def evaluate(
     random_mode: str | None = None,
     window_size: int = 5,
     dry_run: bool = False,
+    movie_mode: bool = False,
     reranker_threshold: float | None = None,
     top_k: int = 5,
 ):
@@ -220,6 +221,7 @@ def evaluate(
         window_size=window_size,
         dry_run=dry_run,
         top_k=top_k,
+        movie_mode=movie_mode,
     )
     if hasattr(rater, "model_name"):
         model_name = rater.model_name  # type: ignore
@@ -238,7 +240,9 @@ def evaluate(
             random_mode=random_mode,
         )
     )
-    output_dir.mkdir(parents=True, exist_ok=True)
+
+    if not dry_run:
+        output_dir.mkdir(parents=True, exist_ok=True)
 
     story_recall_segments, human_ratings_dict = load_story_recall_segments_default(
         testset=testset
@@ -510,6 +514,7 @@ def evaluate_repeat_reliability(
     random_mode: str | None = None,
     window_size: int = 5,
     dry_run: bool = False,
+    movie_mode: bool = False,
     reranker_threshold: float | None = None,
     top_k: int = 5,
 ):
@@ -522,6 +527,7 @@ def evaluate_repeat_reliability(
         dry_run=dry_run,
         reranker_threshold=reranker_threshold,
         top_k=top_k,
+        movie_mode=movie_mode,
     )
     if hasattr(rater, "model_name"):
         model_name = rater.model_name  # type: ignore
@@ -540,7 +546,9 @@ def evaluate_repeat_reliability(
             random_mode=random_mode,
         )
     )
-    output_dir.mkdir(parents=True, exist_ok=True)
+
+    if not dry_run:
+        output_dir.mkdir(parents=True, exist_ok=True)
 
     story_recall_segments, human_ratings_dict = (
         load_story_recall_segments_repeat_reliability(
@@ -774,6 +782,13 @@ if __name__ == "__main__":
         default=False,
         help="Estimate cost without calling the API",
     )
+
+    args.add_argument(
+        "--movie",
+        action="store_true",
+        default=False,
+        help="runs with movie-specific prompt",
+    )
     args.add_argument(
         "--window_size", type=int, default=5, help="Size of recall context window (+/-)"
     )
@@ -804,6 +819,7 @@ if __name__ == "__main__":
             random_mode=args.random_mode,
             window_size=args.window_size,
             dry_run=args.dry_run,
+            movie_mode=args.movie,
             reranker_threshold=args.reranker_threshold,
             top_k=args.top_k,
         )
@@ -818,6 +834,7 @@ if __name__ == "__main__":
             random_mode=args.random_mode,
             window_size=args.window_size,
             dry_run=args.dry_run,
+            movie_mode=args.movie,
             reranker_threshold=args.reranker_threshold,
             top_k=args.top_k,
         )

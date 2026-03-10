@@ -169,6 +169,7 @@ class RaterOpenAI(Rater):
                 recall_segments,
                 desc="(rating recall segments)",
                 position=1,
+                leave=False,
                 disable=self.dry_run,
             )
         ):

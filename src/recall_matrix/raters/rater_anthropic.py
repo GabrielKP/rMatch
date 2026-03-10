@@ -3,7 +3,7 @@ import re
 import anthropic
 from tqdm import tqdm
 
-from recall_matrix import ENV, get_logger
+from recall_matrix import get_logger
 from recall_matrix.raters.rater import Rater
 
 log = get_logger(__name__)
@@ -11,6 +11,7 @@ log = get_logger(__name__)
 ANTHROPIC_PRICES: dict[str, tuple[float, float]] = {
     "claude-opus-4-6": (5, 25),
     "claude-sonnet-4-6": (3, 15),
+    "claude-haiku-4-5": (1, 5),
 }
 
 
@@ -20,6 +21,7 @@ class RaterAnthropic(Rater):
         model_name: str | None = None,
         window_size: int = 5,
         dry_run: bool = False,
+        movie_mode: bool = False,
     ):
         self.rater_name = "anthropic"
 
@@ -30,7 +32,9 @@ class RaterAnthropic(Rater):
             self.model_name = model_name
             log.info(f"Initializing model: {self.model_name}")
 
-        self.client = anthropic.Anthropic(api_key=ENV["ANTHROPIC_API_KEY"])
+        self.client = (
+            anthropic.Anthropic()
+        )  # automatically reads key from .env file, must be named "ANTHROPIC_API_KEY"
         self.use_context = window_size > 0
         self.window_size = window_size
         self.usage_metrics = {"in_tokens": 0, "out_tokens": 0, "cost": 0.0}
@@ -42,6 +46,7 @@ class RaterAnthropic(Rater):
         self.dry_run = dry_run
         if self.dry_run:
             log.info("RUNNING IN DRY RUN MODE")
+        self.movie_mode = movie_mode
 
     def get_usage(self) -> dict | None:
         if self.dry_run:
@@ -82,6 +87,41 @@ class RaterAnthropic(Rater):
         Return ONLY a set of numbers in <>, for example:
         <3, 7, 12>
         """
+        elif self.movie_mode:
+            message = f"""This is a transcription of a short film, broken into shots.
+            Each numbered piece describes a distinct visual moment or shot in the film.
+            Adjacent pieces may depict the same scene from different angles or show
+            consecutive moments in continuous action:
+
+        The movie can be broken down into the following shots:
+        {story_segments}
+
+        Below is a window of consecutive clauses from a participant's recall.
+        The TARGET clause is marked with >>> <<<.
+        The other clauses are provided _only as context_.
+
+        Recall window:
+        {window}
+
+        Which of the numbered shots are
+        expressed by the >>> TARGET <<< clause?
+
+        Important notes:
+            * Shot descriptions may be very brief or purely visual, do not discount
+            a shot simply because it is short or contains no dialogue.
+            * If multiple shots depict the same event, choose the one most
+            specifically and directly matched by the TARGET clause itself.
+            * A single TARGET may match multiple shots if it spans a continuous action.
+            * Use the surrounding clauses only to resolve references (e.g., pronouns),
+            but DO NOT attribute information expressed only in neighboring clauses.
+            * If a numbered shot is not explicitly expressed in the TARGET
+            clause itself, do NOT include it.
+
+        If none apply, return "<NONE>".
+
+        Return ONLY a set of numbers in angle brackets, for example:
+        <3, 7, 12>"""
+
         else:
             message = f"""This is the original story:
         {story}
@@ -173,6 +213,7 @@ class RaterAnthropic(Rater):
                 recall_segments,
                 desc="(rating recall segments)",
                 position=1,
+                leave=False,
                 disable=self.dry_run,
             )
         ):
