@@ -27,6 +27,10 @@ class RaterReranker(Rater):
             log.info(f"Initializing model: {self.model_name}")
 
         token = ENV.get("HF_TOKEN")
+        if not token:
+            raise ValueError(
+                "Missing HuggingFace token. Set HF_TOKEN in your .env or environment."
+            )
 
         self.model = CrossEncoder(
             self.model_name,
