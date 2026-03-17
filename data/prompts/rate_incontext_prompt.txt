@@ -1,0 +1,14 @@
+This is the original text:
+{narrative}
+
+It can be broken down into the following independent pieces of information:
+{segmentation}
+
+Here is a single clause from an alternative version of the story:
+"{alternative}"
+
+Which of the numbered information pieces above are expressed by this alternative clause?
+List all applicable numbers. If none apply, return the string "<>".
+
+Return ONLY a set of numbers in <>, for example:
+<3, 7, 12>

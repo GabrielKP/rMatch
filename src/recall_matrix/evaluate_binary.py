@@ -8,6 +8,7 @@ from pathlib import Path
 
 import krippendorff
 import numpy as np
+from krippendorff import krippendorff
 from scipy.stats import pearsonr
 from sklearn.metrics import f1_score, precision_score, recall_score
 from tqdm import tqdm
@@ -330,6 +331,39 @@ def evaluate(
 
     pearsonr_macro = np.mean(pearsonrs)
     console.print(f"Pearsonr: {pearsonr_macro:.3f}")
+
+    num_repeats = 10
+    repeat_subs = 3
+    repeat_reliability_results = []
+    for (
+        story_name,
+        sub_id,
+        story_segments,
+        recall_segments,
+    ) in tqdm(story_recall_segments, desc="(eval)"):
+        if repeat_subs <= 0:
+            break
+        temp = []
+        for repeat in range(num_repeats):
+            single_sub_ratings = rater.compute_ratings_single_sub(
+                story_segments=story_segments,
+                recall_segments=recall_segments,
+                output_scores=False,
+            )
+            rm_model = ratings_single_sub_to_matrix(
+                single_sub_ratings,  # type: ignore
+                len(story_segments),
+            )
+            temp.append(rm_model)
+        repeat_reliability_results.append(temp)
+
+        repeat_subs -= 1
+
+    mean_f1, std_f1 = get_average_pairwise_f1(repeat_reliability_results)
+    console.print(f"Average pairwise F1: {mean_f1:.3f} ± {std_f1:.3f}")
+
+    kripp_alpha = get_krippendorff_alpha(repeat_reliability_results)
+    console.print(f"Krippendorff's alpha: {kripp_alpha:.3f}")
 
     results_dict = {
         "testset": testset,
@@ -694,8 +728,8 @@ if __name__ == "__main__":
         "-r",
         "--rater_name",
         choices=["reranker", "openai", "huggingface"],
-        default="openai",
-        help="Name of the rater to use. Default is 'openai'.",
+        default="huggingface",
+        help="Name of the rater to use. Default is 'huggingface'.",
     )
     args.add_argument(
         "-t",
@@ -714,7 +748,7 @@ if __name__ == "__main__":
         "-m",
         "--model_name",
         type=str,
-        default=None,
+        default="meta-llama/Llama-3.1-70B-Instruct",
         help=("[reranker, openai, huggingface] Name of the model to use."),
     )
     args.add_argument(
