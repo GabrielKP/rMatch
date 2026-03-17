@@ -39,14 +39,11 @@ class TestRateBinary(unittest.TestCase):
             )
 
     def test_no_API_key(self):
-        # Ensure missing API keys trigger a failure.
-        # Patch ENV so that tokens are present but empty/None (no real token).
         with patch.dict(
             "recall_matrix.ENV",
             {"HF_TOKEN": None, "OPENAI_API_KEY": None},
             clear=True,
         ):
-            # Reranker should fail if HF_TOKEN is empty/None.
             with patch("recall_matrix.raters.rater_reranker.CrossEncoder") as mock_ce:
                 mock_ce.side_effect = ValueError("Missing HF_TOKEN")
                 with self.assertRaises(ValueError):
@@ -63,7 +60,6 @@ class TestRateBinary(unittest.TestCase):
                         top_k=3,
                     )
 
-            # OpenAI should fail if OPENAI_API_KEY is empty/None.
             with patch("recall_matrix.raters.rater_openai.OpenAI") as mock_openai:
                 mock_openai.side_effect = ValueError("Missing OPENAI_API_KEY")
                 with self.assertRaises(ValueError):
