@@ -108,7 +108,7 @@ if __name__ == "__main__":
         default=False,
         help=(
             "Whether to output the scores of the story segments for each"
-            " recall segment. If True, the output will additionaly contain the"
+            " recall segment. If True, the output will additionally contain the"
             " score for each story segment."
         ),
     )
