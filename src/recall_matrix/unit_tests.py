@@ -1,3 +1,4 @@
+import datetime
 import json
 import os
 import tempfile
@@ -6,8 +7,19 @@ from pathlib import Path
 from unittest import mock
 from unittest.mock import Mock, patch
 
+import numpy as np
+
 from recall_matrix import ENV
+from recall_matrix.evaluate_binary import (
+    accuracy,
+    eval_param_str,
+    evaluate,
+    get_average_pairwise_f1,
+    get_krippendorff_alpha,
+    get_model_ratings,
+)
 from recall_matrix.rate_binary import rate_binary
+from recall_matrix.raters import initialize_rater
 from recall_matrix.raters.rater import Rater
 from recall_matrix.raters.rater_openai import RaterOpenAI
 from recall_matrix.raters.rater_reranker import RaterReranker
@@ -83,21 +95,20 @@ class TestRateBinary(unittest.TestCase):
                     )
 
 
-class DummyRaterForTests:
+class DummyRaterForTests(Rater):
     def __init__(self):
-        self._rater = Rater()
-        self._rater.rater_name = "dummy"
+        super().__init__()
+        self.rater_name = "dummy"
         self.calls = []
 
     def compute_ratings_single_sub(
-        self, story_segments, recall_segments, output_scores=False
-    ):
+        self,
+        story_segments: list[str],
+        recall_segments: list[str],
+        output_scores: bool = False,
+    ) -> list[tuple[int, list[int] | list[tuple[int, float]]]]:
         self.calls.append((story_segments, recall_segments))
         return [(idx, []) for idx in range(len(recall_segments))]
-
-    def rate(self, **kwargs):
-        self._rater.compute_ratings_single_sub = self.compute_ratings_single_sub
-        return self._rater.rate(**kwargs)
 
 
 class TestRater(unittest.TestCase):
@@ -251,6 +262,19 @@ class TestRater(unittest.TestCase):
             "data/stories-and-recalls/foo/ratings/foo.json"
         )
         mock_init.return_value = dummy_rater
+
+        rate_binary(
+            rater_name="openai",
+            story_name="foo",
+            story_segmentation_method="sentences",
+            recall_segmentation_method="sentences",
+            output_scores=False,
+            sub_ids=["sub-001"],
+            model_name="m",
+            device="cpu",
+            reranker_threshold=0.5,
+            top_k=3,
+        )
 
         mock_init.assert_called_once_with(
             rater_name="openai",
@@ -409,6 +433,217 @@ class TestRerankerRater(unittest.TestCase):
             )
 
         self.assertEqual(ratings, [(0, [(0, 0.9)])])
+
+
+class TestEvaluateBinary(unittest.TestCase):
+    def test_eval_param_str_includes_expected_parts(self):
+        fixed_dt = datetime.datetime(2020, 1, 2, 3, 4, 5)
+        with patch(
+            "recall_matrix.evaluate_binary.datetime.datetime", wraps=datetime.datetime
+        ) as mock_dt:
+            mock_dt.now.return_value = fixed_dt
+            param_str = eval_param_str(
+                repeat_reliability=True,
+                testset="cyoa_alice10",
+                rater_name="openai",
+                model_name="m/foo",
+                seed=123,
+                random_mode="full_shuffle",
+            )
+
+        self.assertIn("20200102_030405", param_str)
+        self.assertIn("-rr-", param_str)
+        self.assertIn("-cyoa_alice10-", param_str)
+        self.assertIn("-m_m_foo", param_str)
+        self.assertIn("-random_mode_full_shuffle", param_str)
+
+    def test_accuracy_empty_returns_zero(self):
+        self.assertEqual(accuracy(np.array([]), np.array([])), 0.0)
+
+    @patch("recall_matrix.evaluate_binary.initialize_rater")
+    def test_get_model_ratings_random_permutations(self, mock_init):
+        rm_comparison = np.array([[1, 0], [0, 1]])
+        rng = np.random.default_rng(42)
+
+        dummy_rater = DummyRaterForTests()
+        mock_init.return_value = dummy_rater
+
+        # full shuffle should preserve all values and shape, but permute them
+        rm_full = get_model_ratings(
+            random_mode="full_shuffle",
+            rng=np.random.default_rng(42),
+            rm_comparison=rm_comparison,
+            rater=initialize_rater(
+                rater_name="reranker", model_name="BAAI/bge-reranker-v2-m3"
+            ),
+            story_segments=[],
+            recall_segments=[],
+        )
+        expected = rng.permutation(rm_comparison.flatten()).reshape(rm_comparison.shape)
+        self.assertTrue(np.array_equal(rm_full, expected))
+
+        # row shuffle should permute rows but keep each row values
+        rng = np.random.default_rng(42)
+        rm_row = get_model_ratings(
+            random_mode="row_shuffle",
+            rng=np.random.default_rng(42),
+            rm_comparison=rm_comparison,
+            rater=dummy_rater,
+            story_segments=[],
+            recall_segments=[],
+        )
+        self.assertEqual(rm_row.shape, rm_comparison.shape)
+        self.assertTrue(
+            np.array_equal(
+                np.sort(rm_row, axis=None), np.sort(rm_comparison, axis=None)
+            )
+        )
+
+    def test_get_model_ratings_rejects_non_rater(self):
+        with self.assertRaises(TypeError):
+            get_model_ratings(
+                random_mode=None,
+                rng=np.random.default_rng(42),
+                rm_comparison=np.array([[1, 0], [0, 1]]),
+                rater=0.1,  # type: ignore
+                story_segments=["s1"],
+                recall_segments=["r1"],
+            )
+
+    @patch("recall_matrix.evaluate_binary.load_story_recall_segments_default")
+    @patch("recall_matrix.evaluate_binary.initialize_rater")
+    @patch("recall_matrix.evaluate_binary.eval_param_str", return_value="fixed")
+    def test_evaluate_writes_results_and_matrices(
+        self, mock_eval_param_str, mock_init, mock_load
+    ):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            cwd = os.getcwd()
+            try:
+                os.chdir(tmpdir)
+
+                story_name = "story"
+                sub_id = "sub"
+                story_segments = ["s1", "s2"]
+                recall_segments = ["r1", "r2"]
+                rm_comparison = np.array([[1, 0], [0, 1]])
+
+                mock_load.return_value = (
+                    [(story_name, sub_id, story_segments, recall_segments)],
+                    {story_name: {sub_id: rm_comparison}},
+                )
+
+                class DummyRater(Rater):
+                    def __init__(self):
+                        super().__init__()
+                        self.rater_name = "dummy"
+                        self.model_name = None
+
+                    def compute_ratings_single_sub(
+                        self,
+                        story_segments: list[str],
+                        recall_segments: list[str],
+                        output_scores: bool = False,
+                    ) -> list[tuple[int, list[int] | list[tuple[int, float]]]]:
+                        return [(0, [0]), (1, [1])]
+
+                mock_init.return_value = DummyRater()
+
+                evaluate(
+                    repeat_reliability=False,
+                    rater_name="openai",
+                    model_name=None,
+                    testset="cyoa_alice10",
+                    device=None,
+                    seed=0,
+                    random_mode=None,
+                )
+
+                results_path = Path("data") / "eval" / "fixed" / "results.json"
+                self.assertTrue(results_path.exists())
+                results = json.loads(results_path.read_text())
+                self.assertAlmostEqual(results["f1_macro"], 1.0)
+                self.assertAlmostEqual(results["accuracy_macro"], 1.0)
+
+                self.assertTrue(
+                    (
+                        Path("data") / "eval" / "fixed" / "recall_matrices_model.pkl"
+                    ).exists()
+                )
+                self.assertTrue(
+                    (
+                        Path("data")
+                        / "eval"
+                        / "fixed"
+                        / "recall_matrices_cyoa_alice10.pkl"
+                    ).exists()
+                )
+            finally:
+                os.chdir(cwd)
+
+    @patch("recall_matrix.evaluate_binary.load_story_recall_segments_default")
+    @patch("recall_matrix.evaluate_binary.initialize_rater")
+    @patch("recall_matrix.evaluate_binary.eval_param_str", return_value="fixed")
+    def test_evaluate_raises_if_all_zero(
+        self, mock_eval_param_str, mock_init, mock_load
+    ):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            cwd = os.getcwd()
+            try:
+                os.chdir(tmpdir)
+
+                story_name = "story"
+                sub_id = "sub"
+                story_segments = ["s1", "s2"]
+                recall_segments = ["r1", "r2"]
+                rm_comparison = np.zeros((2, 2), dtype=int)
+
+                mock_load.return_value = (
+                    [(story_name, sub_id, story_segments, recall_segments)],
+                    {story_name: {sub_id: rm_comparison}},
+                )
+
+                class DummyRater(Rater):
+                    def __init__(self):
+                        super().__init__()
+                        self.rater_name = "dummy"
+                        self.model_name = None
+
+                    def compute_ratings_single_sub(
+                        self,
+                        story_segments: list[str],
+                        recall_segments: list[str],
+                        output_scores: bool = False,
+                    ) -> list[tuple[int, list[int] | list[tuple[int, float]]]]:
+                        return [(0, [0]), (1, [1])]
+
+                mock_init.return_value = DummyRater()
+
+                with self.assertRaises(ValueError):
+                    evaluate(
+                        repeat_reliability=False,
+                        rater_name="openai",
+                        model_name=None,
+                        testset="cyoa_alice10",
+                        device=None,
+                        seed=0,
+                        random_mode=None,
+                    )
+            finally:
+                os.chdir(cwd)
+
+    def test_get_average_pairwise_f1_and_krippendorff_alpha(self):
+        # create 2 recall matrices for one story
+        m1 = np.array([[1, 0], [0, 1]])
+        m2 = np.array([[1, 0], [0, 1]])
+        d = {"s1": [m1, m2]}
+
+        # average pairwise F1 should be 1.0 when matrices are identical
+        self.assertAlmostEqual(get_average_pairwise_f1(d), 1.0)
+
+        # krippendorff should be 1.0 for identical matrices as well
+        # depending on krippendorff implementation, exact float may vary slightly
+        alpha = get_krippendorff_alpha(d)
+        self.assertGreaterEqual(alpha, 0.999)
 
 
 if __name__ == "__main__":

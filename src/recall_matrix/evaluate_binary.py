@@ -181,6 +181,8 @@ def get_model_ratings(
     story_segments: list[str],
     recall_segments: list[str],
 ):
+    if not isinstance(rater, Rater):
+        raise TypeError("Expected rater to be an instance of Rater")
     if random_mode == "full_shuffle":
         flat = rng.permutation(rm_comparison.flatten())
         rm_model = flat.reshape(rm_comparison.shape)
@@ -694,8 +696,8 @@ if __name__ == "__main__":
         "-r",
         "--rater_name",
         choices=["reranker", "openai", "huggingface"],
-        default="openai",
-        help="Name of the rater to use. Default is 'openai'.",
+        default="huggingface",
+        help="Name of the rater to use. Default is 'huggingface'.",
     )
     args.add_argument(
         "-t",
@@ -714,7 +716,7 @@ if __name__ == "__main__":
         "-m",
         "--model_name",
         type=str,
-        default=None,
+        default="meta-llama/Llama-3.1-70B-Instruct",
         help=("[reranker, openai, huggingface] Name of the model to use."),
     )
     args.add_argument(
