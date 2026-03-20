@@ -1,0 +1,34 @@
+[run]
+source = src/recall_matrix
+branch = True
+omit =
+    */tests/*
+    */unit_tests.py
+    */__pycache__/*
+    */run_coverage.py
+    */__init__.py
+    */load.py
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    raise AssertionError
+    raise NotImplementedError
+    if __name__ == .__main__.:
+    if TYPE_CHECKING:
+    class.*\bProtocol\):
+    @(abc\.)?abstractmethod
+    @abstractmethod
+    @abstractproperty
+    pass
+
+precision = 2
+skip_empty = True
+show_missing = True
+
+[html]
+directory = htmlcov
+
+[xml]
+output = coverage.xml

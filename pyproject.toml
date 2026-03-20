@@ -28,7 +28,11 @@ dependencies = [
     "chardet>=5.2.0",
     "openai>=2.15.0",
     "krippendorff>=0.8.2",
+    "coverage>=7.13.5",
 ]
+
+[project.optional-dependencies]
+test = ["coverage>=7.4.0"]
 
 [build-system]
 requires = ["hatchling"]
@@ -40,3 +44,25 @@ line-length = 88
 [tool.ruff.lint]
 extend-select = ["I", "E501"]
 ignore = ["F401"]
+
+[tool.coverage.run]
+source = ["src/recall_matrix"]
+branch = true
+omit = [
+    "*/tests/*",
+    "*/unit_tests.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "class.*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+precision = 2
+skip_empty = true
