@@ -645,6 +645,1020 @@ class TestEvaluateBinary(unittest.TestCase):
         alpha = get_krippendorff_alpha(d)
         self.assertGreaterEqual(alpha, 0.999)
 
+    def test_load_story_recall_segments_default_invalid_testset(self):
+        """Test that invalid testset raises ValueError."""
+        from recall_matrix.evaluate_binary import load_story_recall_segments_default
+
+        with self.assertRaises(ValueError) as context:
+            load_story_recall_segments_default("invalid_testset")
+
+        self.assertIn("Invalid testset", str(context.exception))
+
+    @patch("recall_matrix.evaluate_binary.load_cyoa_recall_matrix_human_binary")
+    @patch("recall_matrix.evaluate_binary.load_cyoa_story_recall_segments")
+    def test_load_story_recall_segments_default_cyoa_default(
+        self, mock_load_cyoa, mock_load_human
+    ):
+        """Test loading cyoa_alice10 testset."""
+        from recall_matrix.evaluate_binary import load_story_recall_segments_default
+
+        mock_load_cyoa.return_value = [
+            ("alice_2", "sub-001", ["s1"], ["r1"]),
+        ]
+        mock_load_human.return_value = np.array([[1, 0]])
+
+        story_recall_segments, human_ratings = load_story_recall_segments_default(
+            "cyoa_alice10"
+        )
+
+        self.assertEqual(len(story_recall_segments), 1)
+        self.assertIsNotNone(human_ratings)
+        self.assertIn("alice_2", human_ratings)  # type: ignore
+        self.assertIn("sub-001", human_ratings["alice_2"])  # type: ignore
+        mock_load_cyoa.assert_called_once()
+
+    def test_accuracy_with_data(self):
+        """Test accuracy function with real data."""
+        from recall_matrix.evaluate_binary import accuracy
+
+        arr1 = np.array([1, 0, 1, 1, 0])
+        arr2 = np.array([1, 0, 1, 0, 0])
+
+        acc = accuracy(arr1, arr2)
+        self.assertAlmostEqual(acc, 0.8)  # 4 out of 5 correct
+
+
+class TestRatersWithNumpyValues(unittest.TestCase):
+    """Test rater JSON serialization with numpy values."""
+
+    def test_save_to_json_with_numpy_values_and_output_scores(self):
+        """Test save_to_json converts numpy values correctly when output_scores=True."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            cwd = os.getcwd()
+            try:
+                os.chdir(tmpdir)
+
+                rater = Rater()
+                rater.rater_name = "dummy"
+
+                output_dict = {
+                    "rater_name": "dummy",
+                    "story_name": "test_story",
+                    "story_segmentation_method": "sentences",
+                    "recall_segmentation_method": "sentences",
+                    "n_story_segments": 2,
+                    "output_scores": True,
+                    "ratings": {
+                        "sub-001": [
+                            (
+                                np.int64(0),
+                                [
+                                    (np.int64(0), np.float32(0.8)),
+                                    (np.int64(1), np.float64(0.5)),
+                                ],
+                            )
+                        ]
+                    },
+                }
+
+                output_path = rater.save_to_json(output_dict)
+
+                # Load and verify
+                full_path = os.path.join(tmpdir, str(output_path))
+                with open(full_path, "r") as f:
+                    loaded = json.load(f)
+
+                # Verify numpy types were converted to Python native types
+                ratings = loaded["ratings"]["sub-001"]
+                self.assertIsInstance(ratings[0][0], int)
+                self.assertIsInstance(ratings[0][1][0][0], int)
+                self.assertIsInstance(ratings[0][1][0][1], float)
+
+            finally:
+                os.chdir(cwd)
+
+    def test_save_to_json_with_numpy_values_no_output_scores(self):
+        """Test save_to_json converts numpy values when output_scores=False."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            cwd = os.getcwd()
+            try:
+                os.chdir(tmpdir)
+
+                rater = Rater()
+                rater.rater_name = "dummy"
+
+                output_dict = {
+                    "rater_name": "dummy",
+                    "story_name": "test_story",
+                    "story_segmentation_method": "sentences",
+                    "recall_segmentation_method": "sentences",
+                    "n_story_segments": 2,
+                    "output_scores": False,
+                    "ratings": {
+                        "sub-001": [
+                            (np.int64(0), [np.int64(0), np.int64(1)]),
+                        ]
+                    },
+                }
+
+                output_path = rater.save_to_json(output_dict)
+
+                # Load and verify
+                full_path = os.path.join(tmpdir, str(output_path))
+                with open(full_path, "r") as f:
+                    loaded = json.load(f)
+
+                # Verify numpy types were converted
+                ratings = loaded["ratings"]["sub-001"]
+                self.assertIsInstance(ratings[0][0], int)
+                self.assertIsInstance(ratings[0][1][0], int)
+
+            finally:
+                os.chdir(cwd)
+
+
+class TestRaterOpenAIParse(unittest.TestCase):
+    """Test RaterOpenAI parse method edge cases."""
+
+    def test_parse_invalid_format_logs_warning(self):
+        """Test parse method with invalid format logs warning."""
+        with patch.dict("recall_matrix.ENV", {"OPENAI_API_KEY": "key"}, clear=True):
+            rater = RaterOpenAI(model_name="gpt-test")
+
+            # This should return empty set and log a warning
+            result = rater.parse("invalid format without brackets")
+            self.assertEqual(result, set())
+
+    def test_parse_with_none(self):
+        """Test parse method with <NONE>."""
+        with patch.dict("recall_matrix.ENV", {"OPENAI_API_KEY": "key"}, clear=True):
+            rater = RaterOpenAI(model_name="gpt-test")
+            result = rater.parse("<NONE>")
+            self.assertEqual(result, set())
+
+    def test_parse_with_trailing_whitespace(self):
+        """Test parse method with trailing whitespace."""
+        with patch.dict("recall_matrix.ENV", {"OPENAI_API_KEY": "key"}, clear=True):
+            rater = RaterOpenAI(model_name="gpt-test")
+            result = rater.parse("  <1, 2, 3>  ")
+            self.assertEqual(result, {1, 2, 3})
+
+    def test_parse_with_single_number(self):
+        """Test parse method with single number."""
+        with patch.dict("recall_matrix.ENV", {"OPENAI_API_KEY": "key"}, clear=True):
+            rater = RaterOpenAI(model_name="gpt-test")
+            result = rater.parse("<5>")
+            self.assertEqual(result, {5})
+
+    def test_parse_with_non_digit_characters(self):
+        """Test parse method ignores non-digit characters."""
+        with patch.dict("recall_matrix.ENV", {"OPENAI_API_KEY": "key"}, clear=True):
+            rater = RaterOpenAI(model_name="gpt-test")
+            result = rater.parse("<1, abc, 2>")
+            # Should only parse digits
+            self.assertEqual(result, {1, 2})
+
+
+class TestRerankerEdgeCases(unittest.TestCase):
+    """Test RaterReranker edge cases."""
+
+    @patch("recall_matrix.raters.rater_reranker.CrossEncoder")
+    def test_reranker_all_scores_below_threshold(self, mock_crossencoder):
+        """Test reranker when all scores are below threshold."""
+        mock_model = Mock()
+        mock_model.rank.return_value = [
+            {"score": 0.3, "corpus_id": 0},
+            {"score": 0.2, "corpus_id": 1},
+        ]
+        mock_crossencoder.return_value = mock_model
+
+        with patch.dict("recall_matrix.ENV", {"HF_TOKEN": "token"}, clear=True):
+            rater = RaterReranker(
+                model_name="model-x", device="cpu", threshold=0.5, top_k=5
+            )
+            ratings = rater.compute_ratings_single_sub(
+                story_segments=["s1", "s2"],
+                recall_segments=["r1"],
+                output_scores=False,
+            )
+
+        # Should return empty list because no scores meet threshold
+        self.assertEqual(ratings, [(0, [])])
+
+    @patch("recall_matrix.raters.rater_reranker.CrossEncoder")
+    def test_reranker_with_threshold_and_top_k_combined(self, mock_crossencoder):
+        """Test reranker respects both threshold and top_k."""
+        mock_model = Mock()
+        mock_model.rank.return_value = [
+            {"score": 0.9, "corpus_id": 0},  # Above threshold and within top_k
+            {"score": 0.8, "corpus_id": 1},  # Above threshold and within top_k
+            {"score": 0.7, "corpus_id": 2},  # Above threshold but outside top_k
+            {"score": 0.3, "corpus_id": 3},  # Below threshold
+        ]
+        mock_crossencoder.return_value = mock_model
+
+        with patch.dict("recall_matrix.ENV", {"HF_TOKEN": "token"}, clear=True):
+            rater = RaterReranker(
+                model_name="model-x", device="cpu", threshold=0.6, top_k=2
+            )
+            ratings = rater.compute_ratings_single_sub(
+                story_segments=["s1", "s2", "s3", "s4"],
+                recall_segments=["r1"],
+                output_scores=True,
+            )
+
+        # Should include 0.9 and 0.8 (top_k=2, both above threshold)
+        self.assertEqual(len(ratings[0][1]), 2)
+        self.assertEqual(ratings[0][1][0], (0, 0.9))
+        self.assertEqual(ratings[0][1][1], (1, 0.8))
+
+
+class TestPlotFunctions(unittest.TestCase):
+    """Test plot_single_sub functions with mocking."""
+
+    @patch("recall_matrix.plot_single_sub.plt.savefig")
+    @patch("recall_matrix.plot_single_sub.plt.close")
+    def test_plot_single_sub_recall_matrices(self, mock_close, mock_savefig):
+        """Test plot_single_sub_recall_matrices creates output."""
+        from recall_matrix.plot_single_sub import plot_single_sub_recall_matrices
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            cwd = os.getcwd()
+            try:
+                os.chdir(tmpdir)
+
+                recall_matrices = [
+                    np.array([[1, 0], [0, 1]]),
+                    np.array([[1, 1], [0, 0]]),
+                ]
+                rater_names = ["rater1", "rater2"]
+
+                plot_single_sub_recall_matrices(
+                    story_name="test_story",
+                    sub_id="sub-001",
+                    story_segmentation_method="sentences",
+                    recall_segmentation_method="sentences",
+                    recall_matrices=recall_matrices,
+                    rater_names=rater_names,
+                )
+
+                # Verify that savefig was called
+                mock_savefig.assert_called_once()
+                mock_close.assert_called_once()
+
+                # Verify output directory structure
+                plots_dir = (
+                    Path("data") / "stories-and-recalls" / "test_story" / "plots"
+                )
+                self.assertTrue(plots_dir.exists())
+
+            finally:
+                os.chdir(cwd)
+
+    @patch("recall_matrix.plot_single_sub.plot_single_sub_recall_matrices")
+    def test_plot_single_sub_loads_ratings_from_json(self, mock_plot):
+        """Test plot_single_sub loads ratings from JSON files."""
+        from recall_matrix.plot_single_sub import plot_single_sub
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            # Create a test JSON file
+            test_json = {
+                "rater_name": "test_rater",
+                "story_name": "test_story",
+                "story_segmentation_method": "sentences",
+                "recall_segmentation_method": "sentences",
+                "n_story_segments": 2,
+                "output_scores": False,
+                "ratings": {
+                    "sub-001": [(0, [0, 1]), (1, [1])],
+                },
+            }
+
+            json_file = Path(tmpdir) / "test_ratings.json"
+            json_file.write_text(json.dumps(test_json))
+
+            plot_single_sub(
+                sub_id="sub-001",
+                paths_ratings=[json_file],
+            )
+
+            # Verify plot function was called
+            mock_plot.assert_called_once()
+
+
+class TestRaterInitialize(unittest.TestCase):
+    """Test rater initialization edge cases."""
+
+    @patch("recall_matrix.raters.rater_reranker.CrossEncoder")
+    def test_initialize_reranker_without_model_name(self, mock_ce):
+        """Test initializing reranker without explicit model name."""
+        mock_ce.return_value = Mock()
+
+        with patch.dict("recall_matrix.ENV", {"HF_TOKEN": "token"}, clear=True):
+            rater = initialize_rater(
+                rater_name="reranker",
+                model_name=None,
+                device="cpu",
+            )
+
+        self.assertEqual(rater.rater_name, "reranker")
+        # Reranker should have model name attribute
+        self.assertTrue(hasattr(rater, "model_name"))
+
+
+class TestRaterHuggingFace(unittest.TestCase):
+    """Test RaterHuggingFace class."""
+
+    def test_rater_huggingface_init(self):
+        """Test HuggingFace rater initialization."""
+        from recall_matrix.raters.rater_huggingface import RaterHuggingFace
+
+        # Test with default model name
+        rater1 = RaterHuggingFace()
+        self.assertEqual(rater1.rater_name, "openai")
+
+        # Test with explicit model name
+        rater2 = RaterHuggingFace(model_name="bert-base")
+        self.assertEqual(rater2.rater_name, "openai")
+
+    def test_rater_huggingface_not_implemented(self):
+        """Test HuggingFace rater raises NotImplementedError."""
+        from recall_matrix.raters.rater_huggingface import RaterHuggingFace
+
+        rater = RaterHuggingFace()
+        with self.assertRaises(NotImplementedError):
+            rater.single_subject_ratings(["story"], ["recall"])
+
+
+class TestPlotSingleRecallMatrix(unittest.TestCase):
+    """Test plotting with single recall matrix."""
+
+    @patch("recall_matrix.plot_single_sub.plt.savefig")
+    @patch("recall_matrix.plot_single_sub.plt.close")
+    def test_plot_single_sub_recall_matrices_single_matrix(
+        self, mock_close, mock_savefig
+    ):
+        """Test plot_single_sub_recall_matrices with single recall matrix."""
+        from recall_matrix.plot_single_sub import plot_single_sub_recall_matrices
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            cwd = os.getcwd()
+            try:
+                os.chdir(tmpdir)
+
+                # Single recall matrix - this triggers the axes = [axes] branch
+                recall_matrices = [np.array([[1, 0], [0, 1]])]
+                rater_names = ["single_rater"]
+
+                plot_single_sub_recall_matrices(
+                    story_name="test_story",
+                    sub_id="sub-001",
+                    story_segmentation_method="sentences",
+                    recall_segmentation_method="sentences",
+                    recall_matrices=recall_matrices,
+                    rater_names=rater_names,
+                )
+
+                # Verify that savefig was called
+                mock_savefig.assert_called_once()
+                mock_close.assert_called_once()
+
+            finally:
+                os.chdir(cwd)
+
+
+class TestRerankerDefaultThreshold(unittest.TestCase):
+    """Test RaterReranker with default threshold and top_k."""
+
+    @patch("recall_matrix.raters.rater_reranker.CrossEncoder")
+    def test_reranker_uses_instance_threshold_when_none_passed(self, mock_crossencoder):
+        """Test reranker uses instance threshold when None is passed."""
+        mock_model = Mock()
+        mock_model.rank.return_value = [
+            {"score": 0.5, "corpus_id": 0},
+        ]
+        mock_crossencoder.return_value = mock_model
+
+        with patch.dict("recall_matrix.ENV", {"HF_TOKEN": "token"}, clear=True):
+            rater = RaterReranker(
+                model_name="model-x", device="cpu", threshold=0.4, top_k=3
+            )
+            # Call with threshold=None to trigger default logic
+            ratings = rater.compute_ratings_single_sub(
+                story_segments=["s1"],
+                recall_segments=["r1"],
+                output_scores=False,
+                threshold=None,
+                top_k=None,
+            )
+
+        # Score 0.5 is above instance threshold 0.4
+        self.assertEqual(ratings, [(0, [0])])
+
+    @patch("recall_matrix.raters.rater_reranker.CrossEncoder")
+    def test_reranker_uses_default_values_when_instance_none(self, mock_crossencoder):
+        """Test reranker falls back to defaults (0.09, 5) when no threshold/top_k."""
+        mock_model = Mock()
+        mock_model.rank.return_value = [
+            {"score": 0.1, "corpus_id": 0},
+        ]
+        mock_crossencoder.return_value = mock_model
+
+        with patch.dict("recall_matrix.ENV", {"HF_TOKEN": "token"}, clear=True):
+            # Initialize with None values
+            rater = RaterReranker(model_name="model-x", device="cpu")
+            ratings = rater.compute_ratings_single_sub(
+                story_segments=["s1"],
+                recall_segments=["r1"],
+                output_scores=False,
+                threshold=None,
+                top_k=None,
+            )
+
+        # Score 0.1 is above default threshold 0.09
+        self.assertEqual(ratings, [(0, [0])])
+
+
+class TestRaterWithSubIds(unittest.TestCase):
+    """Test rater with explicit sub_ids parameter."""
+
+    @patch("recall_matrix.raters.rater.load_story_recall_segments")
+    def test_rater_with_explicit_sub_ids(self, mock_load):
+        """Test rater.rate with explicit sub_ids parameter."""
+        # When load_story_recall_segments is called with sub_ids, it filters
+        # the segments to only those matching the requested sub_ids
+        story_recall_segments_filtered = [
+            ("sub-001", ["TRANSCRIPT A1", "TRANSCRIPT A2"], ["RECALL A1"]),
+            ("sub-003", ["TRANSCRIPT C1"], ["RECALL C1"]),
+        ]
+        mock_load.return_value = (
+            story_recall_segments_filtered,
+            "sentences",
+            "sentences",
+        )
+
+        dummy = DummyRaterForTests()
+        output = dummy.rate(
+            story_name="dummy_story",
+            story_segmentation_method="sentences",
+            recall_segmentation_method="sentences",
+            sub_ids=["sub-001", "sub-003"],  # Only these 2
+            output_scores=False,
+        )
+
+        # Should only be called for the filtered sub_ids
+        self.assertEqual(len(dummy.calls), 2)
+        self.assertIn("sub-001", output["ratings"])
+        self.assertIn("sub-003", output["ratings"])
+        # sub-002 should not be present
+        self.assertNotIn("sub-002", output["ratings"])
+
+
+class TestRaterJsonSerializationAllCases(unittest.TestCase):
+    """Test rater save_to_json with all numpy type combinations."""
+
+    def test_save_to_json_mixed_numpy_types_with_scores(self):
+        """Test save_to_json with mixed numpy types in output_scores mode."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            cwd = os.getcwd()
+            try:
+                os.chdir(tmpdir)
+
+                rater = Rater()
+                rater.rater_name = "test"
+
+                output_dict = {
+                    "rater_name": "test",
+                    "story_name": "test_story",
+                    "story_segmentation_method": "sentences",
+                    "recall_segmentation_method": "sentences",
+                    "n_story_segments": 3,
+                    "output_scores": True,
+                    "ratings": {
+                        "sub-001": [
+                            (
+                                np.int32(0),
+                                [
+                                    (np.int16(0), np.float16(0.9)),
+                                    (1, np.float32(0.7)),
+                                ],
+                            ),
+                            (1, [(np.int64(1), 0.5)]),
+                        ],
+                    },
+                }
+
+                output_path = rater.save_to_json(output_dict)
+                full_path = os.path.join(tmpdir, str(output_path))
+
+                with open(full_path, "r") as f:
+                    loaded = json.load(f)
+
+                # Verify all types were converted
+                ratings = loaded["ratings"]["sub-001"]
+                self.assertIsInstance(ratings[0][0], int)
+                self.assertIsInstance(ratings[0][1][0][0], int)
+                self.assertIsInstance(ratings[0][1][0][1], float)
+                self.assertIsInstance(ratings[0][1][1][0], int)
+                self.assertIsInstance(ratings[0][1][1][1], float)
+
+            finally:
+                os.chdir(cwd)
+
+
+class TestEvalParamStr(unittest.TestCase):
+    """Test eval_param_str with different parameter combinations."""
+
+    def test_eval_param_str_with_model_name_none(self):
+        """Test eval_param_str when model_name is None (line 41->43)."""
+        from recall_matrix.evaluate_binary import eval_param_str
+
+        with patch(
+            "recall_matrix.evaluate_binary.datetime.datetime", wraps=datetime.datetime
+        ) as mock_dt:
+            mock_dt.now.return_value = datetime.datetime(2020, 1, 1, 0, 0, 0)
+            param_str = eval_param_str(
+                repeat_reliability=False,
+                testset="cyoa_alice10",
+                rater_name="test_rater",
+                model_name=None,  # This is the key - None value
+                seed=42,
+                random_mode=None,
+            )
+
+        self.assertIn("20200101_000000", param_str)
+        self.assertIn("cyoa_alice10", param_str)
+        self.assertIn("test_rater", param_str)
+        self.assertNotIn("-m_", param_str)  # No model name part
+
+    def test_eval_param_str_with_repeat_reliability(self):
+        """Test eval_param_str when repeat_reliability is True."""
+        from recall_matrix.evaluate_binary import eval_param_str
+
+        with patch(
+            "recall_matrix.evaluate_binary.datetime.datetime", wraps=datetime.datetime
+        ) as mock_dt:
+            mock_dt.now.return_value = datetime.datetime(2020, 1, 1, 0, 0, 0)
+            param_str = eval_param_str(
+                repeat_reliability=True,
+                testset="cyoa_alice10",
+                rater_name="test_rater",
+                model_name=None,
+                seed=42,
+                random_mode=None,
+            )
+
+        self.assertIn("-rr", param_str)
+
+
+class TestLoadStoryRecallSegmentsMonthiversary(unittest.TestCase):
+    """Test load_story_recall_segments_default with cyoa_monthiversary6."""
+
+    @patch("recall_matrix.evaluate_binary.load_cyoa_recall_matrix_human_binary")
+    @patch("recall_matrix.evaluate_binary.load_cyoa_story_recall_segments")
+    def test_load_cyoa_monthiversary6(self, mock_load_cyoa, mock_load_human):
+        """Test that cyoa_monthiversary6 testset works (lines 79-90)."""
+        from recall_matrix.evaluate_binary import load_story_recall_segments_default
+
+        mock_load_cyoa.return_value = [
+            ("monthiversary_3", "sub-001", ["s1"], ["r1"]),
+        ]
+        mock_load_human.return_value = np.array([[1, 0]])
+
+        story_recall_segments, human_ratings = load_story_recall_segments_default(
+            "cyoa_monthiversary6"
+        )
+
+        self.assertEqual(len(story_recall_segments), 1)
+        self.assertIsNotNone(human_ratings)
+        mock_load_cyoa.assert_called_once()
+
+
+class TestLoadStoryRecallSegmentsMemsearch(unittest.TestCase):
+    """Test load_story_recall_segments_default with memsearch testsets."""
+
+    @patch("recall_matrix.evaluate_binary.load_ratings_dict")
+    @patch("recall_matrix.evaluate_binary.ratings_single_sub_to_matrix")
+    @patch("recall_matrix.evaluate_binary.load_story_recall_segments")
+    def test_load_memsearch10(self, mock_load, mock_to_matrix, mock_ratings_dict):
+        """Test that memsearch10 testset loads correctly (lines 102-169)."""
+        from recall_matrix.evaluate_binary import load_story_recall_segments_default
+
+        # Mock load_story_recall_segments to return one story's segments
+        mock_load.return_value = (
+            [("sub-001", ["s1"], ["r1"])],
+            "seg_c",
+            "sentences",
+        )
+
+        # Mock ratings dict and conversion
+        mock_ratings_dict.return_value = {
+            "n_story_segments": 2,
+            "ratings": {"sub-001": [(0, [0, 1])]},
+        }
+        mock_to_matrix.return_value = np.array([[1, 1]])
+
+        story_recall_segments, human_ratings = load_story_recall_segments_default(
+            "memsearch10"
+        )
+
+        self.assertIsNotNone(story_recall_segments)
+        self.assertIsNotNone(human_ratings)
+
+    @patch("recall_matrix.evaluate_binary.load_ratings_dict")
+    @patch("recall_matrix.evaluate_binary.ratings_single_sub_to_matrix")
+    @patch("recall_matrix.evaluate_binary.load_story_recall_segments")
+    def test_load_memsearch_all(self, mock_load, mock_to_matrix, mock_ratings_dict):
+        """Test that memsearch (all stories) testset loads correctly."""
+        from recall_matrix.evaluate_binary import load_story_recall_segments_default
+
+        mock_load.return_value = (
+            [("sub-001", ["s1"], ["r1"])],
+            "seg_c",
+            "sentences",
+        )
+        mock_ratings_dict.return_value = {
+            "n_story_segments": 2,
+            "ratings": {"sub-001": [(0, [0, 1])]},
+        }
+        mock_to_matrix.return_value = np.array([[1, 1]])
+
+        story_recall_segments, human_ratings = load_story_recall_segments_default(
+            "memsearch"
+        )
+
+        self.assertIsNotNone(story_recall_segments)
+
+
+class TestEvaluateWithModelZeroMatrix(unittest.TestCase):
+    """Test evaluate function when model produces all-zero matrix."""
+
+    @patch("recall_matrix.evaluate_binary.load_story_recall_segments_default")
+    @patch("recall_matrix.evaluate_binary.initialize_rater")
+    @patch("recall_matrix.evaluate_binary.eval_param_str", return_value="fixed")
+    def test_evaluate_model_all_zeros(self, mock_eval_param_str, mock_init, mock_load):
+        """Test evaluate when rm_model is all zeros (lines 284-287)."""
+        from recall_matrix.evaluate_binary import evaluate
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            cwd = os.getcwd()
+            try:
+                os.chdir(tmpdir)
+
+                story_name = "story"
+                sub_id = "sub"
+                story_segments = ["s1", "s2"]
+                recall_segments = ["r1"]
+                rm_comparison = np.array([[1, 0]])
+
+                mock_load.return_value = (
+                    [(story_name, sub_id, story_segments, recall_segments)],
+                    {story_name: {sub_id: rm_comparison}},
+                )
+
+                class AllZeroRater(Rater):
+                    def __init__(self):
+                        super().__init__()
+                        self.rater_name = "dummy"
+
+                    def compute_ratings_single_sub(  # type: ignore
+                        self,
+                        story_segments: list[str],
+                        recall_segments: list[str],
+                        output_scores: bool = False,
+                    ):
+                        # Return all zeros
+                        return [(0, [])]
+
+                mock_init.return_value = AllZeroRater()
+
+                evaluate(
+                    repeat_reliability=False,
+                    rater_name="test",
+                    model_name=None,
+                    testset="cyoa_alice10",
+                    device=None,
+                    seed=42,
+                    random_mode=None,
+                )
+
+                results_path = Path("data") / "eval" / "fixed" / "results.json"
+                self.assertTrue(results_path.exists())
+
+            finally:
+                os.chdir(cwd)
+
+
+class TestEvaluateWithRandomMode(unittest.TestCase):
+    """Test evaluate function with random_mode parameter."""
+
+    @patch("recall_matrix.evaluate_binary.load_story_recall_segments_default")
+    @patch("recall_matrix.evaluate_binary.initialize_rater")
+    @patch("recall_matrix.evaluate_binary.eval_param_str", return_value="fixed")
+    def test_evaluate_with_random_mode(self, mock_eval_param_str, mock_init, mock_load):
+        """Test evaluate when random_mode is not None (line 303)."""
+        from recall_matrix.evaluate_binary import evaluate
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            cwd = os.getcwd()
+            try:
+                os.chdir(tmpdir)
+
+                story_name = "story"
+                sub_id = "sub"
+                story_segments = ["s1", "s2"]
+                recall_segments = ["r1"]
+                rm_comparison = np.array([[1, 0]])
+
+                mock_load.return_value = (
+                    [(story_name, sub_id, story_segments, recall_segments)],
+                    {story_name: {sub_id: rm_comparison}},
+                )
+
+                class DummyRater(Rater):
+                    def __init__(self):
+                        super().__init__()
+                        self.rater_name = "dummy"
+
+                    def compute_ratings_single_sub(  # type: ignore
+                        self,
+                        story_segments: list[str],
+                        recall_segments: list[str],
+                        output_scores: bool = False,
+                    ):
+                        return [(0, [0])]
+
+                mock_init.return_value = DummyRater()
+
+                evaluate(
+                    repeat_reliability=False,
+                    rater_name="test",
+                    model_name=None,
+                    testset="cyoa_alice10",
+                    device=None,
+                    seed=42,
+                    random_mode="full_shuffle",  # Not None!
+                )
+
+                results_path = Path("data") / "eval" / "fixed" / "results.json"
+                self.assertTrue(results_path.exists())
+                results = json.loads(results_path.read_text())
+                self.assertEqual(results["random_mode"], "full_shuffle")
+
+            finally:
+                os.chdir(cwd)
+
+
+class TestLoadStoryRecallSegmentsRepeatReliability(unittest.TestCase):
+    """Test load_story_recall_segments_repeat_reliability for different testsets."""
+
+    @patch("recall_matrix.evaluate_binary.load_cyoa_recall_matrix_human_binary")
+    @patch("recall_matrix.evaluate_binary.load_cyoa_story_recall_segments")
+    def test_load_repeat_reliability_cyoa_alice10(
+        self, mock_load_cyoa, mock_load_human
+    ):
+        """Test with cyoa_alice10 testset (line 372-380)."""
+        from recall_matrix.evaluate_binary import (
+            load_story_recall_segments_repeat_reliability,
+        )
+
+        mock_load_cyoa.return_value = [
+            ("alice_3", "sub-001", ["s1"], ["r1"]),
+            ("alice_6", "sub-002", ["s2"], ["r2"]),
+            ("alice_12", "sub-003", ["s3"], ["r3"]),
+        ]
+        mock_load_human.return_value = np.array([[1, 0]])
+
+        story_segments, human_ratings = load_story_recall_segments_repeat_reliability(
+            "cyoa_alice10"
+        )
+
+        self.assertEqual(len(story_segments), 3)
+        self.assertIsNotNone(human_ratings)
+        self.assertIn("alice_3", human_ratings)  # type: ignore
+        self.assertIn("alice_6", human_ratings)  # type: ignore
+        self.assertIn("alice_12", human_ratings)  # type: ignore
+
+    @patch("recall_matrix.evaluate_binary.load_cyoa_recall_matrix_human_binary")
+    @patch("recall_matrix.evaluate_binary.load_cyoa_story_recall_segments")
+    def test_load_repeat_reliability_cyoa_monthiversary6(
+        self, mock_load_cyoa, mock_load_human
+    ):
+        """Test with cyoa_monthiversary6 testset."""
+        from recall_matrix.evaluate_binary import (
+            load_story_recall_segments_repeat_reliability,
+        )
+
+        mock_load_cyoa.return_value = [
+            ("monthiversary_3", "sub-001", ["s1"], ["r1"]),
+            ("monthiversary_4", "sub-002", ["s2"], ["r2"]),
+            ("monthiversary_25", "sub-003", ["s3"], ["r3"]),
+        ]
+        mock_load_human.return_value = np.array([[1, 0]])
+
+        story_segments, human_ratings = load_story_recall_segments_repeat_reliability(
+            "cyoa_monthiversary6"
+        )
+
+        self.assertEqual(len(story_segments), 3)
+
+    def test_load_repeat_reliability_invalid_cyoa(self):
+        """Test with invalid cyoa testset (line 380-383 raises ValueError)."""
+        from recall_matrix.evaluate_binary import (
+            load_story_recall_segments_repeat_reliability,
+        )
+
+        with self.assertRaises(ValueError) as context:
+            load_story_recall_segments_repeat_reliability("cyoa_invalid")
+
+        self.assertIn("Invalid testset", str(context.exception))
+
+    @patch("recall_matrix.evaluate_binary.load_ratings_dict")
+    @patch("recall_matrix.evaluate_binary.ratings_single_sub_to_matrix")
+    @patch("recall_matrix.evaluate_binary.load_story_recall_segments")
+    def test_load_repeat_reliability_memsearch(
+        self, mock_load, mock_to_matrix, mock_ratings_dict
+    ):
+        """Test with memsearch testset (lines 411-447)."""
+        from recall_matrix.evaluate_binary import (
+            load_story_recall_segments_repeat_reliability,
+        )
+
+        # memsearch uses special story names and only picks first recall per story
+        mock_load.return_value = (
+            [("sub-001", ["s1"], ["r1"])],
+            "seg_c",
+            "sentences",
+        )
+        mock_ratings_dict.return_value = {
+            "n_story_segments": 2,
+            "ratings": {"sub-001": [(0, [0, 1])]},
+        }
+        mock_to_matrix.return_value = np.array([[1, 1]])
+
+        story_segments, human_ratings = load_story_recall_segments_repeat_reliability(
+            "memsearch"
+        )
+
+        # Should have 3 specific memsearch stories
+        self.assertEqual(len(story_segments), 3)
+
+
+class TestGetAveragePairwiseF1(unittest.TestCase):
+    """Test get_average_pairwise_f1 function edge cases."""
+
+    def test_get_average_pairwise_f1_single_recall_per_story(self):
+        """Test get_average_pairwise_f1 with single recall per story."""
+        from recall_matrix.evaluate_binary import get_average_pairwise_f1
+
+        # Single matrix per story - no pairs to compare-> should go to line 466
+        d = {"s1": [np.array([[1, 0]])], "s2": [np.array([[0, 1]])]}
+
+        f1 = get_average_pairwise_f1(d)
+        # Single matrix per story means scores list is empty for each
+        # so should return 0.0
+        self.assertEqual(f1, 0.0)
+
+    def test_get_average_pairwise_f1_multiple_matrices(self):
+        """Test get_average_pairwise_f1 with multiple matrices."""
+        from recall_matrix.evaluate_binary import get_average_pairwise_f1
+
+        # Multiple matrices per story - will calculate pairwise F1
+        m1 = np.array([[1, 0]])
+        m2 = np.array([[1, 0]])
+        m3 = np.array([[0, 1]])
+
+        d = {"s1": [m1, m2, m3]}
+
+        f1 = get_average_pairwise_f1(d)
+        # Should compute F1 between all pairs
+        self.assertIsInstance(f1, float)
+
+    def test_get_average_pairwise_f1_empty_dict(self):
+        """Test get_average_pairwise_f1 with empty dictionary."""
+        from recall_matrix.evaluate_binary import get_average_pairwise_f1
+
+        d = {}
+        f1 = get_average_pairwise_f1(d)
+        self.assertEqual(f1, 0.0)
+
+
+class TestEvaluateRepeatReliability(unittest.TestCase):
+    """Test evaluate_repeat_reliability function (lines 505-680)."""
+
+    @patch(
+        "recall_matrix.evaluate_binary.load_story_recall_segments_repeat_reliability"
+    )
+    @patch("recall_matrix.evaluate_binary.initialize_rater")
+    @patch("recall_matrix.evaluate_binary.eval_param_str", return_value="fixed")
+    def test_evaluate_repeat_reliability_basic(
+        self, mock_eval_param_str, mock_init, mock_load
+    ):
+        """Test evaluate_repeat_reliability basic functionality."""
+        from recall_matrix.evaluate_binary import evaluate_repeat_reliability
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            cwd = os.getcwd()
+            try:
+                os.chdir(tmpdir)
+
+                story_name = "story"
+                sub_id = "sub"
+                story_segments = ["s1", "s2"]
+                recall_segments = ["r1"]
+                rm_comparison = np.array([[1, 0]])
+
+                mock_load.return_value = (
+                    [(story_name, sub_id, story_segments, recall_segments)],
+                    {story_name: {sub_id: rm_comparison}},
+                )
+
+                class DummyRater(Rater):
+                    def __init__(self):
+                        super().__init__()
+                        self.rater_name = "dummy"
+
+                    def compute_ratings_single_sub(  # type: ignore
+                        self,
+                        story_segments: list[str],
+                        recall_segments: list[str],
+                        output_scores: bool = False,
+                    ):
+                        return [(0, [0])]
+
+                mock_init.return_value = DummyRater()
+
+                evaluate_repeat_reliability(
+                    n_repeats=3,
+                    rater_name="test",
+                    model_name=None,
+                    testset="cyoa_alice10",
+                    device=None,
+                    seed=42,
+                    random_mode=None,
+                )
+
+                results_path = Path("data") / "eval" / "fixed" / "results.json"
+                self.assertTrue(results_path.exists())
+                results = json.loads(results_path.read_text())
+                self.assertIn("n_repeats", results)
+                self.assertEqual(results["n_repeats"], 3)
+
+            finally:
+                os.chdir(cwd)
+
+    @patch(
+        "recall_matrix.evaluate_binary.load_story_recall_segments_repeat_reliability"
+    )
+    @patch("recall_matrix.evaluate_binary.initialize_rater")
+    def test_evaluate_repeat_reliability_all_zero_comparison(
+        self, mock_init, mock_load
+    ):
+        """Test evaluate_repeat_reliability raises when comparison matrix.
+
+        is all zero.
+        """
+        from recall_matrix.evaluate_binary import evaluate_repeat_reliability
+
+        story_name = "story"
+        sub_id = "sub"
+        story_segments = ["s1", "s2"]
+        recall_segments = ["r1"]
+        rm_comparison = np.zeros((1, 2), dtype=int)
+
+        mock_load.return_value = (
+            [(story_name, sub_id, story_segments, recall_segments)],
+            {story_name: {sub_id: rm_comparison}},
+        )
+
+        class DummyRater(Rater):
+            def __init__(self):
+                super().__init__()
+                self.rater_name = "dummy"
+
+            def compute_ratings_single_sub(  # type: ignore
+                self,
+                story_segments: list[str],
+                recall_segments: list[str],
+                output_scores: bool = False,
+            ):
+                return [(0, [0])]
+
+        mock_init.return_value = DummyRater()
+
+        with self.assertRaises(ValueError) as context:
+            evaluate_repeat_reliability(
+                n_repeats=3,
+                rater_name="test",
+                model_name=None,
+                testset="cyoa_alice10",
+                device=None,
+                seed=42,
+                random_mode=None,
+            )
+
+        self.assertIn("all zero", str(context.exception))
+
 
 if __name__ == "__main__":
     unittest.main()
