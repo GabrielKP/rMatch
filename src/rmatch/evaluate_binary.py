@@ -12,16 +12,16 @@ from scipy.stats import pearsonr
 from sklearn.metrics import f1_score, precision_score, recall_score
 from tqdm import tqdm
 
-from recall_matrix import console
-from recall_matrix.load import (
+from rmatch import console
+from rmatch.load import (
     load_cyoa_recall_matrix_human_binary,
     load_cyoa_story_recall_segments,
     load_ratings_dict,
     load_story_recall_segments,
 )
-from recall_matrix.raters import initialize_rater
-from recall_matrix.raters.rater import Rater
-from recall_matrix.utils import ratings_single_sub_to_matrix
+from rmatch.raters import initialize_rater
+from rmatch.raters.rater import Rater
+from rmatch.utils import ratings_single_sub_to_matrix
 
 
 def eval_param_str(

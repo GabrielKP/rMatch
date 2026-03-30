@@ -1,7 +1,7 @@
-from recall_matrix.raters.rater import Rater
-from recall_matrix.raters.rater_huggingface import RaterHuggingFace
-from recall_matrix.raters.rater_openai import RaterOpenAI
-from recall_matrix.raters.rater_reranker import RaterReranker
+from rmatch.raters.rater import Rater
+from rmatch.raters.rater_huggingface import RaterHuggingFace
+from rmatch.raters.rater_openai import RaterOpenAI
+from rmatch.raters.rater_reranker import RaterReranker
 
 __all__ = ["Rater", "RaterReranker", "RaterOpenAI", "RaterHuggingFace"]
 

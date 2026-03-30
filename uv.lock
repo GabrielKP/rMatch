@@ -1247,59 +1247,6 @@ wheels = [
 ]
 
 [[package]]
-name = "recall-matrix"
-version = "0.1.0"
-source = { editable = "." }
-dependencies = [
-    { name = "accelerate" },
-    { name = "chardet" },
-    { name = "einops" },
-    { name = "krippendorff" },
-    { name = "matplotlib" },
-    { name = "nltk" },
-    { name = "numpy" },
-    { name = "openai" },
-    { name = "openpyxl" },
-    { name = "pandas" },
-    { name = "pre-commit" },
-    { name = "python-dotenv" },
-    { name = "rich" },
-    { name = "ruff" },
-    { name = "scikit-learn" },
-    { name = "sentence-transformers" },
-    { name = "spacy" },
-    { name = "torch" },
-    { name = "torchvision" },
-    { name = "tqdm" },
-    { name = "transformers" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "accelerate", specifier = ">=1.10.1,<2" },
-    { name = "chardet", specifier = ">=5.2.0" },
-    { name = "einops", specifier = ">=0.8.1" },
-    { name = "krippendorff", specifier = ">=0.8.2" },
-    { name = "matplotlib", specifier = ">=3.10.7,<4" },
-    { name = "nltk", specifier = ">=3.9.2" },
-    { name = "numpy", specifier = ">=2.3.3,<3" },
-    { name = "openai", specifier = ">=2.15.0" },
-    { name = "openpyxl", specifier = ">=3.1.5,<4" },
-    { name = "pandas", specifier = ">=2.3.3,<3" },
-    { name = "pre-commit", specifier = ">=4.3.0,<5" },
-    { name = "python-dotenv", specifier = ">=1.1.1,<2" },
-    { name = "rich", specifier = ">=14.2.0,<15" },
-    { name = "ruff", specifier = ">=0.14.0,<0.15" },
-    { name = "scikit-learn", specifier = ">=1.7.2" },
-    { name = "sentence-transformers", specifier = ">=5.1.1,<6" },
-    { name = "spacy", specifier = ">=3.8.7,<4" },
-    { name = "torch", specifier = ">=2.9,<2.10" },
-    { name = "torchvision", specifier = ">=0.24,<0.25" },
-    { name = "tqdm", specifier = ">=4.67.1,<5" },
-    { name = "transformers", specifier = "<4.57.0" },
-]
-
-[[package]]
 name = "regex"
 version = "2025.11.3"
 source = { registry = "https://pypi.org/simple" }
@@ -1375,6 +1322,59 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/fb/d2/8920e102050a0de7bfabeb4c4614a49248cf8d5d7a8d01885fbb24dc767a/rich-14.2.0.tar.gz", hash = "sha256:73ff50c7c0c1c77c8243079283f4edb376f0f6442433aecb8ce7e6d0b92d1fe4", size = 219990, upload-time = "2025-10-09T14:16:53.064Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/25/7a/b0178788f8dc6cafce37a212c99565fa1fe7872c70c6c9c1e1a372d9d88f/rich-14.2.0-py3-none-any.whl", hash = "sha256:76bc51fe2e57d2b1be1f96c524b890b816e334ab4c1e45888799bfaab0021edd", size = 243393, upload-time = "2025-10-09T14:16:51.245Z" },
+]
+
+[[package]]
+name = "rmatch"
+version = "0.1.0"
+source = { editable = "." }
+dependencies = [
+    { name = "accelerate" },
+    { name = "chardet" },
+    { name = "einops" },
+    { name = "krippendorff" },
+    { name = "matplotlib" },
+    { name = "nltk" },
+    { name = "numpy" },
+    { name = "openai" },
+    { name = "openpyxl" },
+    { name = "pandas" },
+    { name = "pre-commit" },
+    { name = "python-dotenv" },
+    { name = "rich" },
+    { name = "ruff" },
+    { name = "scikit-learn" },
+    { name = "sentence-transformers" },
+    { name = "spacy" },
+    { name = "torch" },
+    { name = "torchvision" },
+    { name = "tqdm" },
+    { name = "transformers" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "accelerate", specifier = ">=1.10.1,<2" },
+    { name = "chardet", specifier = ">=5.2.0" },
+    { name = "einops", specifier = ">=0.8.1" },
+    { name = "krippendorff", specifier = ">=0.8.2" },
+    { name = "matplotlib", specifier = ">=3.10.7,<4" },
+    { name = "nltk", specifier = ">=3.9.2" },
+    { name = "numpy", specifier = ">=2.3.3,<3" },
+    { name = "openai", specifier = ">=2.15.0" },
+    { name = "openpyxl", specifier = ">=3.1.5,<4" },
+    { name = "pandas", specifier = ">=2.3.3,<3" },
+    { name = "pre-commit", specifier = ">=4.3.0,<5" },
+    { name = "python-dotenv", specifier = ">=1.1.1,<2" },
+    { name = "rich", specifier = ">=14.2.0,<15" },
+    { name = "ruff", specifier = ">=0.14.0,<0.15" },
+    { name = "scikit-learn", specifier = ">=1.7.2" },
+    { name = "sentence-transformers", specifier = ">=5.1.1,<6" },
+    { name = "spacy", specifier = ">=3.8.7,<4" },
+    { name = "torch", specifier = ">=2.9,<2.10" },
+    { name = "torchvision", specifier = ">=0.24,<0.25" },
+    { name = "tqdm", specifier = ">=4.67.1,<5" },
+    { name = "transformers", specifier = "<4.57.0" },
 ]
 
 [[package]]

@@ -5,7 +5,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from recall_matrix import get_logger
+from rmatch import get_logger
 
 log = get_logger(__name__)
 

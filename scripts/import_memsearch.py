@@ -7,7 +7,7 @@ from pathlib import Path
 import pandas as pd
 from rich.console import Console
 
-from recall_matrix.utils import get_param_str
+from rmatch.utils import get_param_str
 
 console = Console()
 

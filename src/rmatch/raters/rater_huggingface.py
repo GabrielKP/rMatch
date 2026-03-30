@@ -1,4 +1,4 @@
-from recall_matrix.raters.rater import Rater
+from rmatch.raters.rater import Rater
 
 
 class RaterHuggingFace(Rater):
