@@ -28,7 +28,14 @@ dependencies = [
     "chardet>=5.2.0",
     "openai>=2.15.0",
     "krippendorff>=0.8.2",
+    "huggingface>=0.0.1",
 ]
+
+[project.optional-dependencies]
+cuda = ["flash-attn>=2.8"]
+
+[tool.uv.extra-build-dependencies]
+flash-attn = ["torch"]
 
 [build-system]
 requires = ["hatchling"]

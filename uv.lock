@@ -411,6 +411,15 @@ wheels = [
 ]
 
 [[package]]
+name = "huggingface"
+version = "0.0.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/9d/a4/168b574a23c1841fab5b24ecac98a88ea626ea3c746c481f79eb360c81f2/huggingface-0.0.1.tar.gz", hash = "sha256:0a2f228fd956801d68b7c6a8bef478dfa60c4b7d7eba572ea7de39ecf87e505a", size = 2320, upload-time = "2020-12-18T18:37:00.599Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f4/8c/e61fbc39c0a37140e1d4941c4af29e2d53bacf9f4559e3de24d8f4e484f0/huggingface-0.0.1-py3-none-any.whl", hash = "sha256:98a3409537557cd2fd768997ef94cab08529f86c5e106e6d54bbabdd5ee03910", size = 2455, upload-time = "2020-12-18T18:36:59.096Z" },
+]
+
+[[package]]
 name = "huggingface-hub"
 version = "0.36.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1332,6 +1341,7 @@ dependencies = [
     { name = "accelerate" },
     { name = "chardet" },
     { name = "einops" },
+    { name = "huggingface" },
     { name = "krippendorff" },
     { name = "matplotlib" },
     { name = "nltk" },
@@ -1357,6 +1367,7 @@ requires-dist = [
     { name = "accelerate", specifier = ">=1.10.1,<2" },
     { name = "chardet", specifier = ">=5.2.0" },
     { name = "einops", specifier = ">=0.8.1" },
+    { name = "huggingface", specifier = ">=0.0.1" },
     { name = "krippendorff", specifier = ">=0.8.2" },
     { name = "matplotlib", specifier = ">=3.10.7,<4" },
     { name = "nltk", specifier = ">=3.9.2" },

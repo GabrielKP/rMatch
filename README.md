@@ -41,6 +41,11 @@ OPENAI_API_KEY="your_api_key"
 uv run src/rmatch/rate_binary.py -rater openai --story_name pieman --sub_ids sub-001
 ```
 
+### Running locally
+
+1. Set up a `HF_TOKEN="your_api_key"` in `.env`.
+2. If cuda is available, run `uv sync --extra cuda` to enable faster computation.
+
 ### Inputs
 
 To rate your own stories and recalls, they need to be in a specific format in the `data/stories-and-recalls` directory.
