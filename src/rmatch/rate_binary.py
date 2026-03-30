@@ -1,4 +1,5 @@
 import argparse
+from typing import Literal
 
 from rmatch.plot_single_sub import plot_single_sub
 from rmatch.raters import initialize_rater
@@ -17,6 +18,8 @@ def rate_binary(
     # reranker specific parameters
     reranker_threshold: float | None = None,
     top_k: int = 5,
+    # huggingface specific parameters
+    quantization: Literal["4bit", "8bit"] | None = None,
 ):
     """Rate whether a recall segment refers to a story segment.
 
@@ -45,7 +48,10 @@ def rate_binary(
         [reranker] Device to use for the reranker. If None, will be autoselected.
     """
     rater = initialize_rater(
-        rater_name=rater_name, model_name=model_name, device=device
+        rater_name=rater_name,
+        model_name=model_name,
+        device=device,
+        quantization=quantization,
     )
 
     output_dict = rater.rate(
@@ -152,6 +158,16 @@ if __name__ == "__main__":
             " for each recall segment."
         ),
     )
+    args.add_argument(
+        "-q",
+        "--quantization",
+        type=str,
+        choices=["4bit", "8bit"],
+        default=None,
+        help=(
+            "[huggingface] Quantization mode: '4bit' or '8bit'. Default is None (bf16)."
+        ),
+    )
 
     args = args.parse_args()
     rate_binary(
@@ -165,4 +181,5 @@ if __name__ == "__main__":
         reranker_threshold=args.reranker_threshold,
         top_k=args.top_k,
         device=args.device,
+        quantization=args.quantization,
     )

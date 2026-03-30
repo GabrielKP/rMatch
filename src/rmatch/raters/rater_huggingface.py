@@ -1,8 +1,9 @@
 import re
+from typing import Literal
 
 import torch
 from tqdm import tqdm
-from transformers import pipeline
+from transformers import BitsAndBytesConfig, pipeline
 
 from rmatch import get_logger
 from rmatch.raters.rater import Rater
@@ -15,11 +16,14 @@ class RaterHuggingFace(Rater):
         self,
         model_name: str | None = None,
         window_size: int = 5,
+        verbose_errors: bool = False,
+        quantization: Literal["4bit", "8bit"] | None = None,
     ):
         self.rater_name = "huggingface"
 
         self.use_context = window_size > 0
         self.window_size = window_size
+        self.verbose_errors = verbose_errors
 
         if model_name is None:
             self.model_name = "meta-llama/Llama-3.2-1B-Instruct"
@@ -28,8 +32,27 @@ class RaterHuggingFace(Rater):
             self.model_name = model_name
             log.info(f"Initializing model: {self.model_name}")
 
-        # handle devices
-        if torch.cuda.is_available():
+        # handle devices and quantization
+        model_kwargs: dict = {}
+
+        if quantization == "4bit":
+            log.info("Using 4-bit quantization (NF4)")
+            model_kwargs["quantization_config"] = BitsAndBytesConfig(
+                load_in_4bit=True,
+                bnb_4bit_compute_dtype=torch.bfloat16,
+                bnb_4bit_quant_type="nf4",
+                bnb_4bit_use_double_quant=True,
+            )
+            torch_dtype = torch.bfloat16
+            attn_impl = "sdpa"
+        elif quantization == "8bit":
+            log.info("Using 8-bit quantization")
+            model_kwargs["quantization_config"] = BitsAndBytesConfig(
+                load_in_8bit=True,
+            )
+            torch_dtype = torch.bfloat16
+            attn_impl = "sdpa"
+        elif torch.cuda.is_available():
             torch_dtype = torch.bfloat16
             attn_impl = "sdpa"
         elif torch.backends.mps.is_available():
@@ -39,16 +62,26 @@ class RaterHuggingFace(Rater):
             torch_dtype = torch.float32
             attn_impl = "eager"
 
+        model_kwargs["attn_implementation"] = attn_impl
+
         self.pipe = pipeline(
             task="text-generation",
             model=self.model_name,
             device_map="auto",
             dtype=torch_dtype,
-            model_kwargs={"attn_implementation": attn_impl},
+            model_kwargs=model_kwargs,
         )
 
-        if torch.cuda.is_available():
-            self.pipe.model = torch.compile(self.pipe.model, mode="reduce-overhead")
+        if torch.cuda.is_available() and quantization is None:
+            device_map = getattr(self.pipe.model, "hf_device_map", {})
+            used_devices = set(v for v in device_map.values() if isinstance(v, int))
+            if len(used_devices) > 1:
+                log.info(
+                    f"Model sharded across GPUs {sorted(used_devices)}; "
+                    "skipping torch.compile"
+                )
+            else:
+                self.pipe.model = torch.compile(self.pipe.model, mode="reduce-overhead")
 
     def build_message(
         self, recall_segment: str, story: str, story_segments: str, window: str | None
@@ -126,6 +159,7 @@ class RaterHuggingFace(Rater):
 
     def parse(self, raw: str) -> set[int] | None:
         """Return matched indices, empty set for <NONE>, or None on parse failure."""
+
         raw = raw.strip()
 
         if "<NONE>" in raw:
@@ -133,7 +167,8 @@ class RaterHuggingFace(Rater):
 
         match = re.search(r"<([0-9,\s]+)>", raw)
         if not match:
-            log.warning(f"failed to parse model output: {raw}")
+            if self.verbose_errors:
+                log.warning(f"failed to parse model output:\n{raw}")
             return None
 
         parsed_set = {

@@ -29,6 +29,7 @@ dependencies = [
     "openai>=2.15.0",
     "krippendorff>=0.8.2",
     "huggingface>=0.0.1",
+    "bitsandbytes>=0.45.0",
 ]
 
 
