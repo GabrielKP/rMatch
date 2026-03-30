@@ -44,7 +44,6 @@ uv run src/rmatch/rate_binary.py -rater openai --story_name pieman --sub_ids sub
 ### Running locally
 
 1. Set up a `HF_TOKEN="your_api_key"` in `.env`.
-2. If cuda is available, run `uv sync --extra cuda` to enable faster computation.
 
 ### Inputs
 

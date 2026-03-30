@@ -31,7 +31,7 @@ class RaterHuggingFace(Rater):
         # handle devices
         if torch.cuda.is_available():
             torch_dtype = torch.bfloat16
-            attn_impl = "flash_attention_2"
+            attn_impl = "sdpa"
         elif torch.backends.mps.is_available():
             torch_dtype = torch.float32
             attn_impl = "sdpa"
