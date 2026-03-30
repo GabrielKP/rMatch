@@ -32,9 +32,6 @@ dependencies = [
 ]
 
 
-[tool.uv.extra-build-dependencies]
-flash-attn = ["torch"]
-
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

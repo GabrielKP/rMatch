@@ -124,7 +124,8 @@ class RaterHuggingFace(Rater):
     def format_story(self, story_segments: list[str]) -> str:
         return " ".join(seg.strip() for seg in story_segments)
 
-    def parse(self, raw: str) -> set[int]:
+    def parse(self, raw: str) -> set[int] | None:
+        """Return matched indices, empty set for <NONE>, or None on parse failure."""
         raw = raw.strip()
 
         if "<NONE>" in raw:
@@ -133,7 +134,7 @@ class RaterHuggingFace(Rater):
         match = re.search(r"<([0-9,\s]+)>", raw)
         if not match:
             log.warning(f"failed to parse model output: {raw}")
-            return set()
+            return None
 
         parsed_set = {
             int(x.strip()) for x in match.group(1).split(",") if x.strip().isdigit()
@@ -146,6 +147,7 @@ class RaterHuggingFace(Rater):
         story_segments: list[str],
         recall_segments: list[str],
         output_scores: bool = False,
+        max_retries: int = 10,
         **kwargs,
     ) -> list[tuple[int, list[int]]]:
         if output_scores:
@@ -156,6 +158,8 @@ class RaterHuggingFace(Rater):
         story = self.format_story(story_segments)
         story_segs_formatted = self.format_story_segments(story_segments)
         ratings: list[tuple[int, list[int]]] = []
+
+        n_story_segments = len(story_segments)
 
         for idx, recall_seg in enumerate(
             tqdm(
@@ -176,12 +180,33 @@ class RaterHuggingFace(Rater):
 
             query = self.build_message(recall_seg, story, story_segs_formatted, window)
 
-            response = self.pipe(
-                [{"role": "user", "content": query}],
-                return_full_text=False,
-                pad_token_id=self.pipe.tokenizer.eos_token_id,  # type: ignore
-            )
-            parsed_response = self.parse(response[0]["generated_text"])  # type: ignore
+            parsed_response: set[int] | None = None
+            for attempt in range(1, max_retries + 1):
+                response = self.pipe(
+                    [{"role": "user", "content": query}],
+                    return_full_text=False,
+                    pad_token_id=self.pipe.tokenizer.eos_token_id,  # type: ignore
+                )
+                parsed_response = self.parse(response[0]["generated_text"])  # type: ignore
+
+                # check if parsed response is valid
+                if parsed_response is not None:
+                    # check if all indices are valid
+                    for i in parsed_response:
+                        if i > n_story_segments or i < 1:
+                            parsed_response = None
+                            break
+                    if parsed_response is not None:
+                        break
+
+                log.info(f"Retrying segment {idx} (attempt {attempt}/{max_retries})")
+
+            if parsed_response is None:
+                log.warning(
+                    f"All {max_retries} attempts failed for segment {idx}, "
+                    "defaulting to no matches"
+                )
+                parsed_response = set()
 
             story_indices = sorted(i - 1 for i in parsed_response)
             ratings.append((idx, story_indices))
