@@ -1,7 +1,7 @@
 [project]
-name = "recall-matrix"
+name = "rMatch"
 version = "0.1.0"
-description = ""
+description = "Match recall segments with story segments."
 authors = [{ name = "Gabriel Kressin Palacios", email = "gkressi1@jhu.edu" }]
 requires-python = ">=3.12,<3.14"
 readme = "README.md"

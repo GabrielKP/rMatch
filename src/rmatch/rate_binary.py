@@ -1,7 +1,7 @@
 import argparse
 
-from recall_matrix.plot_single_sub import plot_single_sub
-from recall_matrix.raters import initialize_rater
+from rmatch.plot_single_sub import plot_single_sub
+from rmatch.raters import initialize_rater
 
 
 def rate_binary(

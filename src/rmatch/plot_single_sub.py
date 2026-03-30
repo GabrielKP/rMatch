@@ -1,7 +1,7 @@
 """Plot a single subject's recall matrix for multiple raters.
 
-Examplep usage:
-uv run src/recall_matrix/plot_single_sub.py\
+Example usage:
+uv run src/rmatch/plot_single_sub.py\
     sub-001\
     data/stories-and-recalls/pieman/ratings/lda_hmm.json
 """
@@ -13,7 +13,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 
-from recall_matrix.utils import ratings_single_sub_to_matrix
+from rmatch.utils import ratings_single_sub_to_matrix
 
 
 def plot_single_sub_recall_matrices(

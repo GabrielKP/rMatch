@@ -3,8 +3,8 @@ import torch
 from sentence_transformers import CrossEncoder
 from tqdm import tqdm
 
-from recall_matrix import ENV, get_logger
-from recall_matrix.raters.rater import Rater
+from rmatch import ENV, get_logger
+from rmatch.raters.rater import Rater
 
 log = get_logger(__name__)
 
