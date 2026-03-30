@@ -5,6 +5,7 @@ import pickle
 from collections import defaultdict
 from itertools import combinations
 from pathlib import Path
+from typing import Literal
 
 import krippendorff
 import numpy as np
@@ -12,16 +13,16 @@ from scipy.stats import pearsonr
 from sklearn.metrics import f1_score, precision_score, recall_score
 from tqdm import tqdm
 
-from recall_matrix import console
-from recall_matrix.load import (
+from rmatch import console
+from rmatch.load import (
     load_cyoa_recall_matrix_human_binary,
     load_cyoa_story_recall_segments,
     load_ratings_dict,
     load_story_recall_segments,
 )
-from recall_matrix.raters import initialize_rater
-from recall_matrix.raters.rater import Rater
-from recall_matrix.utils import ratings_single_sub_to_matrix
+from rmatch.raters import initialize_rater
+from rmatch.raters.rater import Rater
+from rmatch.utils import ratings_single_sub_to_matrix
 
 
 def eval_param_str(
@@ -63,7 +64,12 @@ def load_story_recall_segments_default(
 
     human_ratings_dict = defaultdict(dict)
     if testset.startswith("cyoa"):
-        if testset == "cyoa_alice10":
+        if testset == "cyoa2":
+            story_names = [
+                "alice_2",
+                "alice_3",
+            ]
+        elif testset == "cyoa_alice10":
             story_names = [
                 "alice_2",
                 "alice_3",
@@ -200,7 +206,6 @@ def get_model_ratings(
 
 
 def evaluate(
-    repeat_reliability: bool,
     rater_name: str,
     model_name: str | None,
     testset: str,
@@ -209,6 +214,8 @@ def evaluate(
     random_mode: str | None = None,
     reranker_threshold: float | None = None,
     top_k: int = 5,
+    verbose_errors: bool = False,
+    quantization: Literal["4bit", "8bit"] | None = None,
 ):
     """Evaluate the rater."""
     rater = initialize_rater(
@@ -217,6 +224,8 @@ def evaluate(
         device=device,
         reranker_threshold=reranker_threshold,
         top_k=top_k,
+        verbose_errors=verbose_errors,
+        quantization=quantization,
     )
     if hasattr(rater, "model_name"):
         model_name = rater.model_name  # type: ignore
@@ -227,7 +236,7 @@ def evaluate(
         Path("data")
         / "eval"
         / eval_param_str(
-            repeat_reliability=repeat_reliability,
+            repeat_reliability=False,
             testset=testset,
             rater_name=rater_name,
             model_name=model_name,
@@ -498,6 +507,7 @@ def evaluate_repeat_reliability(
     random_mode: str | None = None,
     reranker_threshold: float | None = None,
     top_k: int = 5,
+    quantization: Literal["4bit", "8bit"] | None = None,
 ):
     """Evaluate the repeat reliability of the rater."""
     rater = initialize_rater(
@@ -506,6 +516,7 @@ def evaluate_repeat_reliability(
         device=device,
         reranker_threshold=reranker_threshold,
         top_k=top_k,
+        quantization=quantization,
     )
     if hasattr(rater, "model_name"):
         model_name = rater.model_name  # type: ignore
@@ -762,6 +773,16 @@ if __name__ == "__main__":
         default=10,
         help="[repeat_reliability] Number of times to run each recall. Default is 10.",
     )
+    args.add_argument(
+        "-q",
+        "--quantization",
+        type=str,
+        choices=["4bit", "8bit"],
+        default=None,
+        help=(
+            "[huggingface] Quantization mode: '4bit' or '8bit'. Default is None (bf16)."
+        ),
+    )
     args = args.parse_args()
 
     if args.repeat_reliability:
@@ -775,10 +796,10 @@ if __name__ == "__main__":
             random_mode=args.random_mode,
             reranker_threshold=args.reranker_threshold,
             top_k=args.top_k,
+            quantization=args.quantization,
         )
     else:
         evaluate(
-            repeat_reliability=False,
             rater_name=args.rater_name,
             testset=args.testset,
             model_name=args.model_name,
@@ -787,4 +808,5 @@ if __name__ == "__main__":
             random_mode=args.random_mode,
             reranker_threshold=args.reranker_threshold,
             top_k=args.top_k,
+            quantization=args.quantization,
         )

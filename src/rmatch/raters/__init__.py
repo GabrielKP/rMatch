@@ -1,7 +1,9 @@
-from recall_matrix.raters.rater import Rater
-from recall_matrix.raters.rater_huggingface import RaterHuggingFace
-from recall_matrix.raters.rater_openai import RaterOpenAI
-from recall_matrix.raters.rater_reranker import RaterReranker
+from typing import Literal
+
+from rmatch.raters.rater import Rater
+from rmatch.raters.rater_huggingface import RaterHuggingFace
+from rmatch.raters.rater_openai import RaterOpenAI
+from rmatch.raters.rater_reranker import RaterReranker
 
 __all__ = ["Rater", "RaterReranker", "RaterOpenAI", "RaterHuggingFace"]
 
@@ -12,6 +14,8 @@ def initialize_rater(
     device: str | None = None,
     reranker_threshold: float | None = None,
     top_k: int | None = None,
+    verbose_errors: bool = False,
+    quantization: Literal["4bit", "8bit"] | None = None,
 ) -> Rater:
     """Initialize the rater."""
     if rater_name == "reranker":
@@ -24,7 +28,11 @@ def initialize_rater(
     elif rater_name == "openai":
         rater = RaterOpenAI(model_name=model_name)
     elif rater_name == "huggingface":
-        rater = RaterHuggingFace(model_name=model_name)
+        rater = RaterHuggingFace(
+            model_name=model_name,
+            verbose_errors=verbose_errors,
+            quantization=quantization,
+        )
     else:
         raise ValueError(f"Invalid argument: {rater_name=}")
     return rater

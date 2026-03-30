@@ -1,7 +1,7 @@
 [project]
-name = "recall-matrix"
+name = "rMatch"
 version = "0.1.0"
-description = ""
+description = "Match recall segments with story segments."
 authors = [{ name = "Gabriel Kressin Palacios", email = "gkressi1@jhu.edu" }]
 requires-python = ">=3.12,<3.14"
 readme = "README.md"
@@ -28,7 +28,10 @@ dependencies = [
     "chardet>=5.2.0",
     "openai>=2.15.0",
     "krippendorff>=0.8.2",
+    "huggingface>=0.0.1",
+    "bitsandbytes>=0.45.0",
 ]
+
 
 [build-system]
 requires = ["hatchling"]
