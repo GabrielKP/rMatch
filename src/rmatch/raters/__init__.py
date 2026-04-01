@@ -2,10 +2,17 @@ from typing import Literal
 
 from rmatch.raters.rater import Rater
 from rmatch.raters.rater_huggingface import RaterHuggingFace
+from rmatch.raters.rater_huggingface_batched import RaterHuggingFaceBatched
 from rmatch.raters.rater_openai import RaterOpenAI
 from rmatch.raters.rater_reranker import RaterReranker
 
-__all__ = ["Rater", "RaterReranker", "RaterOpenAI", "RaterHuggingFace"]
+__all__ = [
+    "Rater",
+    "RaterReranker",
+    "RaterOpenAI",
+    "RaterHuggingFace",
+    "RaterHuggingFaceBatched",
+]
 
 
 def initialize_rater(
@@ -29,6 +36,12 @@ def initialize_rater(
         rater = RaterOpenAI(model_name=model_name)
     elif rater_name == "huggingface":
         rater = RaterHuggingFace(
+            model_name=model_name,
+            verbose_errors=verbose_errors,
+            quantization=quantization,
+        )
+    elif rater_name == "huggingface_batched":
+        rater = RaterHuggingFaceBatched(
             model_name=model_name,
             verbose_errors=verbose_errors,
             quantization=quantization,

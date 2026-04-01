@@ -743,7 +743,7 @@ if __name__ == "__main__":
     args.add_argument(
         "-r",
         "--rater_name",
-        choices=["reranker", "openai", "huggingface"],
+        choices=["reranker", "openai", "huggingface", "huggingface_batched"],
         default="openai",
         help="Name of the rater to use. Default is 'openai'.",
     )
