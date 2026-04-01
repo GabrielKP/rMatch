@@ -86,51 +86,44 @@ class RaterHuggingFace(Rater):
     def build_message(
         self, recall_segment: str, story: str, story_segments: str, window: str | None
     ) -> str:
-        if window is None:
-            message = f"""This is the original story:
-        {story}
+        message = f"""You are an expert annotator for episodic memory research. Your task is to match which numbered story elements a participant's recall segment refers to.
 
-        It can be broken down into the following independent pieces of information:
-        {story_segments}
+Matching guidelines:
+- Match based on semantic content, not surface wording. Recall is often paraphrased.
+- A single recall segment may reference multiple story elements. List all that apply.
+- Do NOT match inferences or distortions unless a specific element is clearly referenced.
+- Match only what is explicitly or clearly implicitly referenced. Do not match based on vague thematic similarity.
+- The surrounding recall context aids comprehension only. Match based solely on the <target> segment.
 
-        Here is a single clause from a participant's recall of the story:
-        "{recall_segment}"
+Return matching story element numbers between <> tags, or <NONE> if none match.
 
-        Which of the numbered information pieces above
-        are expressed by this recall clause?
-        List all applicable numbers. If none apply, return the string "<NONE>".
+<EXAMPLE>
+<story_elements>
+1. Sarah walked into the coffee shop.
+2. She ordered a latte.
+3. The barista spilled the drink.
+4. Sarah laughed and said it was fine.
+5. Sarah sat down at the empty table across the room.
+</story_elements>
 
-        Return ONLY a set of numbers in <>, for example:
-        <3, 7, 12>
-        """
+<recall_context>
+Sarah went to a order a coffee.
+<target>She laughed when the barista spilled the drink, because she is a kind person</target>
+</recall_context>
+Story segments that match the <target> segment:
+<3,4>
+</EXAMPLE>
 
-        else:
-            message = f"""This is the original story:
-        {story}
+Now, given the actual story and context, return the matching story elements:
+<story_elements>
+{story_segments}
+</story_elements>
 
-        It can be broken down into the following independent pieces of information:
-        {story_segments}
-
-        Below is a window of consecutive clauses from a participant's recall.
-        The TARGET clause is marked with >>> <<<.
-        The other clauses are provided _only as context_.
-
-        Recall window:
-        {window}
-
-        Which of the numbered information pieces are
-        expressed by the >>> TARGET <<< clause?
-
-        Use the surrounding clauses only to resolve references (e.g., pronouns),
-        but DO NOT attribute information expressed only in neighboring clauses.
-        If a numbered information piece is not explicitly expressed in the TARGET
-        clause itself, do NOT include it.
-
-        If none apply, return "<NONE>".
-
-        Return ONLY a set of numbers in angle brackets, for example:
-        <3, 7, 12>"""
-
+<recall_context>
+{window}
+</recall_context>
+Story segments that match the <target> segment:
+"""
         return message
 
     def build_recall_window(
@@ -143,7 +136,7 @@ class RaterHuggingFace(Rater):
         for i in range(start, end):
             clause = recall_segments[i].strip()
             if i == idx:
-                lines.append(f">>> {clause} <<<")
+                lines.append(f"<target>{clause}</target>")
             else:
                 lines.append(f"{clause}")
 
