@@ -4,8 +4,10 @@ dataset_stats.py
 Prints summary statistics for alice10, monthiversary6, and memsearch10:
   - number of stories
   - average story length in words
+  - min and max story word counts
   - number of recalls (subjects)
   - average recall length in words (mean over all recalls in the set)
+  - min and max recall word counts
 """
 
 import numpy as np
@@ -99,17 +101,25 @@ def compute_stats(dataset_name: str, cfg: dict) -> None:
     recall_word_counts = [word_count(recall_segs) for _, _, _, recall_segs in rows]
 
     n_stories = len(story_words)
-    avg_story_len = float(np.mean(list(story_words.values())))
+    story_word_list = list(story_words.values())
+    avg_story_len = float(np.mean(story_word_list))
+    min_story_len = min(story_word_list)
+    max_story_len = max(story_word_list)
+
     n_recalls = len(rows)
     avg_recall_len = float(np.mean(recall_word_counts))
+    min_recall_len = min(recall_word_counts)
+    max_recall_len = max(recall_word_counts)
 
     print(f"\n{'=' * 42}")
     print(f"  {dataset_name}")
     print(f"{'=' * 42}")
     print(f"  Stories              : {n_stories}")
     print(f"  Avg story length     : {avg_story_len:.0f} words")
+    print(f"  Story length range   : {min_story_len}-{max_story_len} words")
     print(f"  Recalls (subjects)   : {n_recalls}")
     print(f"  Avg recall length    : {avg_recall_len:.0f} words")
+    print(f"  Recall length range  : {min_recall_len}-{max_recall_len} words")
 
 
 if __name__ == "__main__":

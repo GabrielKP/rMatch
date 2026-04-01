@@ -8,6 +8,7 @@ from pathlib import Path
 
 import krippendorff
 import numpy as np
+from dotenv import load_dotenv
 from scipy.stats import pearsonr
 from sklearn.metrics import f1_score, precision_score, recall_score
 from tqdm import tqdm
@@ -22,6 +23,8 @@ from recall_matrix.load import (
 from recall_matrix.raters import initialize_rater
 from recall_matrix.raters.rater import Rater
 from recall_matrix.utils import ratings_single_sub_to_matrix
+
+load_dotenv()
 
 
 def eval_param_str(
@@ -803,7 +806,7 @@ if __name__ == "__main__":
         "-n",
         "--n_repeats",
         type=int,
-        default=10,
+        default=5,
         help="[repeat_reliability] Number of times to run each recall. Default is 10.",
     )
     args = args.parse_args()
