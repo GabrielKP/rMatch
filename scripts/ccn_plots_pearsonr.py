@@ -64,7 +64,7 @@ RUNS = [
         model="GPT-5.2",
     ),
     dict(
-        run_dir="llama-3.3-70B-Instruct-alice10",
+        run_dir="70B-alice10",
         testset="alice10",
         model="Llama 3.3",
     ),
@@ -85,7 +85,7 @@ RUNS = [
         model="GPT-5.2",
     ),
     dict(
-        run_dir="20260330_091701-memsearch10-huggingface-m_meta-llama_Llama-3.3-70B-Instruct-seed_42",
+        run_dir="70B-memsearch10",
         testset="memsearch10",
         model="Llama 3.3",
     ),
@@ -104,6 +104,11 @@ RUNS = [
         run_dir="20260330_212836-cyoa_monthiversary6-openai-m_gpt-5.2-seed_42",
         testset="monthiversary6",
         model="GPT-5.2",
+    ),
+    dict(
+        run_dir="70B-monthiversary6",
+        testset="monthiversary6",
+        model="Llama 3.3",
     ),
     # ── alice10 RR ────────────────────────────────────────────────────────────
     dict(
