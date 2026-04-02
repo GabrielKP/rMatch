@@ -3,10 +3,8 @@ plot_example_matrices.py
 
 For each of three datasets (alice10, memsearch10, monthiversary6), finds the
 recall whose Pearson r (Claude Haiku vs human) is closest to the dataset mean,
-then produces three plots for that example:
-  1. Human matrix
-  2. Model (Haiku) matrix
-  3. Overlay (TP / FP / FN / TN colour coded)
+then produces an overlay plot for that example:
+  - Overlay (TP / FP / FN / TN colour coded)
 
 Axes convention:
   x  – recall segments  (0 → n, left to right)
@@ -30,13 +28,13 @@ OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 DATASETS = {
     "alice10": {
-        "model_dir": "20260309_194145-cyoa_alice10-anthropic-m_claude-haiku-4-5-seed_42",
+        "model_dir": "20260227_223616-cyoa_alice10-anthropic-m_claude-opus-4-6-seed_42",
     },
     "memsearch10": {
-        "model_dir": "20260310_010740-memsearch10-anthropic-m_claude-haiku-4-5-seed_42",
+        "model_dir": "20260309_215439-memsearch10-anthropic-m_claude-opus-4-6-seed_42",
     },
     "monthiversary6": {
-        "model_dir": "20260309_215727-cyoa_monthiversary6-anthropic-m_claude-haiku-4-5-seed_42",
+        "model_dir": "20260330_211711-cyoa_monthiversary6-anthropic-m_claude-opus-4-6-seed_42",
     },
 }
 
@@ -46,20 +44,15 @@ DATASETS = {
 # FP = human=0 & model=1   red   (model fires, human didn't)
 # FN = human=1 & model=0   blue  (human fires, model missed)
 OVERLAY_COLORS = {
-    "TP": "#2d6a4f",  # dark green
+    "TP": "#2D6A4F",  # dark green
     "TN": "#f0f0f0",  # light grey
-    "FP": "#e63946",  # red
-    "FN": "#457b9d",  # steel blue
+    "FP": "#E63946",  # red
+    "FN": "#56B4E9",  # steel blue
 }
-
-# single-matrix colourscale: white → dark
-MATRIX_COLORSCALE = [[0, "#ffffff"], [1, "#1a1a2e"]]
 
 # fixed plot size (same as comparison plots)
 PLOT_WIDTH = 400
 PLOT_HEIGHT = 400
-
-TITLE_FONT = dict(size=13)
 
 # ── helpers ───────────────────────────────────────────────────────────────────
 
@@ -121,66 +114,13 @@ def find_closest_to_mean(
     return valid_indices[best], pearsonrs[best], mean_r
 
 
-# ── single-matrix heatmap ─────────────────────────────────────────────────────
-
-
-def _heatmap_figure(
-    matrix: np.ndarray,
-    title: str,
-    colorscale: list,
-    zmin: float = 0,
-    zmax: float = 1,
-) -> go.Figure:
-    """
-    Plain heatmap. x = recall segments, y = story segments (top-down).
-    matrix shape: (n_story_segs, n_recall_segs)
-    """
-    n_story, n_recall = matrix.shape
-
-    fig = go.Figure(
-        go.Heatmap(
-            z=matrix,
-            colorscale=colorscale,
-            zmin=zmin,
-            zmax=zmax,
-            showscale=False,
-            xgap=0.5,
-            ygap=0.5,
-        )
-    )
-    fig.update_layout(
-        title=dict(text=title, font=TITLE_FONT, x=0.5),
-        xaxis=dict(
-            title="Recall segment",
-            tickmode="linear",
-            tick0=0,
-            dtick=max(1, n_recall // 10),
-            showgrid=False,
-        ),
-        yaxis=dict(
-            title="Story segment",
-            tickmode="linear",
-            tick0=0,
-            dtick=max(1, n_story // 10),
-            showgrid=False,
-            autorange="reversed",  # 0 at top, m at bottom
-        ),
-        plot_bgcolor="white",
-        paper_bgcolor="white",
-        width=PLOT_WIDTH,
-        height=PLOT_HEIGHT,
-        margin=dict(l=70, r=30, t=65, b=60),
-    )
-    return fig
-
-
 # ── overlay heatmap ───────────────────────────────────────────────────────────
 
 
 def _overlay_figure(
     rm_human: np.ndarray,
     rm_model: np.ndarray,
-    title: str,
+    r_value: float,
 ) -> go.Figure:
     """
     Overlay matrix with four categories:
@@ -221,53 +161,49 @@ def _overlay_figure(
         )
     )
 
-    # legend as invisible scatter traces
-    legend_items = [
-        ("TP", OVERLAY_COLORS["TP"]),
-        ("TN", OVERLAY_COLORS["TN"]),
-        ("FP", OVERLAY_COLORS["FP"]),
-        ("FN", OVERLAY_COLORS["FN"]),
-    ]
-    for label, color in legend_items:
-        fig.add_trace(
-            go.Scatter(
-                x=[None],
-                y=[None],
-                mode="markers",
-                marker=dict(size=10, color=color, symbol="square"),
-                name=label,
-                showlegend=True,
-            )
-        )
+    # Add r value as annotation on the plot
+    # fig.add_annotation(
+    #     text=f"r = {r_value:.3f}",
+    #     xref="paper",
+    #     yref="paper",
+    #     x=0.98,
+    #     y=0.98,
+    #     xanchor="right",
+    #     yanchor="top",
+    #     showarrow=False,
+    #     font=dict(size=12, color="black"),
+    #     bgcolor="rgba(255, 255, 255, 0.8)",
+    #     bordercolor="black",
+    #     borderwidth=1,
+    #     borderpad=4,
+    # )
 
     fig.update_layout(
-        title=dict(text=title, font=TITLE_FONT, x=0.5),
         xaxis=dict(
-            title="Recall segment",
-            tickmode="linear",
+            title=dict(text="Recall segment", font=dict(size=32)),
             tick0=0,
-            dtick=max(1, n_recall // 10),
+            tickfont=dict(size=24),
             showgrid=False,
+            tickangle=0,  # Keep ticks horizontal
+            side="bottom",
+            ticks="outside",
         ),
         yaxis=dict(
-            title="Story segment",
-            tickmode="linear",
+            title=dict(text="Story segment", font=dict(size=32)),
             tick0=0,
-            dtick=max(1, n_story // 10),
+            tickfont=dict(size=24),
             showgrid=False,
             autorange="reversed",
-        ),
-        legend=dict(
-            orientation="v",
-            x=1.02,
-            y=0.5,
-            font=dict(size=11),
+            tickangle=0,  # Keep ticks horizontal
+            side="left",
+            ticks="outside",
         ),
         plot_bgcolor="white",
         paper_bgcolor="white",
         width=PLOT_WIDTH,
         height=PLOT_HEIGHT,
-        margin=dict(l=70, r=80, t=65, b=60),
+        margin=dict(l=70, r=30, t=40, b=60),
+        showlegend=False,  # Remove legend
     )
     return fig
 
@@ -290,40 +226,19 @@ def main() -> None:
         print(f"  selected subject {idx}, r = {subject_r:.3f}")
         print(f"  matrix shape: {rm_human.shape}  " f"(story segs x recall segs)")
 
-        base_title = (
-            f"{dataset_name} | subject {idx} | "
-            f"r = {subject_r:.3f} (dataset mean = {mean_r:.3f})"
-        )
-
-        # 1. human matrix
-        fig_human = _heatmap_figure(
-            rm_human,
-            title=f"Human \u2013 {base_title}",
-            colorscale=MATRIX_COLORSCALE,
-        )
-        # 2. model matrix
-        fig_model = _heatmap_figure(
-            rm_model,
-            title=f"Claude Haiku \u2013 {base_title}",
-            colorscale=MATRIX_COLORSCALE,
-        )
-        # 3. overlay
+        # Create overlay figure
         fig_overlay = _overlay_figure(
             rm_human,
             rm_model,
-            title=f"Overlay \u2013 {base_title}",
+            r_value=subject_r,
         )
 
-        for tag, fig in [
-            ("human", fig_human),
-            ("model", fig_model),
-            ("overlay", fig_overlay),
-        ]:
-            html_out = OUTPUT_DIR / f"{dataset_name}_{tag}.html"
-            png_out = OUTPUT_DIR / f"{dataset_name}_{tag}.png"
-            fig.write_html(str(html_out))
-            fig.write_image(str(png_out))
-            print(f"  -> {png_out}")
+        # Save overlay only
+        html_out = OUTPUT_DIR / f"{dataset_name}_overlay.html"
+        png_out = OUTPUT_DIR / f"{dataset_name}_overlay.png"
+        fig_overlay.write_html(str(html_out))
+        fig_overlay.write_image(str(png_out))
+        print(f"  -> {png_out}")
 
     print("\nDone.")
 

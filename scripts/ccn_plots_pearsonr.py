@@ -112,9 +112,19 @@ RUNS = [
     ),
     # ── alice10 RR ────────────────────────────────────────────────────────────
     dict(
+        run_dir="20260401_130319-rr-cyoa_alice10-anthropic-m_claude-opus-4-6-seed_42",
+        testset="rr_alice10",
+        model="Claude Opus",
+    ),
+    dict(
         run_dir="20260310_003817-rr-cyoa_alice10-anthropic-m_claude-haiku-4-5-seed_42",
         testset="rr_alice10",
         model="Claude Haiku",
+    ),
+    dict(
+        run_dir="20260401_132113-rr-cyoa_alice10-openai-m_gpt-5.2-seed_42",
+        testset="rr_alice10",
+        model="GPT-5.2",
     ),
     dict(
         run_dir="llama-3.3-70B-Instruct-alice10-rr",
@@ -123,9 +133,19 @@ RUNS = [
     ),
     # ── memsearch10 RR ────────────────────────────────────────────────────────
     dict(
+        run_dir="20260401_131330-rr-memsearch10-anthropic-m_claude-opus-4-6-seed_42",
+        testset="rr_memsearch10",
+        model="Claude Opus",
+    ),
+    dict(
         run_dir="20260310_003831-rr-memsearch10-anthropic-m_claude-haiku-4-5-seed_42",
         testset="rr_memsearch10",
         model="Claude Haiku",
+    ),
+    dict(
+        run_dir="20260401_132123-rr-memsearch10-openai-m_gpt-5.2-seed_42",
+        testset="rr_memsearch10",
+        model="GPT-5.2",
     ),
     dict(
         run_dir="20260330_110508-rr-memsearch10-huggingface-m_meta-llama_Llama-3.3-70B-Instruct-seed_42",
@@ -139,9 +159,17 @@ RUNS = [
         model="Claude Opus",
     ),
     dict(
+        run_dir="20260401_132222-rr-cyoa_monthiversary6-anthropic-m_claude-haiku-4-5-seed_42",
+        testset="rr_monthiversary6",
+        model="Claude Haiku",
+    ),
+    dict(
         run_dir="20260331_013923-rr-cyoa_monthiversary6-openai-m_gpt-5.2-seed_42",
         testset="rr_monthiversary6",
         model="GPT-5.2",
+    ),
+    dict(
+        run_dir="70B-rr-monthiversary6", testset="rr_monthiversary6", model="Llama 3.3"
     ),
 ]
 
@@ -276,7 +304,8 @@ def load_rr_pearsonrs(run_dir: Path) -> dict[str, list[float]]:
         with open(rr_pkl, "rb") as f:
             rr_dct: dict[str, list[np.ndarray]] = pickle.load(f)
         for matrices in rr_dct.values():
-            flat = [m.flatten() for m in matrices]
+            first5 = matrices[:5]
+            flat = [m.flatten() for m in first5]
             pair_scores = [
                 _pearsonr_safe(m_i, m_j) for m_i, m_j in combinations(flat, 2)
             ]
@@ -289,6 +318,71 @@ def load_rr_pearsonrs(run_dir: Path) -> dict[str, list[float]]:
         "pearsonr_vs_human": pearsonr_vs_human,
         "pairwise_pearsonr": pairwise_pearsonr,
     }
+
+
+# ── statistics reporting ──────────────────────────────────────────────────────
+
+
+def print_pearsonr_statistics(testset: str, runs: list[dict], is_rr: bool) -> None:
+    """Print mean Pearson r and SEM for each model on this testset."""
+    runs_by_model = {r["model"]: r for r in runs}
+
+    print(f"\n{'='*60}")
+    print(f"Statistics for {testset}")
+    print(f"{'='*60}")
+
+    if is_rr:
+        # For RR, show both metrics if RR_METRIC == "both"
+        if RR_METRIC == "both":
+            metrics = ["pearsonr_vs_human", "pairwise_pearsonr"]
+        else:
+            metrics = [RR_METRIC]
+
+        for metric in metrics:
+            print(f"\n{RR_METRIC_LABELS.get(metric, metric)}:")
+            print(f"{'-'*60}")
+            for model in MODEL_ORDER:
+                run = runs_by_model.get(model)
+                if run is None:
+                    continue
+                rdir = resolve(run["run_dir"])
+                try:
+                    rr_data = load_rr_pearsonrs(rdir)
+                    scores = rr_data.get(metric, [])
+                    if scores:
+                        mean_r = np.mean(scores)
+                        sem_r = (
+                            np.std(scores, ddof=1) / np.sqrt(len(scores))
+                            if len(scores) > 1
+                            else 0.0
+                        )
+                        print(
+                            f"  {model:20s}: r = {mean_r:.3f} ± {sem_r:.3f} (n={len(scores)})"
+                        )
+                except FileNotFoundError as e:
+                    print(f"  {model:20s}: [data not found]")
+    else:
+        # For ratings
+        print(f"\nPearson r vs Human:")
+        print(f"{'-'*60}")
+        for model in MODEL_ORDER:
+            run = runs_by_model.get(model)
+            if run is None:
+                continue
+            rdir = resolve(run["run_dir"])
+            try:
+                scores = load_subject_pearsonrs(rdir)
+                mean_r = np.mean(scores)
+                sem_r = (
+                    np.std(scores, ddof=1) / np.sqrt(len(scores))
+                    if len(scores) > 1
+                    else 0.0
+                )
+                print(
+                    f"  {model:20s}: r = {mean_r:.3f} ± {sem_r:.3f} (n={len(scores)})"
+                )
+            except FileNotFoundError as e:
+                print(f"  {model:20s}: [data not found]")
 
 
 # ── drawing primitives ────────────────────────────────────────────────────────
@@ -494,9 +588,15 @@ def main() -> None:
     for testset, runs in by_testset.items():
         print(f"\nBuilding plot: {testset}  ({len(runs)} run(s))")
 
+        is_rr = testset in RR_TESTSETS
+
+        # Print statistics
+        print_pearsonr_statistics(testset, runs, is_rr)
+
+        # Build figure
         fig = (
             build_rr_figure(testset, runs)
-            if testset in RR_TESTSETS
+            if is_rr
             else build_ratings_figure(testset, runs)
         )
 
@@ -504,7 +604,7 @@ def main() -> None:
         png_out = OUTPUT_DIR / f"pearsonr_{testset}.png"
         fig.write_html(str(html_out))
         fig.write_image(str(png_out))
-        print(f"  -> {html_out}")
+        print(f"\n  -> {html_out}")
         print(f"  -> {png_out}")
 
     print("\nDone.")
