@@ -327,9 +327,9 @@ def print_pearsonr_statistics(testset: str, runs: list[dict], is_rr: bool) -> No
     """Print mean Pearson r and SEM for each model on this testset."""
     runs_by_model = {r["model"]: r for r in runs}
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"Statistics for {testset}")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
 
     if is_rr:
         # For RR, show both metrics if RR_METRIC == "both"
@@ -340,7 +340,7 @@ def print_pearsonr_statistics(testset: str, runs: list[dict], is_rr: bool) -> No
 
         for metric in metrics:
             print(f"\n{RR_METRIC_LABELS.get(metric, metric)}:")
-            print(f"{'-'*60}")
+            print(f"{'-' * 60}")
             for model in MODEL_ORDER:
                 run = runs_by_model.get(model)
                 if run is None:
@@ -357,14 +357,14 @@ def print_pearsonr_statistics(testset: str, runs: list[dict], is_rr: bool) -> No
                             else 0.0
                         )
                         print(
-                            f"  {model:20s}: r = {mean_r:.3f} ± {sem_r:.3f} (n={len(scores)})"
+                            f"  {model:20s}: r = {mean_r:.3f} ± {sem_r:.3f} (n={len(scores)})"  # noqa: E501
                         )
-                except FileNotFoundError as e:
+                except FileNotFoundError:
                     print(f"  {model:20s}: [data not found]")
     else:
         # For ratings
-        print(f"\nPearson r vs Human:")
-        print(f"{'-'*60}")
+        print("\nPearson r vs Human:")
+        print(f"{'-' * 60}")
         for model in MODEL_ORDER:
             run = runs_by_model.get(model)
             if run is None:
@@ -381,7 +381,7 @@ def print_pearsonr_statistics(testset: str, runs: list[dict], is_rr: bool) -> No
                 print(
                     f"  {model:20s}: r = {mean_r:.3f} ± {sem_r:.3f} (n={len(scores)})"
                 )
-            except FileNotFoundError as e:
+            except FileNotFoundError:
                 print(f"  {model:20s}: [data not found]")
 
 
@@ -424,9 +424,7 @@ def _draw_bar_with_scatter(
                 width=6,
             ),
             name=model_label,
-            hovertemplate=(
-                f"<b>{model_label}</b><br>" f"SEM: {sem_v:.3f}<extra></extra>"
-            ),
+            hovertemplate=(f"<b>{model_label}</b><br>SEM: {sem_v:.3f}<extra></extra>"),
             showlegend=False,
         ),
         **skw,

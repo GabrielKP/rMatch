@@ -16,11 +16,10 @@ from sklearn.metrics import f1_score, precision_score, recall_score
 from tqdm import tqdm
 
 from rmatch import console
-from rmatch.load import (
-    load_cyoa_recall_matrix_human_binary,
-    load_cyoa_story_recall_segments,
-    load_ratings_dict,
-    load_story_recall_segments,
+from rmatch.load_benchmark import (
+    default_benchmark_root,
+    load_benchmark_full_eval,
+    load_benchmark_repeat_reliability,
 )
 from rmatch.matchers import initialize_matcher
 from rmatch.matchers.matcher import Matcher
@@ -34,21 +33,15 @@ def eval_param_str(
     testset: str,
     matcher_name: str,
     model_name: str | None,
-    seed: int,
-    random_mode: str | None,
 ) -> str:
     """Get the param string for the evaluation."""
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     rr_str = "-rr" if repeat_reliability else ""
-    random_mode_str = f"-random_mode_{random_mode}" if random_mode is not None else ""
 
     model_name_str = ""
     if model_name is not None:
         model_name_str = f"-m_{model_name.replace('/', '_')}"
-    param_str = (
-        f"{timestamp}{rr_str}-{testset}"
-        f"-{matcher_name}{model_name_str}-seed_{seed}{random_mode_str}"
-    )
+    param_str = f"{timestamp}{rr_str}-{testset}-{matcher_name}{model_name_str}"
     return param_str
 
 
@@ -58,170 +51,18 @@ def accuracy(array_1: np.ndarray, array_2: np.ndarray) -> float:
     return np.sum(array_1 == array_2) / len(array_1)
 
 
-def load_story_recall_segments_default(
-    testset: str,
-) -> tuple[
-    list[tuple[str, str, list[str], list[str]]],
-    dict[str, dict[str, np.ndarray]] | None,
-]:
-    """Returns story, recall pairs and human annotations."""
-
-    human_ratings_dict = defaultdict(dict)
-    if testset.startswith("cyoa"):
-        if testset == "cyoa2":
-            story_names = [
-                "alice_2",
-                "alice_3",
-            ]
-        elif testset == "cyoa_alice10":
-            story_names = [
-                "alice_2",
-                "alice_3",
-                "alice_4",
-                "alice_5",
-                "alice_6",
-                "alice_7",
-                "alice_8",
-                "alice_11",
-                "alice_12",
-                "alice_13",
-            ]
-        elif testset == "cyoa_monthiversary6":
-            story_names = [
-                "monthiversary_3",
-                "monthiversary_4",
-                "monthiversary_10",
-                "monthiversary_14",
-                "monthiversary_19",
-                "monthiversary_23",
-                "monthiversary_25",
-            ]
-        else:
-            story_names = None
-        story_recall_segments = load_cyoa_story_recall_segments(story_names=story_names)
-
-        # load human annotations
-        for story_name, sub_id, _, _ in story_recall_segments:
-            human_ratings_dict[story_name][sub_id] = (
-                load_cyoa_recall_matrix_human_binary(
-                    story_name=story_name, sub_id=sub_id
-                )
-            )
-
-    elif testset.startswith("memsearch"):
-        if testset == "memsearch10":
-            story_names_memsearch = [
-                "breadland",
-                "ednora",
-                "from_dad_to_son",
-                "heartstrings",
-                "hollow",
-                "i_love_death",
-                "ichthys",
-                "laundry",
-                "mismatched",
-                "mop",
-            ]
-        else:
-            story_names_memsearch = [
-                "breadland",
-                "ednora",
-                "from_dad_to_son",
-                "heartstrings",
-                "hollow",
-                "i_love_death",
-                "ichthys",
-                "laundry",
-                "mismatched",
-                "mop",
-                "my_cat_lucy",
-                "numb",
-                "queen_of_basketball",
-                "stapler",
-                "synesthesia",
-                "the_docks",
-                "the_gift",
-                "the_port",
-                "the_soup",
-                "thief",
-            ]
-
-        story_recall_segments_memsearch = list()
-        for story_name in story_names_memsearch:
-            story_recall_segments_single, _, _ = load_story_recall_segments(
-                story_name=story_name,
-                story_segmentation_method="seg_c",
-                recall_segmentation_method="sentences",
-            )
-            story_recall_segments_memsearch.extend(
-                [
-                    (story_name, sub_id, story_segs, recall_segs)
-                    for sub_id, story_segs, recall_segs in story_recall_segments_single
-                ]
-            )
-
-        story_recall_segments = story_recall_segments_memsearch
-
-        # pre load rating dicts for memsearch
-        for story_name in story_names_memsearch:
-            ratings_dict = load_ratings_dict(
-                story_name=story_name,
-                matcher_name="human",
-                story_segmentation_method="seg_c",
-                recall_segmentation_method="sentences",
-            )
-            n_story_segments = ratings_dict["n_story_segments"]
-            # convert to matrix
-            for sub_id, single_sub_ratings in ratings_dict["ratings"].items():
-                rm_memsearch = ratings_single_sub_to_matrix(
-                    single_sub_ratings, n_story_segments
-                )
-                human_ratings_dict[story_name][sub_id] = rm_memsearch
-    else:
-        raise ValueError(f"Invalid testset: {testset}")
-    return story_recall_segments, human_ratings_dict
-
-
-def get_model_ratings(
-    random_mode: str | None,
-    rng: np.random.Generator,
-    rm_comparison: np.ndarray,
-    matcher: Matcher,
-    story_segments: list[str],
-    recall_segments: list[str],
-):
-    if random_mode == "full_shuffle":
-        flat = rng.permutation(rm_comparison.flatten())
-        rm_model = flat.reshape(rm_comparison.shape)
-    elif random_mode == "row_shuffle":
-        rm_model = rng.permutation(rm_comparison)
-    else:
-        single_sub_ratings = matcher.compute_ratings_single_sub(
-            story_segments=story_segments,
-            recall_segments=recall_segments,
-            output_scores=False,
-        )
-        rm_model = ratings_single_sub_to_matrix(
-            single_sub_ratings,  # type: ignore
-            len(story_segments),
-        )
-    return rm_model
-
-
 def evaluate(
     matcher_name: str,
     model_name: str | None,
     testset: str,
+    benchmark_root: Path,
     device: str | None = None,
-    seed: int = 42,
-    random_mode: str | None = None,
     window_size: int = 5,
     dry_run: bool = False,
-    movie_mode: bool = False,
-    reranker_threshold: float | None = None,
-    top_k: int = 5,
     verbose_errors: bool = False,
     quantization: Literal["4bit", "8bit"] | None = None,
+    batch_size: int = 4,
+    max_new_tokens: int = 64,
     track_emissions: bool = False,
 ):
     """Evaluate the matcher."""
@@ -229,13 +70,12 @@ def evaluate(
         matcher_name=matcher_name,
         model_name=model_name,
         device=device,
-        reranker_threshold=reranker_threshold,
         window_size=window_size,
         dry_run=dry_run,
-        top_k=top_k,
-        movie_mode=movie_mode,
         verbose_errors=verbose_errors,
         quantization=quantization,
+        batch_size=batch_size,
+        max_new_tokens=max_new_tokens,
     )
     if hasattr(matcher, "model_name"):
         model_name = matcher.model_name  # type: ignore
@@ -250,19 +90,15 @@ def evaluate(
             testset=testset,
             matcher_name=matcher_name,
             model_name=model_name,
-            seed=seed,
-            random_mode=random_mode,
         )
     )
 
     if not dry_run:
         output_dir.mkdir(parents=True, exist_ok=True)
 
-    story_recall_segments, human_ratings_dict = load_story_recall_segments_default(
-        testset=testset
+    story_recall_segments, human_ratings_dict = load_benchmark_full_eval(
+        benchmark_root, testset
     )
-
-    rng = np.random.default_rng(seed)
 
     tracker = None
     if track_emissions:
@@ -295,13 +131,14 @@ def evaluate(
                 continue
 
             # b) get model ratings
-            rm_model = get_model_ratings(
-                random_mode=random_mode,
-                rng=rng,
-                rm_comparison=rm_comparison,
-                matcher=matcher,
+            single_sub_ratings = matcher.compute_ratings_single_sub(
                 story_segments=story_segments,
                 recall_segments=recall_segments,
+                output_scores=False,
+            )
+            rm_model = ratings_single_sub_to_matrix(
+                single_sub_ratings,  # type: ignore
+                len(story_segments),
             )
 
             # b) evaluate
@@ -337,12 +174,8 @@ def evaluate(
         return
 
     # output results
-    if random_mode is not None:
-        matcher_str = random_mode
-    else:
-        matcher_str = matcher_name
     console.print(
-        f"Matcher: {matcher_str} | N recalls: {len(precisions)}"
+        f"Matcher: {matcher_name} | N recalls: {len(precisions)}"
         f" (evaluated) / {len(story_recall_segments)} (total)"
     )
 
@@ -376,8 +209,6 @@ def evaluate(
         "matcher_name": matcher_name,
         "model_name": model_name,
         "device": device,
-        "seed": seed,
-        "random_mode": random_mode,
         "f1_macro": float(f1_macro),
         "precision_macro": float(precision_macro),
         "recall_macro": float(recall_macro),
@@ -406,91 +237,6 @@ def evaluate(
         pickle.dump(recall_matrices_model, f)
     with open(recall_matrices_comparison_path, "wb") as f:
         pickle.dump(recall_matrices_comparison, f)
-
-
-def load_story_recall_segments_repeat_reliability(
-    testset: str,
-) -> tuple[
-    list[tuple[str, str, list[str], list[str]]],
-    dict[str, dict[str, np.ndarray]] | None,
-]:
-    # load story recall segments
-    human_ratings_dict = defaultdict(dict)
-    if testset.startswith("cyoa"):
-        if testset == "cyoa_alice10":
-            story_names = ["alice_3", "alice_6", "alice_12"]
-        elif testset == "cyoa_monthiversary6":
-            story_names = ["monthiversary_3", "monthiversary_4", "monthiversary_25"]
-        else:
-            raise ValueError(
-                f"Invalid testset: {testset} -"
-                " choose between 'cyoa_alice10' and 'cyoa_monthiversary6'"
-            )
-        all_story_recall_segments = load_cyoa_story_recall_segments(story_names=None)
-
-        story_recall_segments = list()
-        chosen_story_names = set()
-        for (
-            story_name,
-            sub_id,
-            story_segments,
-            recall_segments,
-        ) in all_story_recall_segments:
-            if story_name in story_names and story_name not in chosen_story_names:
-                story_recall_segments.append(
-                    (story_name, sub_id, story_segments, recall_segments)
-                )
-                # only choose first recall per story
-                chosen_story_names.add(story_name)
-                if len(chosen_story_names) == len(story_names):
-                    break
-
-        # load human annotations
-        for story_name, sub_id, _, _ in story_recall_segments:
-            human_ratings_dict[story_name][sub_id] = (
-                load_cyoa_recall_matrix_human_binary(
-                    story_name=story_name, sub_id=sub_id
-                )
-            )
-
-    elif testset.startswith("memsearch"):
-        story_names_memsearch = [
-            "ednora",
-            "hollow",
-            "i_love_death",
-        ]
-        story_recall_segments = list()
-        for story_name in story_names_memsearch:
-            story_recall_segments_single, _, _ = load_story_recall_segments(
-                story_name=story_name,
-                story_segmentation_method="seg_c",
-                recall_segmentation_method="sentences",
-            )
-            if not story_recall_segments_single:
-                raise ValueError(
-                    f"No story-recall segments found for story {story_name!r}."
-                )
-            story_recall_segments.append((story_name, *story_recall_segments_single[0]))
-
-        # load human annotations
-        for story_name in story_names_memsearch:
-            ratings_dict = load_ratings_dict(
-                story_name=story_name,
-                matcher_name="human",
-                story_segmentation_method="seg_c",
-                recall_segmentation_method="sentences",
-            )
-            n_story_segments = ratings_dict["n_story_segments"]
-            # convert to matrix
-            for sub_id, single_sub_ratings in ratings_dict["ratings"].items():
-                rm_memsearch = ratings_single_sub_to_matrix(
-                    single_sub_ratings, n_story_segments
-                )
-                human_ratings_dict[story_name][sub_id] = rm_memsearch
-    else:
-        raise ValueError(f"Invalid testset: {testset}")
-
-    return story_recall_segments, human_ratings_dict
 
 
 def get_average_pairwise_f1(
@@ -541,15 +287,14 @@ def evaluate_repeat_reliability(
     matcher_name: str,
     model_name: str | None,
     testset: str,
+    benchmark_root: Path,
     device: str | None = None,
-    seed: int = 42,
-    random_mode: str | None = None,
     window_size: int = 5,
     dry_run: bool = False,
-    movie_mode: bool = False,
-    reranker_threshold: float | None = None,
-    top_k: int = 5,
+    verbose_errors: bool = False,
     quantization: Literal["4bit", "8bit"] | None = None,
+    batch_size: int = 4,
+    max_new_tokens: int = 64,
     track_emissions: bool = False,
 ):
     """Evaluate the repeat reliability of the matcher."""
@@ -559,10 +304,10 @@ def evaluate_repeat_reliability(
         device=device,
         window_size=window_size,
         dry_run=dry_run,
-        reranker_threshold=reranker_threshold,
-        top_k=top_k,
-        movie_mode=movie_mode,
+        verbose_errors=verbose_errors,
         quantization=quantization,
+        batch_size=batch_size,
+        max_new_tokens=max_new_tokens,
     )
     if hasattr(matcher, "model_name"):
         model_name = matcher.model_name  # type: ignore
@@ -577,21 +322,15 @@ def evaluate_repeat_reliability(
             testset=testset,
             matcher_name=matcher_name,
             model_name=model_name,
-            seed=seed,
-            random_mode=random_mode,
         )
     )
 
     if not dry_run:
         output_dir.mkdir(parents=True, exist_ok=True)
 
-    story_recall_segments, human_ratings_dict = (
-        load_story_recall_segments_repeat_reliability(
-            testset=testset,
-        )
+    story_recall_segments, human_ratings_dict = load_benchmark_repeat_reliability(
+        benchmark_root, testset
     )
-
-    rng = np.random.default_rng(seed)
 
     tracker = None
     if track_emissions:
@@ -628,13 +367,14 @@ def evaluate_repeat_reliability(
 
             # b) get model ratings
             for _ in range(n_repeats):
-                rm_model = get_model_ratings(
-                    random_mode=random_mode,
-                    rng=rng,
-                    rm_comparison=rm_comparison,
-                    matcher=matcher,
+                single_sub_ratings = matcher.compute_ratings_single_sub(
                     story_segments=story_segments,
                     recall_segments=recall_segments,
+                    output_scores=False,
+                )
+                rm_model = ratings_single_sub_to_matrix(
+                    single_sub_ratings,  # type: ignore
+                    len(story_segments),
                 )
                 recall_matrices_model_dct[recall_id].append(rm_model)
 
@@ -669,11 +409,7 @@ def evaluate_repeat_reliability(
         return
 
     # output results
-    if random_mode is not None:
-        matcher_str = random_mode
-    else:
-        matcher_str = matcher_name
-    console.print(f"Matcher: {matcher_str} | N recalls: {len(story_recall_segments)}")
+    console.print(f"Matcher: {matcher_name} | N recalls: {len(story_recall_segments)}")
 
     mean_f1s = list()
     mean_precisions = list()
@@ -705,7 +441,9 @@ def evaluate_repeat_reliability(
     overall_mean_recall = np.mean(mean_recalls)
     overall_mean_pearsonr = np.mean(mean_pearsonrs)
 
-    console.print(f"\nMatcher: {matcher_str} | N recalls: {len(story_recall_segments)}")
+    console.print(
+        f"\nMatcher: {matcher_name} | N recalls: {len(story_recall_segments)}"
+    )
     console.print(
         f"[yellow]Overall[/yellow] (compared to human annotations)"
         f"\n mean pearsonr={overall_mean_pearsonr:.3f}"
@@ -728,8 +466,6 @@ def evaluate_repeat_reliability(
         "matcher_name": matcher_name,
         "model_name": model_name,
         "device": device,
-        "seed": seed,
-        "random_mode": random_mode,
         "n_repeats": n_repeats,
         "overall_mean_f1": float(overall_mean_f1),
         "overall_mean_precision": float(overall_mean_precision),
@@ -761,20 +497,41 @@ def evaluate_repeat_reliability(
 
 
 if __name__ == "__main__":
-    args = argparse.ArgumentParser()
-    args.add_argument(
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "testset",
+        type=str,
+        choices=[
+            "alice",
+            "monthiversary",
+            "memsearch",
+        ],
+        help="Name of the testset.",
+    )
+
+    parser.add_argument(
         "-rr",
         "--repeat_reliability",
         action="store_true",
         default=False,
         help=(
-            "Whether to evaluate the repeat reliability."
-            " If True, will evaluate 3 recalls within the testset 10 times."
+            "Evaluate repeat reliability: three fixed recalls per testset, "
+            "each repeated --n-repeats times."
         ),
     )
-    args.add_argument(
-        "-r",
-        "--matcher_name",
+    parser.add_argument(
+        "--benchmark-root",
+        type=Path,
+        default=None,
+        help=(
+            "Root directory of benchmark (contains data/). "
+            "Default: benchmark_ROOT environment variable, else "
+            "/Users/gkressi1/opt/benchmark."
+        ),
+    )
+    parser.add_argument(
+        "-M",
+        "--matcher",
         choices=[
             "anthropic",
             "reranker",
@@ -784,136 +541,104 @@ if __name__ == "__main__":
         default="anthropic",
         help="Name of the matcher to use. Default is 'anthropic'.",
     )
-    args.add_argument(
-        "-t",
-        "--testset",
-        choices=[
-            "cyoa",
-            "cyoa2",
-            "cyoa_alice10",
-            "cyoa_monthiversary6",
-            "memsearch",
-            "memsearch10",
-        ],
-        default="cyoa_alice10",
-        help=("Name of the testset. Default is 'cyoa_alice10'."),
-    )
-    args.add_argument(
+
+    parser.add_argument(
         "-m",
         "--model_name",
+        dest="model_name",
         type=str,
         default=None,
-        help=("[reranker, openai, huggingface] Name of the model to use."),
+        help="[reranker, openai, huggingface] Name of the model to use.",
     )
-    args.add_argument(
+    parser.add_argument(
         "--device",
         type=str,
         default=None,
-        help=("[reranker, huggingface] Device to use. If None, will be autoselected."),
+        help="[reranker, huggingface] Device to use. If omitted, autoselected.",
     )
-    args.add_argument(
-        "--random_mode",
-        choices=["full_shuffle", "row_shuffle"],
-        default=None,
-        help="Mode for the random shuffle. If None, will not shuffle.",
-    )
-    args.add_argument(
-        "-rt",
-        "--reranker_threshold",
-        type=float,
-        default=0.09,
-        help=(
-            "[reranker] Threshold above which a story-segment score counts as recalled."
-        ),
-    )
-    args.add_argument(
-        "-tk",
-        "--top_k",
-        type=int,
-        default=5,
-        help=(
-            "[reranker] Number of top k story segments to consider"
-            " for each recall segment."
-        ),
-    )
-    args.add_argument(
+    parser.add_argument(
         "--dry_run",
         action="store_true",
         default=False,
-        help="Estimate cost without calling the API",
+        help="Estimate cost without calling the API.",
     )
-
-    args.add_argument(
-        "--movie",
-        action="store_true",
-        default=False,
-        help="runs with movie-specific prompt",
-    )
-    args.add_argument(
-        "--window_size", type=int, default=5, help="Size of recall context window (+/-)"
-    )
-    args.add_argument(
-        "-s",
-        "--seed",
-        type=int,
-        default=42,
-        help="Random seed. Default is 42.",
-    )
-    args.add_argument(
-        "-n",
-        "--n_repeats",
+    parser.add_argument(
+        "--window_size",
         type=int,
         default=5,
-        help="[repeat_reliability] Number of times to run each recall. Default is 10.",
+        help="Size of recall context window (+/-).",
     )
-    args.add_argument(
+    parser.add_argument(
+        "-n",
+        "--n-repeats",
+        dest="n_repeats",
+        type=int,
+        default=5,
+        help="[repeat_reliability] Runs per recall. Default is 5.",
+    )
+    parser.add_argument(
         "-q",
         "--quantization",
         type=str,
         choices=["4bit", "8bit"],
         default=None,
-        help=(
-            "[huggingface] Quantization mode: '4bit' or '8bit'. Default is None (bf16)."
-        ),
+        help=("[huggingface] Quantization: '4bit' or '8bit'. Default is None (bf16)."),
     )
-    args.add_argument(
+    parser.add_argument(
+        "-bs",
+        "--batch-size",
+        dest="batch_size",
+        type=int,
+        default=4,
+        help="[huggingface] Batch size.",
+    )
+    parser.add_argument(
+        "--max-new-tokens",
+        type=int,
+        default=64,
+        help="[huggingface] max_new_tokens for the matcher.",
+    )
+    parser.add_argument(
+        "--verbose-errors",
+        action="store_true",
+        default=False,
+        help="[huggingface] Print verbose errors.",
+    )
+    parser.add_argument(
         "--track_emissions",
         action="store_true",
         default=False,
         help="Track carbon emissions with CodeCarbon during evaluation.",
     )
-    args = args.parse_args()
+    args = parser.parse_args()
+    benchmark_root = args.benchmark_root or default_benchmark_root()
 
     if args.repeat_reliability:
         evaluate_repeat_reliability(
             n_repeats=args.n_repeats,
-            matcher_name=args.matcher_name,
+            matcher_name=args.matcher,
             testset=args.testset,
+            benchmark_root=benchmark_root,
             model_name=args.model_name,
             device=args.device,
-            seed=args.seed,
-            random_mode=args.random_mode,
             window_size=args.window_size,
             dry_run=args.dry_run,
-            movie_mode=args.movie,
-            reranker_threshold=args.reranker_threshold,
-            top_k=args.top_k,
+            verbose_errors=args.verbose_errors,
             quantization=args.quantization,
             track_emissions=args.track_emissions,
         )
     else:
         evaluate(
-            matcher_name=args.matcher_name,
+            matcher_name=args.matcher,
             testset=args.testset,
+            benchmark_root=benchmark_root,
             model_name=args.model_name,
             device=args.device,
-            seed=args.seed,
-            random_mode=args.random_mode,
             window_size=args.window_size,
             dry_run=args.dry_run,
-            movie_mode=args.movie,
-            reranker_threshold=args.reranker_threshold,
-            top_k=args.top_k,
+            verbose_errors=args.verbose_errors,
             quantization=args.quantization,
+            batch_size=args.batch_size,
+            max_new_tokens=args.max_new_tokens,
             track_emissions=args.track_emissions,
         )

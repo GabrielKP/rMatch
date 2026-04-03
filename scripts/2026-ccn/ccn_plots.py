@@ -23,7 +23,7 @@ from sklearn.metrics import precision_score, recall_score
 # ── repeat-reliability metric to display ─────────────────────────────────────
 # Choose ONE of:
 #   "f1_vs_human"   – per-recall mean F1 vs human annotations (one dot per recall)
-#   "pairwise_f1"   – mean pairwise F1 across repeats (self-consistency; one dot per recall)
+#   "pairwise_f1"   – mean pairwise F1 across repeats (self-consistency)
 #   "both"          – side-by-side subplots showing both
 RR_METRIC = "pairwise_f1"
 
@@ -250,7 +250,7 @@ def draw_model_bar(
                 width=6,
             ),
             name=model_label,
-            hovertemplate=f"<b>{model_label}</b><br>mean F1: {mean_v:.3f}<br>SEM: {sem_v:.3f}<extra></extra>",
+            hovertemplate=f"<b>{model_label}</b><br>mean F1: {mean_v:.3f}<br>SEM: {sem_v:.3f}<extra></extra>",  # noqa: E501
             showlegend=False,
         )
     )
@@ -468,7 +468,7 @@ def build_rr_figure(runs: list[dict]) -> go.Figure:
                         line=dict(color=_darken(color, 0.25), width=1.2),
                     ),
                     name=run["model"],
-                    hovertemplate=f"<b>{run['model']}</b><br>F1: {mean_v:.3f}<extra></extra>",
+                    hovertemplate=f"<b>{run['model']}</b><br>F1: {mean_v:.3f}<extra></extra>",  # noqa: E501
                     showlegend=False,
                 ),
                 row=1,

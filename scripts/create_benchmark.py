@@ -1,4 +1,4 @@
-"""Create the rMatch benchmark from existing CYOA and MemSearch data.
+"""Create a benchmark from existing CYOA and MemSearch data.
 
 Usage:
     uv run scripts/create_benchmark.py

@@ -34,7 +34,7 @@ DATASETS = {
         "model_dir": "20260309_215439-memsearch10-anthropic-m_claude-opus-4-6-seed_42",
     },
     "monthiversary6": {
-        "model_dir": "20260330_211711-cyoa_monthiversary6-anthropic-m_claude-opus-4-6-seed_42",
+        "model_dir": "20260330_211711-cyoa_monthiversary6-anthropic-m_claude-opus-4-6-seed_42",  # noqa: E501
     },
 }
 
@@ -224,7 +224,7 @@ def main() -> None:
 
         print(f"  dataset mean r = {mean_r:.3f}")
         print(f"  selected subject {idx}, r = {subject_r:.3f}")
-        print(f"  matrix shape: {rm_human.shape}  " f"(story segs x recall segs)")
+        print(f"  matrix shape: {rm_human.shape}  (story segs x recall segs)")
 
         # Create overlay figure
         fig_overlay = _overlay_figure(
