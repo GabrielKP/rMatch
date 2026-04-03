@@ -83,7 +83,7 @@ Each entry in `ratings` maps a subject ID to a list of `[recall_segment_id, [mat
 Requires [anonymized repo](https://anonymous.4open.science/r/958B):
 
 ```sh
-git clone git@github.com:GabrielKP/rBench.git
+git clone anonymzed
 ```
 
 Add to `.env`:
