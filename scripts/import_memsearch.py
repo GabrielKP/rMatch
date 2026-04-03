@@ -122,7 +122,7 @@ def import_memsearch(memsearch_path: Path | str):
 
         # 2 & 3 import recall segmentation & ratings
         output_dict_segc = {
-            "rater_name": "human",
+            "matcher_name": "human",
             "story_name": story_name,
             "story_segmentation_method": "seg_c",
             "recall_segmentation_method": "sentences",
@@ -130,7 +130,7 @@ def import_memsearch(memsearch_path: Path | str):
             "output_scores": False,
         }
         output_dict_segb = {
-            "rater_name": "human",
+            "matcher_name": "human",
             "story_name": story_name,
             "story_segmentation_method": "seg_b",
             "recall_segmentation_method": "sentences",

@@ -11,7 +11,7 @@ from rmatch.utils import get_param_str
 log = get_logger(__name__)
 
 
-class Rater:
+class Matcher:
     def __init__(self):
         self.additional_metadata = dict()
         self.usage_metrics = dict
@@ -55,13 +55,13 @@ class Rater:
             dict with metadata and the ratings:
 
             {
-                "rater_name": "...",
+                "matcher_name": "...",
                 "story_name": "...",
                 "story_segmentation_method": "...",
                 "recall_segmentation_method": "...",
                 "n_story_segments": ...,
                 "output_scores": ...,
-                **kwargs, # additional metadata from specific rater
+                **kwargs, # additional metadata from specific matcher
                 "ratings": {
                     "sub-id-1": single_subject_ratings,
                     "sub-id-2": single_subject_ratings,
@@ -81,7 +81,7 @@ class Rater:
         )
 
         output_dict = {
-            "rater_name": self.rater_name,
+            "matcher_name": self.matcher_name,
             "story_name": story_name,
             "story_segmentation_method": story_segmentation_method,
             "recall_segmentation_method": recall_segmentation_method,
@@ -277,9 +277,9 @@ class Rater:
         return output_path
 
     @property
-    def rater_name(self) -> str:
-        return self._rater_name
+    def matcher_name(self) -> str:
+        return self._matcher_name
 
-    @rater_name.setter
-    def rater_name(self, value: str):
-        self._rater_name = value
+    @matcher_name.setter
+    def matcher_name(self, value: str):
+        self._matcher_name = value

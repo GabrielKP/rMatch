@@ -10,7 +10,7 @@ def generate_file(
     story_segmentation_method: str,
     recall_segmentation_method: str,
     sub_ids: list[str],
-    rater_initials: str,
+    matcher_initials: str,
 ):
     # load story and recall segments
     story_segments, story_segmentation_method = load_story_segments(
@@ -44,7 +44,7 @@ def generate_file(
         )
         output_dir.mkdir(parents=True, exist_ok=True)
         param_str = (
-            f"{sub_id}-{rater_initials}"
+            f"{sub_id}-{matcher_initials}"
             f"-ssm_{story_segmentation_method}-rsm_{recall_segmentation_method}"
         )
         output_path = output_dir / f"{param_str}.csv"
@@ -57,11 +57,11 @@ if __name__ == "__main__":
     story_segmentation_method = "sentences_corrected"
     recall_segmentation_method = "sentences"
     sub_ids = ["sub-001", "sub-003"]
-    rater_initials = "Ishan"
+    matcher_initials = "Ishan"
     generate_file(
         story_name=story_name,
         story_segmentation_method=story_segmentation_method,
         recall_segmentation_method=recall_segmentation_method,
         sub_ids=sub_ids,
-        rater_initials=rater_initials,
+        matcher_initials=matcher_initials,
     )

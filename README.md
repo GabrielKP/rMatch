@@ -21,9 +21,9 @@ uv run src/rmatch/rate_binary.py --sub-ids sub-001
 # 3. Run rating code
 
 # single subject
-uv run src/rmatch/rate_binary.py -rater reranker --story_name pieman --sub_ids sub-001
+uv run src/rmatch/rate_binary.py --matcher reranker --story_name pieman --sub_ids sub-001
 # all subjects
-uv run src/rmatch/rate_binary.py -rater reranker --story_name pieman
+uv run src/rmatch/rate_binary.py --matcher reranker --story_name pieman
 ```
 
 ### Running with openai API
@@ -38,7 +38,7 @@ OPENAI_API_KEY="your_api_key"
 ```
 6. Now you can run:
 ```sh
-uv run src/rmatch/rate_binary.py -rater openai --story_name pieman --sub_ids sub-001
+uv run src/rmatch/rate_binary.py -matcher openai --story_name pieman --sub_ids sub-001
 ```
 
 ### Running locally
@@ -86,7 +86,7 @@ Each story-directory can contain additional directories with other information (
 
 The output is a single json file in `data/stories_and_recalls/storyname/ratings`.
 It contains important metadata fields:
-* **rater_name**: Name of rating method (e.g. 'openai' or 'reranker')/
+* **matcher_name**: Name of rating method (e.g. 'openai' or 'reranker')/
 * **story_segmentation_method**: How story was segmented for producing this rating file.
 * **recall_segmentation_method**: How recalls were segmented for producing this rating file.
 * **output_scores**: Whether scores were outputted for each matched recall and story segment.

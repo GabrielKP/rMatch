@@ -1,4 +1,4 @@
-"""Plot a single subject's recall matrix for multiple raters.
+"""Plot a single subject's recall matrix for multiple matchers.
 
 Example usage:
 uv run src/rmatch/plot_single_sub.py\
@@ -22,7 +22,7 @@ def plot_single_sub_recall_matrices(
     story_segmentation_method: str,
     recall_segmentation_method: str,
     recall_matrices: list[np.ndarray],
-    rater_names: list[str],
+    matcher_names: list[str],
 ):
     """Plot the recall matrices comparison"""
 
@@ -46,12 +46,12 @@ def plot_single_sub_recall_matrices(
     if n_recall_matrices == 1:
         axes = [axes]
 
-    for idx, (rater_name, recall_matrix) in enumerate(
-        zip(rater_names, recall_matrices)
+    for idx, (matcher_name, recall_matrix) in enumerate(
+        zip(matcher_names, recall_matrices)
     ):
         ax = axes[idx]
         img = ax.imshow(recall_matrix, cmap="Reds")
-        ax.set_title(rater_name)
+        ax.set_title(matcher_name)
         ax.set_xlabel("Recall segments")
         ax.set_ylabel("Story segments")
         ax.set_aspect(1)
@@ -82,7 +82,7 @@ def plot_single_sub(sub_id: str, paths_ratings: list[Path]):
     assert len(paths_ratings) > 0, "need at least one rating file"
 
     recall_matrices = list()
-    rater_names = list()
+    matcher_names = list()
     for paths_rating in paths_ratings:
         data_dict = json.loads(paths_rating.read_text())
 
@@ -91,7 +91,7 @@ def plot_single_sub(sub_id: str, paths_ratings: list[Path]):
         )
 
         recall_matrices.append(recall_matrix)
-        rater_names.append(data_dict["rater_name"])
+        matcher_names.append(data_dict["matcher_name"])
         story_segmentation_method = data_dict["story_segmentation_method"]
         recall_segmentation_method = data_dict["recall_segmentation_method"]
         story_name = data_dict["story_name"]
@@ -102,7 +102,7 @@ def plot_single_sub(sub_id: str, paths_ratings: list[Path]):
         story_segmentation_method=story_segmentation_method,  # type: ignore
         recall_segmentation_method=recall_segmentation_method,  # type: ignore
         recall_matrices=recall_matrices,
-        rater_names=rater_names,
+        matcher_names=matcher_names,
     )
 
 

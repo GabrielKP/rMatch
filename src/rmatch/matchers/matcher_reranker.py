@@ -4,12 +4,12 @@ from sentence_transformers import CrossEncoder
 from tqdm import tqdm
 
 from rmatch import ENV, get_logger
-from rmatch.raters.rater import Rater
+from rmatch.matchers.matcher import Matcher
 
 log = get_logger(__name__)
 
 
-class RaterReranker(Rater):
+class MatcherReranker(Matcher):
     def __init__(
         self,
         model_name: str | None = None,
@@ -17,7 +17,7 @@ class RaterReranker(Rater):
         threshold: float | None = None,
         top_k: int | None = None,
     ):
-        self.rater_name = "reranker"
+        self.matcher_name = "reranker"
 
         if model_name is None:
             self.model_name = "BAAI/bge-reranker-v2-m3"

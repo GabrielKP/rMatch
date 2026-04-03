@@ -1,40 +1,34 @@
 import re
 
-import anthropic
+import tiktoken
+from openai import OpenAI
 from tqdm import tqdm
 
-from rmatch import get_logger
-from rmatch.raters.rater import Rater
+from rmatch import ENV, get_logger
+from rmatch.matchers.matcher import Matcher
 
 log = get_logger(__name__)
 
-ANTHROPIC_PRICES: dict[str, tuple[float, float]] = {
-    "claude-opus-4-6": (5, 25),
-    "claude-sonnet-4-6": (3, 15),
-    "claude-haiku-4-5": (1, 5),
-}
+OPENAI_PRICES: dict[str, tuple[float, float]] = {"gpt-5.2": (1.75, 14)}
 
 
-class RaterAnthropic(Rater):
+class MatcherOpenAI(Matcher):
     def __init__(
         self,
         model_name: str | None = None,
         window_size: int = 5,
         dry_run: bool = False,
-        movie_mode: bool = False,
     ):
-        self.rater_name = "anthropic"
+        self.matcher_name = "openai"
 
         if model_name is None:
-            self.model_name = "claude-opus-4-6"
+            self.model_name = "gpt-4.1"
             log.info(f"Initializing model to default: {self.model_name}")
         else:
             self.model_name = model_name
             log.info(f"Initializing model: {self.model_name}")
 
-        self.client = (
-            anthropic.Anthropic()
-        )  # automatically reads key from .env file, must be named "ANTHROPIC_API_KEY"
+        self.client = OpenAI(api_key=ENV["OPENAI_API_KEY"])
         self.use_context = window_size > 0
         self.window_size = window_size
         self.usage_metrics = {"in_tokens": 0, "out_tokens": 0, "cost": 0.0}
@@ -44,9 +38,6 @@ class RaterAnthropic(Rater):
             "est_cost": 0.0,
         }
         self.dry_run = dry_run
-        if self.dry_run:
-            log.info("RUNNING IN DRY RUN MODE")
-        self.movie_mode = movie_mode
 
     def get_usage(self) -> dict | None:
         if self.dry_run:
@@ -54,18 +45,18 @@ class RaterAnthropic(Rater):
         return self.usage_metrics
 
     def _calculate_cost(self, in_tokens: int, out_tokens: int) -> float:
-        if self.model_name not in ANTHROPIC_PRICES:
+        if self.model_name not in OPENAI_PRICES:
             log.warning(f"No pricing found for {self.model_name}, cost set to 0")
             return 0.0
-        prices = ANTHROPIC_PRICES[self.model_name]
+        prices = OPENAI_PRICES[self.model_name]
         return (in_tokens * prices[0] + out_tokens * prices[1]) / 1_000_000
 
     def _estimate_tokens(self, query: str) -> int:
-        mock = self.client.messages.count_tokens(
-            model=self.model_name,
-            messages=[{"role": "user", "content": query}],
-        )
-        return mock.input_tokens
+        try:
+            enc = tiktoken.encoding_for_model(self.model_name)
+        except KeyError:
+            enc = tiktoken.get_encoding("cl100k_base")
+        return len(enc.encode(query))
 
     def build_message(
         self, recall_segment: str, story: str, story_segments: str, window: str | None
@@ -87,41 +78,6 @@ class RaterAnthropic(Rater):
         Return ONLY a set of numbers in <>, for example:
         <3, 7, 12>
         """
-        elif self.movie_mode:
-            message = f"""This is a transcription of a short film, broken into shots.
-            Each numbered piece describes a distinct visual moment or shot in the film.
-            Adjacent pieces may depict the same scene from different angles or show
-            consecutive moments in continuous action:
-
-        The movie can be broken down into the following shots:
-        {story_segments}
-
-        Below is a window of consecutive clauses from a participant's recall.
-        The TARGET clause is marked with >>> <<<.
-        The other clauses are provided _only as context_.
-
-        Recall window:
-        {window}
-
-        Which of the numbered shots are
-        expressed by the >>> TARGET <<< clause?
-
-        Important notes:
-            * Shot descriptions may be very brief or purely visual, do not discount
-            a shot simply because it is short or contains no dialogue.
-            * If multiple shots depict the same event, choose the one most
-            specifically and directly matched by the TARGET clause itself.
-            * A single TARGET may match multiple shots if it spans a continuous action.
-            * Use the surrounding clauses only to resolve references (e.g., pronouns),
-            but DO NOT attribute information expressed only in neighboring clauses.
-            * If a numbered shot is not explicitly expressed in the TARGET
-            clause itself, do NOT include it.
-
-        If none apply, return "<NONE>".
-
-        Return ONLY a set of numbers in angle brackets, for example:
-        <3, 7, 12>"""
-
         else:
             message = f"""This is the original story:
         {story}
@@ -201,7 +157,7 @@ class RaterAnthropic(Rater):
     ) -> list[tuple[int, list[int]]]:
         if output_scores:
             raise NotImplementedError(
-                "Anthropic rater currently does not support output_scores = True"
+                "OpenAI matcher currently does not support output_scores = True"
             )
 
         story = self.format_story(story_segments)
@@ -238,12 +194,11 @@ class RaterAnthropic(Rater):
                     estimated_in_tokens, estimated_out_tokens
                 )
             else:
-                response = self.client.messages.create(
-                    model=self.model_name,
-                    max_tokens=1024,
-                    messages=[{"role": "user", "content": query}],
+                response = self.client.responses.create(
+                    model=self.model_name, input=query
                 )
 
+                assert response.usage is not None
                 in_tokens = response.usage.input_tokens
                 out_tokens = response.usage.output_tokens
                 self.usage_metrics["in_tokens"] += in_tokens
@@ -251,7 +206,7 @@ class RaterAnthropic(Rater):
                 self.usage_metrics["cost"] += self._calculate_cost(
                     in_tokens, out_tokens
                 )
-                parsed_response = self.parse(response.content[0].text)  # type: ignore
+                parsed_response = self.parse(response.output_text)
 
             story_indices = sorted(i - 1 for i in parsed_response)
             ratings.append((idx, story_indices))

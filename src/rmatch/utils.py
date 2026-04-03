@@ -8,13 +8,13 @@ from matplotlib import pyplot as plt
 def get_param_str(output_dict: dict) -> str:
     """Get the param string from the output dict."""
 
-    rater_name = output_dict["rater_name"]
+    matcher_name = output_dict["matcher_name"]
     recall_segmentation_method = output_dict["recall_segmentation_method"]
     story_segmentation_method = output_dict["story_segmentation_method"]
     output_scores_str = "-ouput_scores" if output_dict["output_scores"] else ""
 
     param_str = (
-        f"{rater_name}"
+        f"{matcher_name}"
         f"-ssm_{story_segmentation_method}"
         f"-rsm_{recall_segmentation_method}"
         f"{output_scores_str}"

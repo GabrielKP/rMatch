@@ -60,7 +60,7 @@ def load_cyoa_story_recall_segments(
 def load_filmfest_story_recall_segments(
     story_names: list[str],
     sub_ids: list[str] | None = None,
-    transcript_rater: str = "JL",
+    transcript_matcher: str = "JL",
 ) -> list[tuple[str, str, list[str], list[str]]]:
     """Returns the story segments and recall segments for the given story names.
 
@@ -70,8 +70,8 @@ def load_filmfest_story_recall_segments(
         list of story names (movie names)
     sub_ids: list[str] | None
         list of subject ids included
-    transcript_rater: "JL" | "KM" | "RC"
-        rater of the transcripts
+    transcript_matcher: "JL" | "KM" | "RC"
+        matcher of the transcripts
 
     Returns
     -------
@@ -87,7 +87,10 @@ def load_filmfest_story_recall_segments(
     # preload transcripts
     transcript_segments_dict: dict[str, list[str]] = dict()
     all_transcripts = pd.read_csv(
-        Path("data") / "filmfest" / "transcripts" / f"{transcript_rater}_transcript.csv"
+        Path("data")
+        / "filmfest"
+        / "transcripts"
+        / f"{transcript_matcher}_transcript.csv"
     )
     for story_name in story_names:
         transcript_df = all_transcripts.loc[all_transcripts["movie_name"] == story_name]
@@ -341,7 +344,8 @@ def load_filmfest_recall_matrix_human_binary(
 
     # get transcript df
     transcript_path = Path("data") / "filmfest" / "transcripts" / "JL_transcript.csv"
-    # trancript rater does not matter as event segmentation is the same for all raters
+    # trancript matcher does not matter as event segmentation is the same for all
+    # matchers
     all_transcript_df = pd.read_csv(transcript_path)
     transcript_df = all_transcript_df.loc[all_transcript_df["movie_name"] == story_name]
 
@@ -375,7 +379,7 @@ def load_filmfest_recall_matrix_human_binary(
 
 
 def load_nfrd_recall_matrix_human_mi(
-    story_name: str, sub_id: str, rater: str
+    story_name: str, sub_id: str, matcher: str
 ) -> np.ndarray:
     """Returns the recall matrix for the given story name and subject id.
 
@@ -385,7 +389,7 @@ def load_nfrd_recall_matrix_human_mi(
         name of the story
     sub_id: str
         subject id
-    rater: str
+    matcher: str
         who rated the file, all lowercase
 
     Returns
@@ -402,7 +406,7 @@ def load_nfrd_recall_matrix_human_mi(
         / "recalls"
         / "human_mi"
         / story_name
-        / f"{sub_id}_{story_name}_{rater}.csv"
+        / f"{sub_id}_{story_name}_{matcher}.csv"
     )
 
     df = pd.read_csv(ratings_path, dtype={"mi": int})
@@ -423,7 +427,7 @@ def load_nfrd_recall_matrix_human_mi(
 
 def load_ratings_dict(
     story_name: str,
-    rater_name: str,
+    matcher_name: str,
     story_segmentation_method: str,
     recall_segmentation_method: str,
 ) -> dict:
@@ -433,7 +437,7 @@ def load_ratings_dict(
         / story_name
         / "ratings"
         / (
-            f"{rater_name}"
+            f"{matcher_name}"
             f"-ssm_{story_segmentation_method}"
             f"-rsm_{recall_segmentation_method}.json"
         )

@@ -7,12 +7,12 @@ from tqdm import tqdm
 from transformers import BitsAndBytesConfig, pipeline
 
 from rmatch import get_logger
-from rmatch.raters.rater import Rater
+from rmatch.matchers.matcher import Matcher
 
 log = get_logger(__name__)
 
 
-class RaterHuggingFace(Rater):
+class MatcherHuggingFace(Matcher):
     def __init__(
         self,
         model_name: str | None = None,
@@ -22,7 +22,7 @@ class RaterHuggingFace(Rater):
         batch_size: int = 4,
         max_new_tokens: int = 64,
     ):
-        self.rater_name = "huggingface"
+        self.matcher_name = "huggingface"
 
         assert window_size >= 0, "window_size must be non-negative"
         self.window_size = window_size
@@ -189,7 +189,7 @@ Story segments that match the <target> segment:
     ) -> list[tuple[int, list[int]]]:
         if output_scores:
             raise NotImplementedError(
-                "HuggingFace rater does not support output_scores = True"
+                "HuggingFace matcher does not support output_scores = True"
             )
 
         story_segs_formatted = self.format_story_segments(story_segments)

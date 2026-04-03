@@ -22,8 +22,8 @@ from rmatch.load import (
     load_ratings_dict,
     load_story_recall_segments,
 )
-from rmatch.raters import initialize_rater
-from rmatch.raters.rater import Rater
+from rmatch.matchers import initialize_matcher
+from rmatch.matchers.matcher import Matcher
 from rmatch.utils import ratings_single_sub_to_matrix
 
 load_dotenv()
@@ -32,7 +32,7 @@ load_dotenv()
 def eval_param_str(
     repeat_reliability: bool,
     testset: str,
-    rater_name: str,
+    matcher_name: str,
     model_name: str | None,
     seed: int,
     random_mode: str | None,
@@ -47,7 +47,7 @@ def eval_param_str(
         model_name_str = f"-m_{model_name.replace('/', '_')}"
     param_str = (
         f"{timestamp}{rr_str}-{testset}"
-        f"-{rater_name}{model_name_str}-seed_{seed}{random_mode_str}"
+        f"-{matcher_name}{model_name_str}-seed_{seed}{random_mode_str}"
     )
     return param_str
 
@@ -166,7 +166,7 @@ def load_story_recall_segments_default(
         for story_name in story_names_memsearch:
             ratings_dict = load_ratings_dict(
                 story_name=story_name,
-                rater_name="human",
+                matcher_name="human",
                 story_segmentation_method="seg_c",
                 recall_segmentation_method="sentences",
             )
@@ -186,7 +186,7 @@ def get_model_ratings(
     random_mode: str | None,
     rng: np.random.Generator,
     rm_comparison: np.ndarray,
-    rater: Rater,
+    matcher: Matcher,
     story_segments: list[str],
     recall_segments: list[str],
 ):
@@ -196,7 +196,7 @@ def get_model_ratings(
     elif random_mode == "row_shuffle":
         rm_model = rng.permutation(rm_comparison)
     else:
-        single_sub_ratings = rater.compute_ratings_single_sub(
+        single_sub_ratings = matcher.compute_ratings_single_sub(
             story_segments=story_segments,
             recall_segments=recall_segments,
             output_scores=False,
@@ -209,7 +209,7 @@ def get_model_ratings(
 
 
 def evaluate(
-    rater_name: str,
+    matcher_name: str,
     model_name: str | None,
     testset: str,
     device: str | None = None,
@@ -224,9 +224,9 @@ def evaluate(
     quantization: Literal["4bit", "8bit"] | None = None,
     track_emissions: bool = False,
 ):
-    """Evaluate the rater."""
-    rater = initialize_rater(
-        rater_name=rater_name,
+    """Evaluate the matcher."""
+    matcher = initialize_matcher(
+        matcher_name=matcher_name,
         model_name=model_name,
         device=device,
         reranker_threshold=reranker_threshold,
@@ -237,8 +237,8 @@ def evaluate(
         verbose_errors=verbose_errors,
         quantization=quantization,
     )
-    if hasattr(rater, "model_name"):
-        model_name = rater.model_name  # type: ignore
+    if hasattr(matcher, "model_name"):
+        model_name = matcher.model_name  # type: ignore
     else:
         model_name = None
 
@@ -248,7 +248,7 @@ def evaluate(
         / eval_param_str(
             repeat_reliability=False,
             testset=testset,
-            rater_name=rater_name,
+            matcher_name=matcher_name,
             model_name=model_name,
             seed=seed,
             random_mode=random_mode,
@@ -267,7 +267,7 @@ def evaluate(
     tracker = None
     if track_emissions:
         tracker = EmissionsTracker(
-            project_name=f"rmatch-eval-{rater_name}",
+            project_name=f"rmatch-eval-{matcher_name}",
             output_dir=str(output_dir),
         )
         tracker.start()
@@ -299,7 +299,7 @@ def evaluate(
                 random_mode=random_mode,
                 rng=rng,
                 rm_comparison=rm_comparison,
-                rater=rater,
+                matcher=matcher,
                 story_segments=story_segments,
                 recall_segments=recall_segments,
             )
@@ -333,16 +333,16 @@ def evaluate(
             )
 
     if dry_run:
-        console.print(f"[DRY RUN] Estimated Usage: {rater.get_usage()}")
+        console.print(f"[DRY RUN] Estimated Usage: {matcher.get_usage()}")
         return
 
     # output results
     if random_mode is not None:
-        rater_str = random_mode
+        matcher_str = random_mode
     else:
-        rater_str = rater_name
+        matcher_str = matcher_name
     console.print(
-        f"Rater: {rater_str} | N recalls: {len(precisions)}"
+        f"Matcher: {matcher_str} | N recalls: {len(precisions)}"
         f" (evaluated) / {len(story_recall_segments)} (total)"
     )
 
@@ -373,7 +373,7 @@ def evaluate(
 
     results_dict = {
         "testset": testset,
-        "rater_name": rater_name,
+        "matcher_name": matcher_name,
         "model_name": model_name,
         "device": device,
         "seed": seed,
@@ -385,9 +385,9 @@ def evaluate(
         "pearsonr_macro": float(pearsonr_macro),
     }
 
-    if rater.get_usage() is not None:
-        console.print(f"Total API usage: {rater.get_usage()}")
-        results_dict["usage"] = rater.get_usage()
+    if matcher.get_usage() is not None:
+        console.print(f"Total API usage: {matcher.get_usage()}")
+        results_dict["usage"] = matcher.get_usage()
 
     if track_emissions:
         results_dict["emissions_kg_co2eq"] = float(emissions_kg)  # type: ignore
@@ -476,7 +476,7 @@ def load_story_recall_segments_repeat_reliability(
         for story_name in story_names_memsearch:
             ratings_dict = load_ratings_dict(
                 story_name=story_name,
-                rater_name="human",
+                matcher_name="human",
                 story_segmentation_method="seg_c",
                 recall_segmentation_method="sentences",
             )
@@ -519,7 +519,7 @@ def get_krippendorff_alpha(recall_matrices_dct: dict[str, list[np.ndarray]]) -> 
     This measures how consistent ratings are for each individual recall.
     E.g. if a story contributes 50 recalls and another only 10, the first story
     contributes 5 times as much to the agreement as the second story.
-    This is okay, because we are interested in the consistency of the rater
+    This is okay, because we are interested in the consistency of the matcher
     at the level of individual recalls. It also probably doesn't matter to average
     across stories instead.
     """
@@ -538,7 +538,7 @@ def get_krippendorff_alpha(recall_matrices_dct: dict[str, list[np.ndarray]]) -> 
 
 def evaluate_repeat_reliability(
     n_repeats: int,
-    rater_name: str,
+    matcher_name: str,
     model_name: str | None,
     testset: str,
     device: str | None = None,
@@ -552,9 +552,9 @@ def evaluate_repeat_reliability(
     quantization: Literal["4bit", "8bit"] | None = None,
     track_emissions: bool = False,
 ):
-    """Evaluate the repeat reliability of the rater."""
-    rater = initialize_rater(
-        rater_name=rater_name,
+    """Evaluate the repeat reliability of the matcher."""
+    matcher = initialize_matcher(
+        matcher_name=matcher_name,
         model_name=model_name,
         device=device,
         window_size=window_size,
@@ -564,8 +564,8 @@ def evaluate_repeat_reliability(
         movie_mode=movie_mode,
         quantization=quantization,
     )
-    if hasattr(rater, "model_name"):
-        model_name = rater.model_name  # type: ignore
+    if hasattr(matcher, "model_name"):
+        model_name = matcher.model_name  # type: ignore
     else:
         model_name = None
 
@@ -575,7 +575,7 @@ def evaluate_repeat_reliability(
         / eval_param_str(
             repeat_reliability=True,
             testset=testset,
-            rater_name=rater_name,
+            matcher_name=matcher_name,
             model_name=model_name,
             seed=seed,
             random_mode=random_mode,
@@ -596,7 +596,7 @@ def evaluate_repeat_reliability(
     tracker = None
     if track_emissions:
         tracker = EmissionsTracker(
-            project_name=f"rmatch-eval-rr-{rater_name}",
+            project_name=f"rmatch-eval-rr-{matcher_name}",
             output_dir=str(output_dir),
         )
         tracker.start()
@@ -632,7 +632,7 @@ def evaluate_repeat_reliability(
                     random_mode=random_mode,
                     rng=rng,
                     rm_comparison=rm_comparison,
-                    rater=rater,
+                    matcher=matcher,
                     story_segments=story_segments,
                     recall_segments=recall_segments,
                 )
@@ -665,15 +665,15 @@ def evaluate_repeat_reliability(
             )
 
     if dry_run:
-        console.print(f"[DRY RUN] Estimated Usage: {rater.get_usage()}")
+        console.print(f"[DRY RUN] Estimated Usage: {matcher.get_usage()}")
         return
 
     # output results
     if random_mode is not None:
-        rater_str = random_mode
+        matcher_str = random_mode
     else:
-        rater_str = rater_name
-    console.print(f"Rater: {rater_str} | N recalls: {len(story_recall_segments)}")
+        matcher_str = matcher_name
+    console.print(f"Matcher: {matcher_str} | N recalls: {len(story_recall_segments)}")
 
     mean_f1s = list()
     mean_precisions = list()
@@ -705,7 +705,7 @@ def evaluate_repeat_reliability(
     overall_mean_recall = np.mean(mean_recalls)
     overall_mean_pearsonr = np.mean(mean_pearsonrs)
 
-    console.print(f"\nRater: {rater_str} | N recalls: {len(story_recall_segments)}")
+    console.print(f"\nMatcher: {matcher_str} | N recalls: {len(story_recall_segments)}")
     console.print(
         f"[yellow]Overall[/yellow] (compared to human annotations)"
         f"\n mean pearsonr={overall_mean_pearsonr:.3f}"
@@ -725,7 +725,7 @@ def evaluate_repeat_reliability(
 
     results_dict = {
         "testset": testset,
-        "rater_name": rater_name,
+        "matcher_name": matcher_name,
         "model_name": model_name,
         "device": device,
         "seed": seed,
@@ -774,7 +774,7 @@ if __name__ == "__main__":
     )
     args.add_argument(
         "-r",
-        "--rater_name",
+        "--matcher_name",
         choices=[
             "anthropic",
             "reranker",
@@ -782,7 +782,7 @@ if __name__ == "__main__":
             "huggingface",
         ],
         default="anthropic",
-        help="Name of the rater to use. Default is 'anthropic'.",
+        help="Name of the matcher to use. Default is 'anthropic'.",
     )
     args.add_argument(
         "-t",
@@ -887,7 +887,7 @@ if __name__ == "__main__":
     if args.repeat_reliability:
         evaluate_repeat_reliability(
             n_repeats=args.n_repeats,
-            rater_name=args.rater_name,
+            matcher_name=args.matcher_name,
             testset=args.testset,
             model_name=args.model_name,
             device=args.device,
@@ -903,7 +903,7 @@ if __name__ == "__main__":
         )
     else:
         evaluate(
-            rater_name=args.rater_name,
+            matcher_name=args.matcher_name,
             testset=args.testset,
             model_name=args.model_name,
             device=args.device,

@@ -26,7 +26,7 @@ ratings_dicts_memsearch = defaultdict(dict)
 for story_name in STORY_NAMES_MEMSEARCH10:
     ratings_dict = load_ratings_dict(
         story_name=story_name,
-        rater_name="human",
+        matcher_name="human",
         story_segmentation_method="seg_c",
         recall_segmentation_method="sentences",
     )

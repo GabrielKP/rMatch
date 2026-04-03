@@ -69,7 +69,7 @@ def load_human_matrices_for_testset(
         for story_name in story_names:
             ratings_dict = load_ratings_dict(
                 story_name=story_name,
-                rater_name="human",
+                matcher_name="human",
                 story_segmentation_method="seg_c",
                 recall_segmentation_method="sentences",
             )

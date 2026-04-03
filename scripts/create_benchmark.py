@@ -177,7 +177,7 @@ def convert_cyoa_story(benchmark_dir: Path, story_name: str, dataset_name: str) 
         out_dir / "matches" / "human-scenes-sub_sentences.json",
         {
             "type": "matches",
-            "rater": "human",
+            "matcher": "human",
             "story_segmentation": "scenes",
             "recall_segmentation": "sub_sentences",
             "n_story_segments": n_events,
@@ -234,7 +234,7 @@ def convert_memsearch_story(benchmark_dir: Path, story_name: str) -> None:
             out_dir / "matches" / f"human-{dst_name}-sentences.json",
             {
                 "type": "matches",
-                "rater": "human",
+                "matcher": "human",
                 "story_segmentation": dst_name,
                 "recall_segmentation": "sentences",
                 "n_story_segments": src_ratings["n_story_segments"],

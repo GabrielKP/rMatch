@@ -3,12 +3,12 @@ from pathlib import Path
 from typing import Literal
 
 from rmatch import console
+from rmatch.matchers import initialize_matcher
 from rmatch.plot_single_sub import plot_single_sub
-from rmatch.raters import initialize_rater
 
 
 def rate_binary(
-    rater_name: str,
+    matcher_name: str,
     story_name: str,
     story_segmentation_method: str | None = None,
     recall_segmentation_method: str | None = None,
@@ -29,8 +29,8 @@ def rate_binary(
 
     Parameters
     ----------
-    rater_name: str
-        Name of the rater to use.
+    matcher_name: str
+        Name of the matcher to use.
     story_name: str
         Name of the story to rate.
     story_segmentation_method: str | None
@@ -51,8 +51,8 @@ def rate_binary(
     device: str | None
         [reranker] Device to use for the reranker. If None, will be autoselected.
     """
-    rater = initialize_rater(
-        rater_name=rater_name,
+    matcher = initialize_matcher(
+        matcher_name=matcher_name,
         model_name=model_name,
         device=device,
         quantization=quantization,
@@ -67,13 +67,13 @@ def rate_binary(
         from codecarbon import EmissionsTracker
 
         tracker = EmissionsTracker(
-            project_name=f"rmatch-rate-{rater_name}",
+            project_name=f"rmatch-rate-{matcher_name}",
             output_dir=str(ratings_dir),
         )
         tracker.start()
 
     try:
-        output_dict = rater.rate(
+        output_dict = matcher.rate(
             story_name=story_name,
             story_segmentation_method=story_segmentation_method,
             recall_segmentation_method=recall_segmentation_method,
@@ -90,7 +90,7 @@ def rate_binary(
                 f"[green]Carbon emissions:[/green] {emissions_kg:.6f} kg CO2eq"
             )
 
-    output_path = rater.save_to_json(output_dict)
+    output_path = matcher.save_to_json(output_dict)
 
     # plot a single sub
     if not output_dict["output_scores"]:
@@ -102,7 +102,7 @@ if __name__ == "__main__":
     args = argparse.ArgumentParser()
     args.add_argument(
         "-r",
-        "--rater_name",
+        "--matcher_name",
         choices=[
             "anthropic",
             "reranker",
@@ -110,7 +110,7 @@ if __name__ == "__main__":
             "huggingface",
         ],
         default="anthropic",
-        help="Name of the rater to use. Default is 'openai'.",
+        help="Name of the matcher to use. Default is 'openai'.",
     )
     args.add_argument(
         "-s",
@@ -204,7 +204,7 @@ if __name__ == "__main__":
         "--batch_size",
         type=int,
         default=4,
-        help="[huggingface] Batch size for the HuggingFace rater.",
+        help="[huggingface] Batch size for the HuggingFace matcher.",
     )
     args.add_argument(
         "--track_emissions",
@@ -215,7 +215,7 @@ if __name__ == "__main__":
 
     args = args.parse_args()
     rate_binary(
-        rater_name=args.rater_name,
+        matcher_name=args.matcher_name,
         story_name=args.story_name,
         story_segmentation_method=args.story_segmentation_method,
         recall_segmentation_method=args.recall_segmentation_method,

@@ -249,7 +249,7 @@ def import_nfrd_data(nfrd_dir: Path):
         recalled_events = dict(sorted(recalled_events.items(), key=lambda x: x[0]))
 
         output_dict = {
-            "rater_name": "lda-hmm",
+            "matcher_name": "lda-hmm",
             "story_name": story_id,
             "story_segmentation_method": "lda-hmm",
             "recall_segmentation_method": "lda-hmm",
