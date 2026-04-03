@@ -10,105 +10,90 @@
 
 ## Installation
 
-From the repository root:
-
 ```sh
 pip install .
 ```
 
-This installs the `rmatch` command on your PATH. Run `rmatch --help` for story/recall arguments and matcher options. Equivalent: `python -m rmatch.match`.
+## Setup
 
-
-### API keys
-
-1. Create an api key at the platform of your choice.
-2. Create and add it to the `.env`:
-```sh
-ANTHROPIC_API_KEY="your_api_key"
-OPENAI_API_KEY="your_api_key"
-HF_TOKEN="your_hf_token"
-```
-
-
-
-## Usage
-Run from the repository root:
+Create a `.env` file in the repository root with the API keys you need:
 
 ```sh
-rmatch STORY_FILE RECALL_FILE [--matcher {anthropic,reranker,openai,huggingface}] \
-  [--model-name MODEL] [--device DEVICE] [--quantization {4bit,8bit}] \
-  [--batch-size N] [--track-emissions]
+ANTHROPIC_API_KEY="your_api_key"   # for --matcher anthropic (default)
+OPENAI_API_KEY="your_api_key"      # for --matcher openai
+HF_TOKEN="your_hf_token"          # for --matcher huggingface
 ```
 
-Key arguments:
-- `STORY_FILE` (positional): Path to the story, either line-separated `.txt` or `.json` with a `segments` array.
-- `RECALL_FILE` (positional): Path to recalls, either `.txt`/`.json` file or a directory containing `.txt`/`.json` files.
-- `--matcher` / `-M`: Which rating method to use: `anthropic`, `reranker`, `openai`, or `huggingface` (default: `anthropic`).
-- `--model-name` / `-m`: Underlying model override for the selected matcher (default: matcher built-in default).
-- `--device`: Device hint for `reranker`/`huggingface` (default: auto).
-- `--quantization` / `-q`: Huggingface quantization: `4bit` or `8bit` (default: no override).
-- `--batch-size` / `-bs`: Huggingface batch size (default: `4`).
-- `--track-emissions`: Enable CodeCarbon emissions tracking (writes output beside the recall).
+## Quick start
 
+### Command line
 
-### Outputs
+```sh
+rmatch story.txt recalls/ --matcher anthropic
+```
 
-The output is a single json file with following fields:
-* **matcher_name**: Name of rating method (e.g. 'openai' or 'reranker')/
-* **story_segmentation_method**: How story was segmented for producing this rating file.
-* **recall_segmentation_method**: How recalls were segmented for producing this rating file.
-* **output_scores**: Whether scores were outputted for each matched recall and story segment.
-* **n_story_segments**: The number of story segments
-* **ratings**: a dictionary mapping 'sub-id' -> 'single_subject_ratings' list.
+`STORY_FILE` is a line-separated `.txt` or `.json` (with a `segments` array).
+`RECALL_FILE` is a `.txt`/`.json` file or a directory of them.
 
-The dictionary may contain additional metadata (e.g. the model_name).
+### Python API
 
+```python
+from rmatch import match
 
-#### The ratings dictionary
+ratings = match(
+    story_segments=["The cat sat on the mat.", "It purred softly."],
+    recall_segments=["A cat was on a mat."],
+    matcher="anthropic",
+)
+# [(0, [0])]  — recall segment 0 matched story segment 0
+```
 
-Maps 'sub-id' -> 'single_subject_ratings'.
-The 'single_subject_ratings' list is a list of tuples with recall segments and their matching story segments:
-`[(recall_segment_id_1, [matched story segments...]), (recall_segment_id_2, [matched story segments...])]`
+## CLI options
 
-Thus, the ratings dictionary looks something like this:
+| Flag | Description | Default |
+|---|---|---|
+| `--matcher`, `-M` | `anthropic`, `openai`, `reranker`, `huggingface` | `anthropic` |
+| `--model-name`, `-m` | Override the matcher's default model | matcher default |
+| `--device` | Device for `reranker`/`huggingface` | auto |
+| `--quantization`, `-q` | `4bit` or `8bit` (huggingface only) | none |
+| `--batch-size`, `-bs` | Batch size (huggingface only) | `4` |
+| `--track-emissions` | Enable CodeCarbon emissions tracking | off |
+
+Run `rmatch --help` for the full list.
+
+## Output format
+
+A JSON file with:
+
 ```json
 {
-    "sub-001": [
-        (recall_segment_id_1, [story_segment_id_x, story_segment_id_y, ..., ]),
-        (recall_segment_id_2, [story_segment_id_z, story_segment_id_a, ...,]),
-        ...
-    ],
-    "sub-002": [
-        (recall_segment_id_1, [story_segment_id_x, story_segment_id_y, ..., ]),
-        (recall_segment_id_2, [story_segment_id_z, story_segment_id_a, ...,]),
-        ...
-    ],
-    ...
+  "matcher_name": "anthropic",
+  "n_story_segments": 20,
+  "ratings": {
+    "sub-001": [[0, [3, 7]], [1, [12]]],
+    "sub-002": [[0, [1]], [1, [5, 6]]]
+  }
 }
 ```
 
-Note that the number of recall segments can be computed from the length of the 'single_subject_ratings' list.
+Each entry in `ratings` maps a subject ID to a list of `[recall_segment_id, [matched_story_segment_ids...]]` pairs.
 
+## Benchmarking
 
-## Benchmark
+Requires [rBench](https://github.com/GabrielKP/rBench):
 
-To benchmark rMatch:
-
-1. Download [rBench](https://github.com/GabrielKP/rBench):
 ```sh
 git clone git@github.com:GabrielKP/rBench.git
 ```
-2. Edit `.env` to point towards rBench root:
+
+Add to `.env`:
+
 ```sh
 BENCHMARK_ROOT="path/to/rBench"
 ```
-3. Run `uv run src/rmatch/evaluate.py`
 
-Usage:
+Run:
+
 ```sh
-usage: evaluate.py [-h] [-rr] [--benchmark-root BENCHMARK_ROOT] [-M {anthropic,reranker,openai,huggingface}] [-m MODEL_NAME] [--device DEVICE] [--dry-run] [--window-size WINDOW_SIZE] [-n N_REPEATS]
-                   [-q {4bit,8bit}] [-bs BATCH_SIZE] [--max-new-tokens MAX_NEW_TOKENS] [--verbose-errors] [--track-emissions]
-                   {alice,monthiversary,memsearch}
+uv run src/rmatch/evaluate.py {alice,monthiversary,memsearch}
 ```
-
-_Good luck on your adventures._
