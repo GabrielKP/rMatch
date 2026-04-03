@@ -1,0 +1,286 @@
+"""Imports data from the NFRD dataset."""
+
+import argparse
+import json
+import re
+from pathlib import Path
+
+import chardet
+import numpy as np
+from nltk.tokenize import sent_tokenize
+
+
+def read_recall_transcript(recall_transcript_path: Path) -> str:
+    encoding_dict = {
+        "Windows-1252": "cp1252",
+        "ascii": "ascii",
+        "utf-8": "utf-8",
+    }
+
+    with open(recall_transcript_path, "rb") as f:
+        raw_recall = f.read()
+    encoding = chardet.detect(raw_recall)
+
+    return recall_transcript_path.read_text(
+        encoding=encoding_dict[encoding["encoding"]]  # type: ignore
+    )
+
+
+def format_text(text: str) -> str:
+    """
+    from:
+    https://github.com/phoebsc/Naturalistic-Free-Recall-Dataset/blob/e1aea19210858b5ce6b32128e8df42b137effb8f/sherlock_helpers/functions.py#L20
+    from:
+    https://github.com/ContextLab/sherlock-topic-model-paper/
+    """
+
+    pattern = "[^.\\w\\s]+"  # fixed the syntax error on the escape characters \ -> \\
+
+    no_possessive = text.lower().replace("'s", "")
+    return re.sub(pattern, "", no_possessive)
+
+
+def parse_windows_reg(
+    textlist: list[str],
+    wsize: int,
+    stepsize: int,
+) -> tuple[list[str], list[tuple[int, int]]]:
+    """
+    from:
+    https://github.com/phoebsc/Naturalistic-Free-Recall-Dataset/blob/e1aea19210858b5ce6b32128e8df42b137effb8f/sherlock_helpers/functions.py#L60
+    """
+    windows = []
+    window_bounds = []
+    for ix in np.arange(0, len(textlist), stepsize):
+        start = ix
+        end = ix + wsize if ix + wsize <= len(textlist) else len(textlist)
+        window_bounds.append((start, end))
+        windows.append(" ".join(textlist[start:end]))
+
+    return windows, window_bounds
+
+
+def get_story_windows(story: str, window_size: int, step_size: int) -> list[str]:
+    """Returns the windows of each story used for the lda-hmm in Raccah et al.
+
+    This is a wrapper for the code from in
+    https://github.com/phoebsc/Naturalistic-Free-Recall-Dataset
+
+    Returns
+    """
+
+    story_fmt = format_text(story).replace("\n", " ").replace(".", "").strip()
+    story_fmt = " ".join(story_fmt.split()).split(" ")
+
+    windows, _ = parse_windows_reg(story_fmt, wsize=window_size, stepsize=step_size)
+    return windows
+
+
+def sentence_tokenize(text: str) -> list[str]:
+    initial_sentences = [sent for sent in sent_tokenize(text)]
+    # merge sentences that are within qoutes "..." and not too long
+    processed_sentences_1 = list()
+    idx_sentence = 0
+    open_quote = 0
+    while idx_sentence < len(initial_sentences):
+        sentence = initial_sentences[idx_sentence]
+        n_qoutes = sentence.count('"')
+        if (n_qoutes + open_quote) % 2 == 0:
+            processed_sentences_1.append(sentence)
+            idx_sentence += 1
+            open_quote = 0
+        else:
+            # need to merge sentences unless it becomes too long
+            max_length = 210
+            candidate_new_sentence = sentence
+            idx_sentence_next = idx_sentence + 1
+            while (
+                n_qoutes % 2 != 0
+                and len(candidate_new_sentence) < max_length
+                and idx_sentence_next < len(initial_sentences)
+            ):
+                candidate_new_sentence += " " + initial_sentences[idx_sentence_next]
+                n_qoutes = candidate_new_sentence.count('"')
+                idx_sentence_next += 1
+            if len(candidate_new_sentence) < max_length:
+                processed_sentences_1.append(candidate_new_sentence)
+                idx_sentence = idx_sentence_next
+                open_quote = 0
+            else:
+                processed_sentences_1.append(sentence)
+                idx_sentence += 1
+                open_quote = 1
+
+    # second step: remove small sentences
+    processed_sentences_2 = list()
+    for sentence in processed_sentences_1:
+        if len(sentence) > 9:
+            processed_sentences_2.append(sentence)
+    return processed_sentences_2
+
+
+def import_nfrd_data(nfrd_dir: Path):
+    dim_topic_model = 40
+    window_size = 55
+    step_size = 21
+
+    if not nfrd_dir.exists():
+        raise FileNotFoundError(f"NFRD directory {nfrd_dir} does not exist")
+
+    # 2. import story data
+    story_ids = ["pieman", "oregon", "eyespy", "baseball"]
+    for story_id in story_ids:
+        subfolder_name = (
+            f"{story_id}_t{dim_topic_model}_v{window_size}_r{window_size}_s{step_size}"
+        )
+
+        # (A) load and save story segments
+        story_segmentes_output_dir = (
+            Path("data") / "stories-and-recalls" / story_id / "transcripts"
+        )
+        story_segmentes_output_dir.mkdir(parents=True, exist_ok=True)
+        story_text_path = Path(
+            nfrd_dir,
+            "story_transcript",
+            f"{story_id}_transcript.txt",
+        )
+        story_text = Path(story_text_path).read_text()
+        # clean text
+        story_text = (
+            story_text.replace("’", "'")
+            .replace("“", '"')
+            .replace("“", '"')
+            .replace("”", '"')
+            .replace("\n", " ")
+            .strip()
+        )
+
+        # original text
+        (story_segmentes_output_dir / "text.txt").write_text(story_text + "\n")
+
+        # sentence segments
+        story_sentence_segments = [sent for sent in sent_tokenize(story_text)]
+        (story_segmentes_output_dir / "sentences.txt").write_text(
+            "\n".join(story_sentence_segments) + "\n"
+        )
+
+        # lda_hmm segments
+        window_size = 55
+        step_size = 21
+        lda_hmm_segments = get_story_windows(
+            story=story_text, window_size=window_size, step_size=step_size
+        )
+        (story_segmentes_output_dir / "lda_hmm.txt").write_text(
+            "\n".join(lda_hmm_segments) + "\n"
+        )
+
+        # (B) load recall segements
+        story_id_recall = story_id if story_id != "oregon" else "oregontrail"
+        recall_segments_paths = Path(
+            nfrd_dir, "recall_transcript", f"recall_transcript_{story_id_recall}"
+        ).glob("*.txt")
+        for recall_segments_path in recall_segments_paths:
+            sub_id = f"sub-{int(recall_segments_path.stem.split('_')[0][1:]):03d}"
+            recall_text = read_recall_transcript(recall_segments_path)
+            recall_text = (
+                recall_text.replace("’", "'")
+                .replace("“", '"')
+                .replace("“", '"')
+                .replace("”", '"')
+                .replace("\n", " ")
+                .strip()
+            )
+
+            # original text
+            recall_text_output = Path(
+                "data",
+                "stories-and-recalls",
+                story_id,
+                "recalls",
+                "text",
+                f"{sub_id}.txt",
+            )
+            recall_text_output.parent.mkdir(parents=True, exist_ok=True)
+            recall_text_output.write_text(recall_text + "\n")
+
+            # sentence segments
+            recall_segments = sentence_tokenize(recall_text)
+            recall_segments_output = Path(
+                "data",
+                "stories-and-recalls",
+                story_id,
+                "recalls",
+                "sentences",
+                f"{sub_id}.txt",
+            )
+            recall_segments_output.parent.mkdir(parents=True, exist_ok=True)
+            recall_segments_output.write_text("\n".join(recall_segments) + "\n")
+
+        # (C) load recalled event identities by lda-hmm
+        recalled_events_path = Path(
+            nfrd_dir,
+            "result_models",
+            subfolder_name,
+            "labels.npy",
+        )
+        recalled_events_list = np.load(recalled_events_path, allow_pickle=True)
+        # load participant ids
+        story_recall_models_ids_path = Path(
+            nfrd_dir, "result_models", f"{subfolder_name}.npy"
+        )
+        _, _, recall_transcript_paths = np.load(
+            story_recall_models_ids_path, allow_pickle=True
+        )
+
+        recalled_events = dict()
+        for recall_tanscript_path, recall in zip(
+            recall_transcript_paths, recalled_events_list
+        ):
+            sub_id = (
+                f"sub-{int(Path(recall_tanscript_path).stem.split('_')[0][1:]):03d}"
+            )
+            recalled_events[sub_id] = [
+                (
+                    idx_recall_segment,
+                    [int(idx_event)] if not np.isnan(idx_event) else [],
+                )
+                for idx_recall_segment, idx_event in enumerate(recall)
+            ]
+        recalled_events = dict(sorted(recalled_events.items(), key=lambda x: x[0]))
+
+        output_dict = {
+            "matcher_name": "lda-hmm",
+            "story_name": story_id,
+            "story_segmentation_method": "lda-hmm",
+            "recall_segmentation_method": "lda-hmm",
+            "model_name": "lda-hmm",
+            "n_story_segments": len(lda_hmm_segments),
+            "ratings": recalled_events,
+        }
+
+        # save as json
+        recalled_events_output = Path(
+            "data",
+            "stories-and-recalls",
+            story_id,
+            "ratings",
+            "lda_hmm.json",
+        )
+        recalled_events_output.parent.mkdir(parents=True, exist_ok=True)
+        with open(recalled_events_output, "w") as f:
+            f.write(json.dumps(output_dict) + "\n")
+
+        print(f"Imported {story_id} lda-hmm segmentation & recalled events")
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--dir", type=str, default=None)
+    args = parser.parse_args()
+
+    if args.dir is None:
+        nfrd_dir = Path("../Naturalistic-Free-Recall-Dataset")
+    else:
+        nfrd_dir = Path(args.dir)
+
+    import_nfrd_data(nfrd_dir=nfrd_dir)

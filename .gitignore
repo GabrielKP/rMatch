@@ -6,3 +6,4 @@ data/cyoa
 .vscode
 __pycache__
 data
+.cursor

@@ -43,3 +43,6 @@ def print_config(config: dict, **kwargs: dict):
         if len(config_copy["sub_ids"]) > 3:
             config_copy["sub_ids"] = config_copy["sub_ids"][:3] + ["..."]
     console.print_json(json.dumps(config_copy, indent=4))
+
+
+from rmatch.match import match  # noqa: E402,F401
