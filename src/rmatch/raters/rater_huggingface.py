@@ -180,7 +180,7 @@ Story segments that match the <target> segment:
     ) -> list[tuple[int, list[int]]]:
         if output_scores:
             raise NotImplementedError(
-                "Anthropic rater currently does not support output_scores = True"
+                "HuggingFace rater currently does not support output_scores = True"
             )
 
         story = self.format_story(story_segments)

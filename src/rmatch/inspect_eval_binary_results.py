@@ -3,13 +3,14 @@ from collections import defaultdict
 from pathlib import Path
 
 import numpy as np
-from recall_matrix.load import (
+
+from rmatch.load import (
     load_cyoa_recall_matrix_human_binary,
     load_cyoa_story_recall_segments,
     load_ratings_dict,
     load_story_recall_segments,
 )
-from recall_matrix.utils import ratings_single_sub_to_matrix
+from rmatch.utils import ratings_single_sub_to_matrix
 
 # ── config ──────────────────────────────────────────────────────────────────
 RUNS = [
@@ -53,7 +54,9 @@ def load_story_recall_segments_for_testset(testset, story_names):
     return segments
 
 
-def load_human_matrices_for_testset(testset, story_names, story_recall_segments):
+def load_human_matrices_for_testset(
+    testset, story_names, story_recall_segments
+) -> dict:
     if testset.startswith("cyoa"):
         matrices = {}
         for story_name, sub_id, _, _ in story_recall_segments:
@@ -80,6 +83,8 @@ def load_human_matrices_for_testset(testset, story_names, story_recall_segments)
             for story_name, sub_id, _, _ in story_recall_segments
             if sub_id in ratings_dicts[story_name]
         }
+    else:
+        raise ValueError(f"Invalid testset: {testset}")
     return matrices
 
 
@@ -119,7 +124,7 @@ def write_inspection(run_dir, testset, story_names):
             out.write(f"STORY: {story_name} | SUBJECT: {sub_id}\n")
             out.write(
                 f"Disagreements: {len(disagreed_indices)}"
-                " / {len(recall_segs)} recall segments\n"
+                f" / {len(recall_segs)} recall segments\n"
             )
             out.write("=" * 80 + "\n\n")
 

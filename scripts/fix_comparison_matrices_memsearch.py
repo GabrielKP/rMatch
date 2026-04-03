@@ -2,8 +2,8 @@ import pickle
 from collections import defaultdict
 from pathlib import Path
 
-from recall_matrix.load import load_ratings_dict, load_story_recall_segments
-from recall_matrix.utils import ratings_single_sub_to_matrix
+from rmatch.load import load_ratings_dict, load_story_recall_segments
+from rmatch.utils import ratings_single_sub_to_matrix
 
 STORY_NAMES_MEMSEARCH10 = [
     "breadland",

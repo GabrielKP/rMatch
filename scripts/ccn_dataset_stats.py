@@ -12,7 +12,7 @@ Prints summary statistics for alice10, monthiversary6, and memsearch10:
 
 import numpy as np
 
-from recall_matrix.load import (
+from rmatch.load import (
     load_cyoa_story_recall_segments,
     load_story_recall_segments,
 )

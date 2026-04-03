@@ -308,19 +308,6 @@ def evaluate(
             recall_matrices_model.append(rm_model)
             recall_matrices_comparison.append(rm_comparison)
 
-            if (rm_model == 0).all():
-                precision = 0
-                recall = 0
-                pearsonr_score = 0
-                accuracy_score = 0
-            else:
-                rm_model_flat = rm_model.flatten()
-                rm_comparison_flat = rm_comparison.flatten()
-                precision = precision_score(rm_comparison_flat, rm_model_flat)
-                recall = recall_score(rm_comparison_flat, rm_model_flat)
-                pearsonr_score = pearsonr(rm_comparison_flat, rm_model_flat)[0]  # type: ignore
-                accuracy_score = accuracy(rm_comparison_flat, rm_model_flat)
-
             if (rm_model == 0).all() or dry_run:
                 precision = 0
                 recall = 0

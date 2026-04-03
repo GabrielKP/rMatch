@@ -4,15 +4,16 @@ from pathlib import Path
 
 import numpy as np
 import plotly.graph_objects as go
-from recall_matrix.load import (
+from scipy.stats import pearsonr
+from sklearn.metrics import precision_score, recall_score
+
+from rmatch.load import (
     load_cyoa_recall_matrix_human_binary,
     load_cyoa_story_recall_segments,
     load_ratings_dict,
     load_story_recall_segments,
 )
-from recall_matrix.utils import ratings_single_sub_to_matrix
-from scipy.stats import pearsonr
-from sklearn.metrics import precision_score, recall_score
+from rmatch.utils import ratings_single_sub_to_matrix
 
 
 def accuracy(array_1: np.ndarray, array_2: np.ndarray) -> float:
@@ -124,7 +125,9 @@ def load_story_recall_segments_for_testset(testset, story_names):
     return segments
 
 
-def load_human_matrices_for_testset(testset, story_names, story_recall_segments):
+def load_human_matrices_for_testset(
+    testset, story_names, story_recall_segments
+) -> dict:
     if testset.startswith("cyoa"):
         matrices = {}
         for story_name, sub_id, _, _ in story_recall_segments:
@@ -151,6 +154,8 @@ def load_human_matrices_for_testset(testset, story_names, story_recall_segments)
             for story_name, sub_id, _, _ in story_recall_segments
             if sub_id in ratings_dicts[story_name]
         }
+    else:
+        raise ValueError(f"Invalid testset: {testset}")
     return matrices
 
 
@@ -186,8 +191,8 @@ def compute_metrics_per_subject(run_dir, testset, story_names):
         if (rm_model == 0).all():
             prec = rec = f1_score = pearsonr_score = acc = weighted_accuracy = 0.0
         else:
-            prec = precision_score(rm_human_flat, rm_model_flat, zero_division=0)
-            rec = recall_score(rm_human_flat, rm_model_flat, zero_division=0)
+            prec = precision_score(rm_human_flat, rm_model_flat, zero_division=0)  # type: ignore
+            rec = recall_score(rm_human_flat, rm_model_flat, zero_division=0)  # type: ignore
             f1_score = f1_per_subject(prec, rec)
             pearsonr_score = float(pearsonr(rm_human_flat, rm_model_flat)[0])  # type: ignore
             acc = accuracy(rm_human_flat, rm_model_flat)
@@ -257,7 +262,7 @@ def plot_run(records, run_label, output_path):
                 ys.append(r[metric])
                 hover_texts.append(
                     f"sub: {r['sub_id']}<br>story: {r['story_name']}"
-                    "<br>{metric}: {r[metric]:.3f}"
+                    f"<br>{metric}: {r[metric]:.3f}"
                 )
 
         fig.add_trace(
