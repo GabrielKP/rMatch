@@ -1,4 +1,4 @@
-<h1 align="center">recall_matrix</h1>
+<h1 align="center">rMatch</h1>
 
 <p align="center">Automatic recall & story matching tool.</p>
 
@@ -12,18 +12,18 @@
 
 ```sh
 # 1. clone
-git clone git@github.com:GabrielKP/recall_matrix.git
-cd recall_matrix
+git clone git@github.com:GabrielKP/rMatch.git
+cd rMatch
 
 # 2. Install uv (https://docs.astral.sh/uv/getting-started/installation/)
-uv run src/recall_matrix/rate_binary.py --sub-ids sub-001
+uv run src/rmatch/rate_binary.py --sub-ids sub-001
 
 # 3. Run rating code
 
 # single subject
-uv run src/recall_matrix/rate_binary.py -rater reranker --story_name pieman --sub_ids sub-001
+uv run src/rmatch/rate_binary.py -rater reranker --story_name pieman --sub_ids sub-001
 # all subjects
-uv run src/recall_matrix/rate_binary.py -rater reranker --story_name pieman
+uv run src/rmatch/rate_binary.py -rater reranker --story_name pieman
 ```
 
 ### Running with openai API
@@ -38,8 +38,12 @@ OPENAI_API_KEY="your_api_key"
 ```
 6. Now you can run:
 ```sh
-uv run src/recall_matrix/rate_binary.py -rater openai --story_name pieman --sub_ids sub-001
+uv run src/rmatch/rate_binary.py -rater openai --story_name pieman --sub_ids sub-001
 ```
+
+### Running locally
+
+1. Set up a `HF_TOKEN="your_api_key"` in `.env`.
 
 ### Inputs
 
@@ -122,16 +126,13 @@ Note that the number of recall segments can be computed from the length of the '
 
 ```sh
 # clone
-git clone git@github.com:GabrielKP/recall_matrix.git
-cd recall_matrix
+git clone git@github.com:GabrielKP/rMatch.git
+cd rMatch
 
 # install uv (https://docs.astral.sh/uv/getting-started/installation/) to install package & dependencies
 
 # set up pre-commit
 uv run pre-commit install
-
-# Now you can run the project code!
-uv run src/recall_matrix/test_recall_matrix.py -m reranker
 ```
 
 ## Data downloads

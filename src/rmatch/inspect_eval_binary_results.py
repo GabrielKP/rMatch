@@ -3,7 +3,6 @@ from collections import defaultdict
 from pathlib import Path
 
 import numpy as np
-
 from recall_matrix.load import (
     load_cyoa_recall_matrix_human_binary,
     load_cyoa_story_recall_segments,
@@ -103,9 +102,9 @@ def write_inspection(run_dir, testset, story_names):
         and (story_name, sub_id) in human_matrices
     ]
 
-    assert len(filtered) == len(
-        matrices_model
-    ), f"Mismatch: {len(filtered)} subjects vs {len(matrices_model)} model matrices"
+    assert len(filtered) == len(matrices_model), (
+        f"Mismatch: {len(filtered)} subjects vs {len(matrices_model)} model matrices"
+    )
 
     output_path = run_dir / "inspection.txt"
     with open(output_path, "w", encoding="utf-8") as out:
@@ -119,7 +118,8 @@ def write_inspection(run_dir, testset, story_names):
             out.write("=" * 80 + "\n")
             out.write(f"STORY: {story_name} | SUBJECT: {sub_id}\n")
             out.write(
-                f"Disagreements: {len(disagreed_indices)} / {len(recall_segs)} recall segments\n"
+                f"Disagreements: {len(disagreed_indices)}"
+                " / {len(recall_segs)} recall segments\n"
             )
             out.write("=" * 80 + "\n\n")
 
@@ -139,13 +139,13 @@ def write_inspection(run_dir, testset, story_names):
                 false_negatives = [i for i in human_matches if i not in model_matches]
 
                 if false_positives:
-                    out.write(f"  FALSE POSITIVES (model said yes, human said no):\n")
+                    out.write("  FALSE POSITIVES (model said yes, human said no):\n")
                     for i in false_positives:
                         out.write(f"    [{i}] {story_segs[i].strip()}\n")
                     out.write("\n")
 
                 if false_negatives:
-                    out.write(f"  FALSE NEGATIVES (model said no, human said yes):\n")
+                    out.write("  FALSE NEGATIVES (model said no, human said yes):\n")
                     for i in false_negatives:
                         out.write(f"    [{i}] {story_segs[i].strip()}\n")
                     out.write("\n")

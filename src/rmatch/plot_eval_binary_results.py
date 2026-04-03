@@ -4,9 +4,6 @@ from pathlib import Path
 
 import numpy as np
 import plotly.graph_objects as go
-from scipy.stats import pearsonr
-from sklearn.metrics import precision_score, recall_score
-
 from recall_matrix.load import (
     load_cyoa_recall_matrix_human_binary,
     load_cyoa_story_recall_segments,
@@ -14,6 +11,8 @@ from recall_matrix.load import (
     load_story_recall_segments,
 )
 from recall_matrix.utils import ratings_single_sub_to_matrix
+from scipy.stats import pearsonr
+from sklearn.metrics import precision_score, recall_score
 
 
 def accuracy(array_1: np.ndarray, array_2: np.ndarray) -> float:
@@ -47,7 +46,7 @@ RUNS = [
 
 # {
 #         "run_dir": Path(
-#             "data/eval/20260310_010740-memsearch10-anthropic-m_claude-haiku-4-5-seed_42"
+#             "data/eval/20260310_010740-memsearch10-anthropic-m_claude-haiku-4-5-seed_42" # noqa: E501
 #         ),
 #         "testset": "memsearch10",
 #         "story_names": [
@@ -85,7 +84,7 @@ RUNS = [
 
 #    {
 #         "run_dir": Path(
-#             "data/eval/20260309_194145-cyoa_alice10-anthropic-m_claude-haiku-4-5-seed_42"
+#             "data/eval/20260309_194145-cyoa_alice10-anthropic-m_claude-haiku-4-5-seed_42" # noqa: E501
 #         ),
 #         "testset": "cyoa_alice10",
 #         "story_names": [
@@ -172,9 +171,9 @@ def compute_metrics_per_subject(run_dir, testset, story_names):
         and (story_name, sub_id) in human_matrices
     ]
 
-    assert len(filtered) == len(
-        matrices_model
-    ), f"Mismatch: {len(filtered)} subjects vs {len(matrices_model)} model matrices"
+    assert len(filtered) == len(matrices_model), (
+        f"Mismatch: {len(filtered)} subjects vs {len(matrices_model)} model matrices"
+    )
 
     records = []
     for idx, (story_name, sub_id, _, _) in enumerate(filtered):
@@ -257,7 +256,8 @@ def plot_run(records, run_label, output_path):
                 xs.append(x)
                 ys.append(r[metric])
                 hover_texts.append(
-                    f"sub: {r['sub_id']}<br>story: {r['story_name']}<br>{metric}: {r[metric]:.3f}"
+                    f"sub: {r['sub_id']}<br>story: {r['story_name']}"
+                    "<br>{metric}: {r[metric]:.3f}"
                 )
 
         fig.add_trace(

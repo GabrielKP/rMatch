@@ -1,7 +1,10 @@
 import argparse
+from pathlib import Path
+from typing import Literal
 
-from recall_matrix.plot_single_sub import plot_single_sub
-from recall_matrix.raters import initialize_rater
+from rmatch import console
+from rmatch.plot_single_sub import plot_single_sub
+from rmatch.raters import initialize_rater
 
 
 def rate_binary(
@@ -17,6 +20,9 @@ def rate_binary(
     # reranker specific parameters
     reranker_threshold: float | None = None,
     top_k: int = 5,
+    # huggingface specific parameters
+    quantization: Literal["4bit", "8bit"] | None = None,
+    track_emissions: bool = False,
 ):
     """Rate whether a recall segment refers to a story segment.
 
@@ -45,19 +51,43 @@ def rate_binary(
         [reranker] Device to use for the reranker. If None, will be autoselected.
     """
     rater = initialize_rater(
-        rater_name=rater_name, model_name=model_name, device=device
+        rater_name=rater_name,
+        model_name=model_name,
+        device=device,
+        quantization=quantization,
     )
 
-    output_dict = rater.rate(
-        story_name=story_name,
-        story_segmentation_method=story_segmentation_method,
-        recall_segmentation_method=recall_segmentation_method,
-        sub_ids=sub_ids,
-        output_scores=output_scores,
-        reranker_threshold=reranker_threshold,  # type: ignore
-        top_k=top_k,  # type: ignore
-        device=device,  # type: ignore
-    )
+    ratings_dir = Path("data") / "stories-and-recalls" / story_name / "ratings"
+    ratings_dir.mkdir(parents=True, exist_ok=True)
+
+    tracker = None
+    if track_emissions:
+        from codecarbon import EmissionsTracker
+
+        tracker = EmissionsTracker(
+            project_name=f"rmatch-rate-{rater_name}",
+            output_dir=str(ratings_dir),
+        )
+        tracker.start()
+
+    try:
+        output_dict = rater.rate(
+            story_name=story_name,
+            story_segmentation_method=story_segmentation_method,
+            recall_segmentation_method=recall_segmentation_method,
+            sub_ids=sub_ids,
+            output_scores=output_scores,
+            reranker_threshold=reranker_threshold,  # type: ignore
+            top_k=top_k,  # type: ignore
+            device=device,  # type: ignore
+        )
+    finally:
+        if tracker is not None:
+            emissions_kg = tracker.stop()
+            console.print(
+                f"[green]Carbon emissions:[/green] {emissions_kg:.6f} kg CO2eq"
+            )
+
     output_path = rater.save_to_json(output_dict)
 
     # plot a single sub
@@ -152,6 +182,23 @@ if __name__ == "__main__":
             " for each recall segment."
         ),
     )
+    args.add_argument(
+        "-q",
+        "--quantization",
+        type=str,
+        choices=["4bit", "8bit"],
+        default=None,
+        help=(
+            "[huggingface] Quantization mode: '4bit' or '8bit'. Default is None (bf16)."
+        ),
+    )
+
+    args.add_argument(
+        "--track_emissions",
+        action="store_true",
+        default=False,
+        help="Track carbon emissions with CodeCarbon during rating.",
+    )
 
     args = args.parse_args()
     rate_binary(
@@ -165,4 +212,6 @@ if __name__ == "__main__":
         reranker_threshold=args.reranker_threshold,
         top_k=args.top_k,
         device=args.device,
+        quantization=args.quantization,
+        track_emissions=args.track_emissions,
     )

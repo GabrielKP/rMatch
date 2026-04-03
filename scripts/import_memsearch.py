@@ -7,7 +7,7 @@ from pathlib import Path
 import pandas as pd
 from rich.console import Console
 
-from recall_matrix.utils import get_param_str
+from rmatch.utils import get_param_str
 
 console = Console()
 
@@ -165,7 +165,8 @@ def import_memsearch(memsearch_path: Path | str):
 
             if "Movie Label" not in recall_df.columns:
                 print(
-                    f"    ({story_name}) ({sub_id}) columns: {recall_df.columns.tolist()}"
+                    f"    ({story_name}) ({sub_id})"
+                    " columns: {recall_df.columns.tolist()}"
                 )
                 continue
 

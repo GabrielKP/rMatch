@@ -5,24 +5,26 @@ import pickle
 from collections import defaultdict
 from itertools import combinations
 from pathlib import Path
+from typing import Literal
 
 import krippendorff
 import numpy as np
+from codecarbon import EmissionsTracker
 from dotenv import load_dotenv
 from scipy.stats import pearsonr
 from sklearn.metrics import f1_score, precision_score, recall_score
 from tqdm import tqdm
 
-from recall_matrix import console
-from recall_matrix.load import (
+from rmatch import console
+from rmatch.load import (
     load_cyoa_recall_matrix_human_binary,
     load_cyoa_story_recall_segments,
     load_ratings_dict,
     load_story_recall_segments,
 )
-from recall_matrix.raters import initialize_rater
-from recall_matrix.raters.rater import Rater
-from recall_matrix.utils import ratings_single_sub_to_matrix
+from rmatch.raters import initialize_rater
+from rmatch.raters.rater import Rater
+from rmatch.utils import ratings_single_sub_to_matrix
 
 load_dotenv()
 
@@ -66,7 +68,12 @@ def load_story_recall_segments_default(
 
     human_ratings_dict = defaultdict(dict)
     if testset.startswith("cyoa"):
-        if testset == "cyoa_alice10":
+        if testset == "cyoa2":
+            story_names = [
+                "alice_2",
+                "alice_3",
+            ]
+        elif testset == "cyoa_alice10":
             story_names = [
                 "alice_2",
                 "alice_3",
@@ -202,7 +209,6 @@ def get_model_ratings(
 
 
 def evaluate(
-    repeat_reliability: bool,
     rater_name: str,
     model_name: str | None,
     testset: str,
@@ -214,6 +220,9 @@ def evaluate(
     movie_mode: bool = False,
     reranker_threshold: float | None = None,
     top_k: int = 5,
+    verbose_errors: bool = False,
+    quantization: Literal["4bit", "8bit"] | None = None,
+    track_emissions: bool = False,
 ):
     """Evaluate the rater."""
     rater = initialize_rater(
@@ -225,6 +234,8 @@ def evaluate(
         dry_run=dry_run,
         top_k=top_k,
         movie_mode=movie_mode,
+        verbose_errors=verbose_errors,
+        quantization=quantization,
     )
     if hasattr(rater, "model_name"):
         model_name = rater.model_name  # type: ignore
@@ -235,7 +246,7 @@ def evaluate(
         Path("data")
         / "eval"
         / eval_param_str(
-            repeat_reliability=repeat_reliability,
+            repeat_reliability=False,
             testset=testset,
             rater_name=rater_name,
             model_name=model_name,
@@ -253,58 +264,86 @@ def evaluate(
 
     rng = np.random.default_rng(seed)
 
+    tracker = None
+    if track_emissions:
+        tracker = EmissionsTracker(
+            project_name=f"rmatch-eval-{rater_name}",
+            output_dir=str(output_dir),
+        )
+        tracker.start()
+
     precisions = list()
     recalls = list()
     pearsonrs = list()
     accuracies = list()
     recall_matrices_model: list[np.ndarray] = list()
     recall_matrices_comparison: list[np.ndarray] = list()
-    for (
-        story_name,
-        sub_id,
-        story_segments,
-        recall_segments,
-    ) in tqdm(story_recall_segments, desc="(eval)"):
-        # a) get ground truth
-        rm_comparison = human_ratings_dict[story_name][sub_id]  # type: ignore
+    try:
+        for (
+            story_name,
+            sub_id,
+            story_segments,
+            recall_segments,
+        ) in tqdm(story_recall_segments, desc="(eval)"):
+            # a) get ground truth
+            rm_comparison = human_ratings_dict[story_name][sub_id]  # type: ignore
 
-        if (rm_comparison == 0).all():
-            console.print(
-                f"Skipping {story_name=} {sub_id=} : comparison matrix is all zero"
+            if (rm_comparison == 0).all():
+                console.print(
+                    f"Skipping {story_name=} {sub_id=} : comparison matrix is all zero"
+                )
+                continue
+
+            # b) get model ratings
+            rm_model = get_model_ratings(
+                random_mode=random_mode,
+                rng=rng,
+                rm_comparison=rm_comparison,
+                rater=rater,
+                story_segments=story_segments,
+                recall_segments=recall_segments,
             )
-            continue
 
-        # b) get model ratings
-        rm_model = get_model_ratings(
-            random_mode=random_mode,
-            rng=rng,
-            rm_comparison=rm_comparison,
-            rater=rater,
-            story_segments=story_segments,
-            recall_segments=recall_segments,
-        )
+            # b) evaluate
+            recall_matrices_model.append(rm_model)
+            recall_matrices_comparison.append(rm_comparison)
 
-        # b) evaluate
-        recall_matrices_model.append(rm_model)
-        recall_matrices_comparison.append(rm_comparison)
+            if (rm_model == 0).all():
+                precision = 0
+                recall = 0
+                pearsonr_score = 0
+                accuracy_score = 0
+            else:
+                rm_model_flat = rm_model.flatten()
+                rm_comparison_flat = rm_comparison.flatten()
+                precision = precision_score(rm_comparison_flat, rm_model_flat)
+                recall = recall_score(rm_comparison_flat, rm_model_flat)
+                pearsonr_score = pearsonr(rm_comparison_flat, rm_model_flat)[0]  # type: ignore
+                accuracy_score = accuracy(rm_comparison_flat, rm_model_flat)
 
-        if (rm_model == 0).all() or dry_run:
-            precision = 0
-            recall = 0
-            pearsonr_score = 0
-            accuracy_score = 0
-        else:
-            rm_model_flat = rm_model.flatten()
-            rm_comparison_flat = rm_comparison.flatten()
-            precision = precision_score(rm_comparison_flat, rm_model_flat)
-            recall = recall_score(rm_comparison_flat, rm_model_flat)
-            pearsonr_score = pearsonr(rm_comparison_flat, rm_model_flat)[0]  # type: ignore
-            accuracy_score = accuracy(rm_comparison_flat, rm_model_flat)
+            if (rm_model == 0).all() or dry_run:
+                precision = 0
+                recall = 0
+                pearsonr_score = 0
+                accuracy_score = 0
+            else:
+                rm_model_flat = rm_model.flatten()
+                rm_comparison_flat = rm_comparison.flatten()
+                precision = precision_score(rm_comparison_flat, rm_model_flat)
+                recall = recall_score(rm_comparison_flat, rm_model_flat)
+                pearsonr_score = pearsonr(rm_comparison_flat, rm_model_flat)[0]  # type: ignore
+                accuracy_score = accuracy(rm_comparison_flat, rm_model_flat)
 
-        precisions.append(precision)
-        recalls.append(recall)
-        pearsonrs.append(pearsonr_score)
-        accuracies.append(accuracy_score)
+            precisions.append(precision)
+            recalls.append(recall)
+            pearsonrs.append(pearsonr_score)
+            accuracies.append(accuracy_score)
+    finally:
+        if tracker is not None:
+            emissions_kg = tracker.stop()
+            console.print(
+                f"[green]Carbon emissions:[/green] {emissions_kg:.6f} kg CO2eq"
+            )
 
     if dry_run:
         console.print(f"[DRY RUN] Estimated Usage: {rater.get_usage()}")
@@ -362,6 +401,9 @@ def evaluate(
     if rater.get_usage() is not None:
         console.print(f"Total API usage: {rater.get_usage()}")
         results_dict["usage"] = rater.get_usage()
+
+    if track_emissions:
+        results_dict["emissions_kg_co2eq"] = float(emissions_kg)  # type: ignore
 
     output_dir.mkdir(parents=True, exist_ok=True)  # make again, in case user deleted it
     results_path = output_dir / "results.json"
@@ -520,6 +562,8 @@ def evaluate_repeat_reliability(
     movie_mode: bool = False,
     reranker_threshold: float | None = None,
     top_k: int = 5,
+    quantization: Literal["4bit", "8bit"] | None = None,
+    track_emissions: bool = False,
 ):
     """Evaluate the repeat reliability of the rater."""
     rater = initialize_rater(
@@ -531,6 +575,7 @@ def evaluate_repeat_reliability(
         reranker_threshold=reranker_threshold,
         top_k=top_k,
         movie_mode=movie_mode,
+        quantization=quantization,
     )
     if hasattr(rater, "model_name"):
         model_name = rater.model_name  # type: ignore
@@ -561,59 +606,76 @@ def evaluate_repeat_reliability(
 
     rng = np.random.default_rng(seed)
 
+    tracker = None
+    if track_emissions:
+        tracker = EmissionsTracker(
+            project_name=f"rmatch-eval-rr-{rater_name}",
+            output_dir=str(output_dir),
+        )
+        tracker.start()
+
     precisions: dict[str, list] = defaultdict(list)
     recalls: dict[str, list] = defaultdict(list)
     pearsonrs: dict[str, list] = defaultdict(list)
     f1s: dict[str, list] = defaultdict(list)
     recall_matrices_model_dct: dict[str, list[np.ndarray]] = defaultdict(list)
     recall_matrices_comparison_dct: dict[str, np.ndarray] = dict()
-    for (
-        story_name,
-        sub_id,
-        story_segments,
-        recall_segments,
-    ) in tqdm(story_recall_segments, desc="(eval)"):
-        recall_id = f"{story_name}_{sub_id}"
+    try:
+        for (
+            story_name,
+            sub_id,
+            story_segments,
+            recall_segments,
+        ) in tqdm(story_recall_segments, desc="(eval)"):
+            recall_id = f"{story_name}_{sub_id}"
 
-        # a) get ground truth
-        rm_comparison = human_ratings_dict[story_name][sub_id]  # type: ignore
-        recall_matrices_comparison_dct[recall_id] = rm_comparison
+            # a) get ground truth
+            rm_comparison = human_ratings_dict[story_name][sub_id]  # type: ignore
+            recall_matrices_comparison_dct[recall_id] = rm_comparison
 
-        if (rm_comparison == 0).all():
-            raise ValueError(
-                f"Comparison matrix is all zero for {story_name=} {sub_id=}"
-                " choose different recall"
+            if (rm_comparison == 0).all():
+                raise ValueError(
+                    f"Comparison matrix is all zero for {story_name=} {sub_id=}"
+                    " choose different recall"
+                )
+
+            # b) get model ratings
+            for _ in range(n_repeats):
+                rm_model = get_model_ratings(
+                    random_mode=random_mode,
+                    rng=rng,
+                    rm_comparison=rm_comparison,
+                    rater=rater,
+                    story_segments=story_segments,
+                    recall_segments=recall_segments,
+                )
+                recall_matrices_model_dct[recall_id].append(rm_model)
+
+                if (rm_model == 0).all():
+                    precision = 0
+                    recall = 0
+                    pearsonr_score = 0
+                else:
+                    rm_model_flat = rm_model.flatten()
+                    rm_comparison_flat = rm_comparison.flatten()
+                    precision = precision_score(rm_comparison_flat, rm_model_flat)
+                    recall = recall_score(rm_comparison_flat, rm_model_flat)
+                    pearsonr_score: float = pearsonr(rm_comparison_flat, rm_model_flat)[
+                        0
+                    ]  # type: ignore
+
+                precisions[recall_id].append(precision)
+                recalls[recall_id].append(recall)
+                pearsonrs[recall_id].append(pearsonr_score)
+                denom = precision + recall
+                f1 = (2 * precision * recall) / denom if denom != 0 else 0.0
+                f1s[recall_id].append(f1)
+    finally:
+        if tracker is not None:
+            emissions_kg = tracker.stop()
+            console.print(
+                f"[green]Carbon emissions:[/green] {emissions_kg:.6f} kg CO2eq"
             )
-
-        # b) get model ratings
-        for _ in range(n_repeats):
-            rm_model = get_model_ratings(
-                random_mode=random_mode,
-                rng=rng,
-                rm_comparison=rm_comparison,
-                rater=rater,
-                story_segments=story_segments,
-                recall_segments=recall_segments,
-            )
-            recall_matrices_model_dct[recall_id].append(rm_model)
-
-            if (rm_model == 0).all() or dry_run:
-                precision = 0
-                recall = 0
-                pearsonr_score = 0
-            else:
-                rm_model_flat = rm_model.flatten()
-                rm_comparison_flat = rm_comparison.flatten()
-                precision = precision_score(rm_comparison_flat, rm_model_flat)
-                recall = recall_score(rm_comparison_flat, rm_model_flat)
-                pearsonr_score: float = pearsonr(rm_comparison_flat, rm_model_flat)[0]  # type: ignore
-
-            precisions[recall_id].append(precision)
-            recalls[recall_id].append(recall)
-            pearsonrs[recall_id].append(pearsonr_score)
-            denom = precision + recall
-            f1 = (2 * precision * recall) / denom if denom != 0 else 0.0
-            f1s[recall_id].append(f1)
 
     if dry_run:
         console.print(f"[DRY RUN] Estimated Usage: {rater.get_usage()}")
@@ -693,6 +755,8 @@ def evaluate_repeat_reliability(
         "recalls": {k: [float(x) for x in v] for k, v in recalls.items()},
         "pearsonrs": {k: [float(x) for x in v] for k, v in pearsonrs.items()},
     }
+    if track_emissions:
+        results_dict["emissions_kg_co2eq"] = float(emissions_kg)  # type: ignore
     output_dir.mkdir(parents=True, exist_ok=True)  # make again, in case user deleted it
     results_path = output_dir / "results.json"
     with open(results_path, "w") as f:
@@ -712,7 +776,7 @@ def evaluate_repeat_reliability(
 if __name__ == "__main__":
     args = argparse.ArgumentParser()
     args.add_argument(
-        "-R",
+        "-rr",
         "--repeat_reliability",
         action="store_true",
         default=False,
@@ -724,15 +788,22 @@ if __name__ == "__main__":
     args.add_argument(
         "-r",
         "--rater_name",
-        choices=["reranker", "openai", "huggingface", "anthropic"],
-        default="openai",
-        help="Name of the rater to use. Default is 'openai'.",
+        choices=[
+            "anthropic",
+            "reranker",
+            "openai",
+            "huggingface",
+            "huggingface_batched",
+        ],
+        default="anthropic",
+        help="Name of the rater to use. Default is 'anthropic'.",
     )
     args.add_argument(
         "-t",
         "--testset",
         choices=[
             "cyoa",
+            "cyoa2",
             "cyoa_alice10",
             "cyoa_monthiversary6",
             "memsearch",
@@ -809,6 +880,22 @@ if __name__ == "__main__":
         default=5,
         help="[repeat_reliability] Number of times to run each recall. Default is 10.",
     )
+    args.add_argument(
+        "-q",
+        "--quantization",
+        type=str,
+        choices=["4bit", "8bit"],
+        default=None,
+        help=(
+            "[huggingface] Quantization mode: '4bit' or '8bit'. Default is None (bf16)."
+        ),
+    )
+    args.add_argument(
+        "--track_emissions",
+        action="store_true",
+        default=False,
+        help="Track carbon emissions with CodeCarbon during evaluation.",
+    )
     args = args.parse_args()
 
     if args.repeat_reliability:
@@ -825,10 +912,11 @@ if __name__ == "__main__":
             movie_mode=args.movie,
             reranker_threshold=args.reranker_threshold,
             top_k=args.top_k,
+            quantization=args.quantization,
+            track_emissions=args.track_emissions,
         )
     else:
         evaluate(
-            repeat_reliability=False,
             rater_name=args.rater_name,
             testset=args.testset,
             model_name=args.model_name,
@@ -840,4 +928,6 @@ if __name__ == "__main__":
             movie_mode=args.movie,
             reranker_threshold=args.reranker_threshold,
             top_k=args.top_k,
+            quantization=args.quantization,
+            track_emissions=args.track_emissions,
         )

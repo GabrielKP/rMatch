@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from recall_matrix.load import load_recall_segments, load_story_segments
+from rmatch.load import load_recall_segments, load_story_segments
 
 
 def generate_file(

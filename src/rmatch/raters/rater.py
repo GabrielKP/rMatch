@@ -4,9 +4,9 @@ from pathlib import Path
 import numpy as np
 from tqdm import tqdm
 
-from recall_matrix import get_logger, print_config
-from recall_matrix.load import load_story_recall_segments
-from recall_matrix.utils import get_param_str
+from rmatch import get_logger, print_config
+from rmatch.load import load_story_recall_segments
+from rmatch.utils import get_param_str
 
 log = get_logger(__name__)
 
