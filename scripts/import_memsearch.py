@@ -163,6 +163,13 @@ def import_memsearch(memsearch_path: Path | str):
                 },
             )
 
+            if "Movie Label" not in recall_df.columns:
+                print(
+                    f"    ({story_name}) ({sub_id})"
+                    " columns: {recall_df.columns.tolist()}"
+                )
+                continue
+
             movied_recall_df = recall_df[recall_df["Movie Label"] == movie_num]
             if len(movied_recall_df) == 0:
                 print(

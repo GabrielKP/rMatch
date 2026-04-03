@@ -10,6 +10,7 @@ from typing import Literal
 import krippendorff
 import numpy as np
 from codecarbon import EmissionsTracker
+from dotenv import load_dotenv
 from scipy.stats import pearsonr
 from sklearn.metrics import f1_score, precision_score, recall_score
 from tqdm import tqdm
@@ -24,6 +25,8 @@ from rmatch.load import (
 from rmatch.raters import initialize_rater
 from rmatch.raters.rater import Rater
 from rmatch.utils import ratings_single_sub_to_matrix
+
+load_dotenv()
 
 
 def eval_param_str(
@@ -176,7 +179,6 @@ def load_story_recall_segments_default(
                 human_ratings_dict[story_name][sub_id] = rm_memsearch
     else:
         raise ValueError(f"Invalid testset: {testset}")
-
     return story_recall_segments, human_ratings_dict
 
 
@@ -213,6 +215,9 @@ def evaluate(
     device: str | None = None,
     seed: int = 42,
     random_mode: str | None = None,
+    window_size: int = 5,
+    dry_run: bool = False,
+    movie_mode: bool = False,
     reranker_threshold: float | None = None,
     top_k: int = 5,
     verbose_errors: bool = False,
@@ -225,7 +230,10 @@ def evaluate(
         model_name=model_name,
         device=device,
         reranker_threshold=reranker_threshold,
+        window_size=window_size,
+        dry_run=dry_run,
         top_k=top_k,
+        movie_mode=movie_mode,
         verbose_errors=verbose_errors,
         quantization=quantization,
     )
@@ -246,7 +254,9 @@ def evaluate(
             random_mode=random_mode,
         )
     )
-    output_dir.mkdir(parents=True, exist_ok=True)
+
+    if not dry_run:
+        output_dir.mkdir(parents=True, exist_ok=True)
 
     story_recall_segments, human_ratings_dict = load_story_recall_segments_default(
         testset=testset
@@ -298,7 +308,7 @@ def evaluate(
             recall_matrices_model.append(rm_model)
             recall_matrices_comparison.append(rm_comparison)
 
-            if (rm_model == 0).all():
+            if (rm_model == 0).all() or dry_run:
                 precision = 0
                 recall = 0
                 pearsonr_score = 0
@@ -321,6 +331,10 @@ def evaluate(
             console.print(
                 f"[green]Carbon emissions:[/green] {emissions_kg:.6f} kg CO2eq"
             )
+
+    if dry_run:
+        console.print(f"[DRY RUN] Estimated Usage: {rater.get_usage()}")
+        return
 
     # output results
     if random_mode is not None:
@@ -370,8 +384,14 @@ def evaluate(
         "accuracy_macro": float(accuracy_macro),
         "pearsonr_macro": float(pearsonr_macro),
     }
+
+    if rater.get_usage() is not None:
+        console.print(f"Total API usage: {rater.get_usage()}")
+        results_dict["usage"] = rater.get_usage()
+
     if track_emissions:
         results_dict["emissions_kg_co2eq"] = float(emissions_kg)  # type: ignore
+
     output_dir.mkdir(parents=True, exist_ok=True)  # make again, in case user deleted it
     results_path = output_dir / "results.json"
     with open(results_path, "w") as f:
@@ -524,6 +544,9 @@ def evaluate_repeat_reliability(
     device: str | None = None,
     seed: int = 42,
     random_mode: str | None = None,
+    window_size: int = 5,
+    dry_run: bool = False,
+    movie_mode: bool = False,
     reranker_threshold: float | None = None,
     top_k: int = 5,
     quantization: Literal["4bit", "8bit"] | None = None,
@@ -534,8 +557,11 @@ def evaluate_repeat_reliability(
         rater_name=rater_name,
         model_name=model_name,
         device=device,
+        window_size=window_size,
+        dry_run=dry_run,
         reranker_threshold=reranker_threshold,
         top_k=top_k,
+        movie_mode=movie_mode,
         quantization=quantization,
     )
     if hasattr(rater, "model_name"):
@@ -555,7 +581,9 @@ def evaluate_repeat_reliability(
             random_mode=random_mode,
         )
     )
-    output_dir.mkdir(parents=True, exist_ok=True)
+
+    if not dry_run:
+        output_dir.mkdir(parents=True, exist_ok=True)
 
     story_recall_segments, human_ratings_dict = (
         load_story_recall_segments_repeat_reliability(
@@ -635,6 +663,10 @@ def evaluate_repeat_reliability(
             console.print(
                 f"[green]Carbon emissions:[/green] {emissions_kg:.6f} kg CO2eq"
             )
+
+    if dry_run:
+        console.print(f"[DRY RUN] Estimated Usage: {rater.get_usage()}")
+        return
 
     # output results
     if random_mode is not None:
@@ -743,9 +775,15 @@ if __name__ == "__main__":
     args.add_argument(
         "-r",
         "--rater_name",
-        choices=["reranker", "openai", "huggingface", "huggingface_batched"],
-        default="openai",
-        help="Name of the rater to use. Default is 'openai'.",
+        choices=[
+            "anthropic",
+            "reranker",
+            "openai",
+            "huggingface",
+            "huggingface_batched",
+        ],
+        default="anthropic",
+        help="Name of the rater to use. Default is 'anthropic'.",
     )
     args.add_argument(
         "-t",
@@ -800,6 +838,22 @@ if __name__ == "__main__":
         ),
     )
     args.add_argument(
+        "--dry_run",
+        action="store_true",
+        default=False,
+        help="Estimate cost without calling the API",
+    )
+
+    args.add_argument(
+        "--movie",
+        action="store_true",
+        default=False,
+        help="runs with movie-specific prompt",
+    )
+    args.add_argument(
+        "--window_size", type=int, default=5, help="Size of recall context window (+/-)"
+    )
+    args.add_argument(
         "-s",
         "--seed",
         type=int,
@@ -810,7 +864,7 @@ if __name__ == "__main__":
         "-n",
         "--n_repeats",
         type=int,
-        default=10,
+        default=5,
         help="[repeat_reliability] Number of times to run each recall. Default is 10.",
     )
     args.add_argument(
@@ -840,6 +894,9 @@ if __name__ == "__main__":
             device=args.device,
             seed=args.seed,
             random_mode=args.random_mode,
+            window_size=args.window_size,
+            dry_run=args.dry_run,
+            movie_mode=args.movie,
             reranker_threshold=args.reranker_threshold,
             top_k=args.top_k,
             quantization=args.quantization,
@@ -853,6 +910,9 @@ if __name__ == "__main__":
             device=args.device,
             seed=args.seed,
             random_mode=args.random_mode,
+            window_size=args.window_size,
+            dry_run=args.dry_run,
+            movie_mode=args.movie,
             reranker_threshold=args.reranker_threshold,
             top_k=args.top_k,
             quantization=args.quantization,

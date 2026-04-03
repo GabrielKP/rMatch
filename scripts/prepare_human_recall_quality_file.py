@@ -26,8 +26,8 @@ def generate_file(
             {
                 "recall_segment": r,
                 "story_segment": s,
-                "quality_score": "",
-                "summary": "",
+                "quality_score": "0",
+                "notes": "",
             }
             for r in recall_segments
             for s in story_segments
@@ -56,8 +56,8 @@ if __name__ == "__main__":
     story_name = "pieman"
     story_segmentation_method = "sentences_corrected"
     recall_segmentation_method = "sentences"
-    sub_ids = ["sub-001", "sub-002", "sub-003", "sub-004", "sub-005", "sub-006"]
-    rater_initials = "GKP"
+    sub_ids = ["sub-001", "sub-003"]
+    rater_initials = "Ishan"
     generate_file(
         story_name=story_name,
         story_segmentation_method=story_segmentation_method,
