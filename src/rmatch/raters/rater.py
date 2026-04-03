@@ -19,7 +19,7 @@ class Rater:
         self.dry_run = bool
 
     def get_usage(self) -> dict | None:
-        raise NotImplementedError("Subclasses must implement this method")
+        return {self.__class__.__name__: "not implemented"}
 
     def _estimate_tokens(self, query: str) -> int:
         raise NotImplementedError("Subclasses must implement this method")

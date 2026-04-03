@@ -780,7 +780,6 @@ if __name__ == "__main__":
             "reranker",
             "openai",
             "huggingface",
-            "huggingface_batched",
         ],
         default="anthropic",
         help="Name of the rater to use. Default is 'anthropic'.",

@@ -22,6 +22,7 @@ def rate_binary(
     top_k: int = 5,
     # huggingface specific parameters
     quantization: Literal["4bit", "8bit"] | None = None,
+    batch_size: int = 4,
     track_emissions: bool = False,
 ):
     """Rate whether a recall segment refers to a story segment.
@@ -55,6 +56,7 @@ def rate_binary(
         model_name=model_name,
         device=device,
         quantization=quantization,
+        batch_size=batch_size,
     )
 
     ratings_dir = Path("data") / "stories-and-recalls" / story_name / "ratings"
@@ -106,9 +108,8 @@ if __name__ == "__main__":
             "reranker",
             "openai",
             "huggingface",
-            "huggingface_batched",
         ],
-        default="openai",
+        default="anthropic",
         help="Name of the rater to use. Default is 'openai'.",
     )
     args.add_argument(
@@ -198,7 +199,13 @@ if __name__ == "__main__":
             "[huggingface] Quantization mode: '4bit' or '8bit'. Default is None (bf16)."
         ),
     )
-
+    args.add_argument(
+        "-bs",
+        "--batch_size",
+        type=int,
+        default=4,
+        help="[huggingface] Batch size for the HuggingFace rater.",
+    )
     args.add_argument(
         "--track_emissions",
         action="store_true",
@@ -219,5 +226,6 @@ if __name__ == "__main__":
         top_k=args.top_k,
         device=args.device,
         quantization=args.quantization,
+        batch_size=args.batch_size,
         track_emissions=args.track_emissions,
     )

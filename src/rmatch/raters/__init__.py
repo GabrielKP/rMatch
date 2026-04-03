@@ -3,7 +3,6 @@ from typing import Literal
 from rmatch.raters.rater import Rater
 from rmatch.raters.rater_anthropic import RaterAnthropic
 from rmatch.raters.rater_huggingface import RaterHuggingFace
-from rmatch.raters.rater_huggingface_batched import RaterHuggingFaceBatched
 from rmatch.raters.rater_openai import RaterOpenAI
 from rmatch.raters.rater_reranker import RaterReranker
 
@@ -12,7 +11,6 @@ __all__ = [
     "RaterReranker",
     "RaterOpenAI",
     "RaterHuggingFace",
-    "RaterHuggingFaceBatched",
 ]
 
 
@@ -26,6 +24,8 @@ def initialize_rater(
     # huggingface
     verbose_errors: bool = False,
     quantization: Literal["4bit", "8bit"] | None = None,
+    batch_size: int = 4,
+    max_new_tokens: int = 64,
     # anthropic/openai
     movie_mode: bool = False,
     dry_run: bool = False,
@@ -59,13 +59,8 @@ def initialize_rater(
             verbose_errors=verbose_errors,
             quantization=quantization,
             window_size=window_size,
-        )
-    elif rater_name == "huggingface_batched":
-        rater = RaterHuggingFaceBatched(
-            model_name=model_name,
-            verbose_errors=verbose_errors,
-            quantization=quantization,
-            window_size=window_size,
+            batch_size=batch_size,
+            max_new_tokens=max_new_tokens,
         )
     else:
         raise ValueError(f"Invalid argument: {rater_name=}")

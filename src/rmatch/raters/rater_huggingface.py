@@ -1,3 +1,4 @@
+# ruff: noqa: E501
 import re
 from typing import Literal
 
@@ -18,10 +19,12 @@ class RaterHuggingFace(Rater):
         window_size: int = 5,
         verbose_errors: bool = False,
         quantization: Literal["4bit", "8bit"] | None = None,
+        batch_size: int = 4,
+        max_new_tokens: int = 64,
     ):
         self.rater_name = "huggingface"
 
-        self.use_context = window_size > 0
+        assert window_size >= 0, "window_size must be non-negative"
         self.window_size = window_size
         self.verbose_errors = verbose_errors
 
@@ -83,9 +86,15 @@ class RaterHuggingFace(Rater):
             else:
                 self.pipe.model = torch.compile(self.pipe.model, mode="reduce-overhead")
 
-    def build_message(
-        self, recall_segment: str, story: str, story_segments: str, window: str | None
-    ) -> str:
+        self.batch_size = batch_size
+        self.max_new_tokens = max_new_tokens
+
+        tokenizer = self.pipe.tokenizer
+        if tokenizer.pad_token_id is None:  # type: ignore
+            tokenizer.pad_token_id = tokenizer.eos_token_id  # type: ignore
+        tokenizer.padding_side = "left"  # type: ignore
+
+    def build_message(self, story_segments: str, window: str | None) -> str:
         message = f"""You are an expert annotator for episodic memory research. Your task is to match which numbered story elements a participant's recall segment refers to.
 
 Matching guidelines:
@@ -129,6 +138,9 @@ Story segments that match the <target> segment:
     def build_recall_window(
         self, recall_segments: list[str], idx: int, window_size: int
     ) -> str:
+        if window_size == 0:
+            return f"<target>{recall_segments[idx]}</target>"
+
         start = max(0, idx - window_size)
         end = min(len(recall_segments), idx + window_size + 1)
 
@@ -146,9 +158,6 @@ Story segments that match the <target> segment:
         return "\n".join(
             f"{i + 1}. {seg.strip()}" for i, seg in enumerate(story_segments)
         )
-
-    def format_story(self, story_segments: list[str]) -> str:
-        return " ".join(seg.strip() for seg in story_segments)
 
     def parse(self, raw: str) -> set[int] | None:
         """Return matched indices, empty set for <NONE>, or None on parse failure."""
@@ -180,63 +189,70 @@ Story segments that match the <target> segment:
     ) -> list[tuple[int, list[int]]]:
         if output_scores:
             raise NotImplementedError(
-                "HuggingFace rater currently does not support output_scores = True"
+                "HuggingFace rater does not support output_scores = True"
             )
 
-        story = self.format_story(story_segments)
         story_segs_formatted = self.format_story_segments(story_segments)
-        ratings: list[tuple[int, list[int]]] = []
-
         n_story_segments = len(story_segments)
 
-        for idx, recall_seg in enumerate(
-            tqdm(
-                recall_segments,
-                desc="(rating recall segments)",
+        prompts: list[list[dict[str, str]]] = []
+        for idx in range(len(recall_segments)):
+            window = self.build_recall_window(recall_segments, idx, self.window_size)
+
+            query = self.build_message(story_segs_formatted, window)
+            prompts.append([{"role": "user", "content": query}])
+
+        results: dict[int, set[int]] = {}
+        pending = list(range(len(recall_segments)))
+
+        for attempt in range(1, max_retries + 1):
+            if not pending:
+                break
+
+            pending_prompts = [prompts[i] for i in pending]
+            responses = self.pipe(
+                pending_prompts,
+                batch_size=self.batch_size,
+                return_full_text=False,
+                max_new_tokens=self.max_new_tokens,
+                pad_token_id=self.pipe.tokenizer.eos_token_id,  # type: ignore
+            )
+
+            still_pending: list[int] = []
+            for idx, response in tqdm(
+                zip(pending, responses),
+                total=len(pending),
+                desc=f"(parsing attempt {attempt})",
                 position=1,
                 leave=False,
+            ):
+                parsed = self.parse(response[0]["generated_text"])  # type: ignore
+
+                if parsed is not None and all(
+                    1 <= i <= n_story_segments for i in parsed
+                ):
+                    results[idx] = parsed
+                else:
+                    still_pending.append(idx)
+
+            if still_pending:
+                log.info(
+                    f"Attempt {attempt}/{max_retries}: "
+                    f"{len(still_pending)}/{len(pending)} segments need retry"
+                )
+
+            pending = still_pending
+
+        for idx in pending:
+            log.warning(
+                f"All {max_retries} attempts failed for segment {idx}, "
+                "defaulting to no matches"
             )
-        ):
-            if self.use_context:
-                window = self.build_recall_window(
-                    recall_segments,
-                    idx,
-                    self.window_size,
-                )
-            else:
-                window = None
+            results[idx] = set()
 
-            query = self.build_message(recall_seg, story, story_segs_formatted, window)
-
-            parsed_response: set[int] | None = None
-            for attempt in range(1, max_retries + 1):
-                response = self.pipe(
-                    [{"role": "user", "content": query}],
-                    return_full_text=False,
-                    pad_token_id=self.pipe.tokenizer.eos_token_id,  # type: ignore
-                )
-                parsed_response = self.parse(response[0]["generated_text"])  # type: ignore
-
-                # check if parsed response is valid
-                if parsed_response is not None:
-                    # check if all indices are valid
-                    for i in parsed_response:
-                        if i > n_story_segments or i < 1:
-                            parsed_response = None
-                            break
-                    if parsed_response is not None:
-                        break
-
-                log.info(f"Retrying segment {idx} (attempt {attempt}/{max_retries})")
-
-            if parsed_response is None:
-                log.warning(
-                    f"All {max_retries} attempts failed for segment {idx}, "
-                    "defaulting to no matches"
-                )
-                parsed_response = set()
-
-            story_indices = sorted(i - 1 for i in parsed_response)
+        ratings: list[tuple[int, list[int]]] = []
+        for idx in range(len(recall_segments)):
+            story_indices = sorted(i - 1 for i in results[idx])
             ratings.append((idx, story_indices))
 
         return ratings
