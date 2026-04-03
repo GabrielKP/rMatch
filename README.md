@@ -8,84 +8,52 @@
 <a href="https://docs.astral.sh/uv/"><img alt="packaging framework: uv" src="https://img.shields.io/badge/packaging-uv-lightblue?logo=uv"></a>
 <a href="https://pre-commit.com/"><img alt="pre-commit" src="https://img.shields.io/badge/tool-Pre%20Commit-yellow?logo=Pre-Commit"></a>
 
-## Usage
+## Installation
+
+From the repository root:
 
 ```sh
-# 1. clone
-git clone git@github.com:GabrielKP/rMatch.git
-cd rMatch
-
-# 2. Install uv (https://docs.astral.sh/uv/getting-started/installation/)
-uv run src/rmatch/rate_binary.py --sub-ids sub-001
-
-# 3. Run rating code
-
-# single subject
-uv run src/rmatch/rate_binary.py --matcher reranker --story_name pieman --sub_ids sub-001
-# all subjects
-uv run src/rmatch/rate_binary.py --matcher reranker --story_name pieman
+pip install .
 ```
 
-### Running with openai API
+This installs the `rmatch` command on your PATH. Run `rmatch --help` for story/recall arguments and matcher options. Equivalent: `python -m rmatch.match`.
 
-1. Create an .env file in the root directory of the project.
-2. Log in / Create an account at [platform.openai.com](platform.openai.com)
-3. Put money into the account ~0.10$ for one recall.
-4. Create an API key under settings > API keys. The key needs to have at least permissions for `Model capabilities > Responses (/v1/responses) > Write`.
-5. Paste the API key exactly like this into the .env under the field `OPENAI_API_KEY`:
+
+### API keys
+
+1. Create an api key at the platform of your choice.
+2. Create and add it to the `.env`:
 ```sh
+ANTHROPIC_API_KEY="your_api_key"
 OPENAI_API_KEY="your_api_key"
+HF_TOKEN="your_hf_token"
 ```
-6. Now you can run:
+
+
+
+## Usage
+Run from the repository root:
+
 ```sh
-uv run src/rmatch/rate_binary.py -matcher openai --story_name pieman --sub_ids sub-001
+rmatch STORY_FILE RECALL_FILE [--matcher {anthropic,reranker,openai,huggingface}] \
+  [--model-name MODEL] [--device DEVICE] [--quantization {4bit,8bit}] \
+  [--batch-size N] [--track-emissions]
 ```
 
-### Running locally
-
-1. Set up a `HF_TOKEN="your_api_key"` in `.env`.
-
-### Inputs
-
-To rate your own stories and recalls, they need to be in a specific format in the `data/stories-and-recalls` directory.
-
-Each story directory is organized as follows (this examnple is for pieman):
-```sh
-data/stories-and-recalls/pieman/
-├── ratings
-│   └── *.json
-├── recalls
-│   ├── sentences
-│   │   ├── sub-001.txt
-│   │   ├── sub-002.txt
-│   │   ├── ...
-│   │   └── sub-116.txt
-│   └── ...
-├── transcripts
-│   ├── lda_hmm.txt
-│   ├── sentences.txt
-│   ├── sentences_corrected.txt
-│   └── ...
-└── ...
-```
-
-* **recalls**: contains subdirectories with the name of the `recall_segmentation_method` (in the example, "sentences"). The subdirectories contain .txt files for each subject in which each line is a new segment.
-* **transcripts**: contains .txt files with the story transcript. The filename refers to the `story_segmentation_method` (in the example, "lda_hmm", "sentences", and "sentences_corrected")/
-* **ratings**: contains the rating outputs
-
-Each story-directory can contain additional directories with other information (e.g. "plots", "causality"), but these are not required for recall rating.
-
-#### Step by step instructions
-
-1. Create dir with your storyname in `data/stories_and_recalls`
-2. Place you transcript in `data/stories_and_recalls/storyname/transcripts/<story_segmentation_method>.txt` - this file has to have a segmented story, each line is a new segment (e.g. an event, or sentences).
-3. Place your recall transcripts in `data/stories_and_recalls/storyname/recalls/<recall_segmentation_method/sub-*.txt`  - separate file for each subject. Again, each line is a new segment (e.g. an event).
+Key arguments:
+- `STORY_FILE` (positional): Path to the story, either line-separated `.txt` or `.json` with a `segments` array.
+- `RECALL_FILE` (positional): Path to recalls, either `.txt`/`.json` file or a directory containing `.txt`/`.json` files.
+- `--matcher` / `-M`: Which rating method to use: `anthropic`, `reranker`, `openai`, or `huggingface` (default: `anthropic`).
+- `--model-name` / `-m`: Underlying model override for the selected matcher (default: matcher built-in default).
+- `--device`: Device hint for `reranker`/`huggingface` (default: auto).
+- `--quantization` / `-q`: Huggingface quantization: `4bit` or `8bit` (default: no override).
+- `--batch-size` / `-bs`: Huggingface batch size (default: `4`).
+- `--track-emissions`: Enable CodeCarbon emissions tracking (writes output beside the recall).
 
 
 ### Outputs
 
-The output is a single json file in `data/stories_and_recalls/storyname/ratings`.
-It contains important metadata fields:
+The output is a single json file with following fields:
 * **matcher_name**: Name of rating method (e.g. 'openai' or 'reranker')/
 * **story_segmentation_method**: How story was segmented for producing this rating file.
 * **recall_segmentation_method**: How recalls were segmented for producing this rating file.
@@ -122,33 +90,25 @@ Thus, the ratings dictionary looks something like this:
 Note that the number of recall segments can be computed from the length of the 'single_subject_ratings' list.
 
 
-## Development setup
+## Benchmark
 
+To benchmark rMatch:
+
+1. Download [rBench](https://github.com/GabrielKP/rBench):
 ```sh
-# clone
-git clone git@github.com:GabrielKP/rMatch.git
-cd rMatch
+git clone git@github.com:GabrielKP/rBench.git
+```
+2. Edit `.env` to point towards rBench root:
+```sh
+BENCHMARK_ROOT="path/to/rBench"
+```
+3. Run `uv run src/rmatch/evaluate.py`
 
-# install uv (https://docs.astral.sh/uv/getting-started/installation/) to install package & dependencies
-
-# set up pre-commit
-uv run pre-commit install
+Usage:
+```sh
+usage: evaluate.py [-h] [-rr] [--benchmark-root BENCHMARK_ROOT] [-M {anthropic,reranker,openai,huggingface}] [-m MODEL_NAME] [--device DEVICE] [--dry-run] [--window-size WINDOW_SIZE] [-n N_REPEATS]
+                   [-q {4bit,8bit}] [-bs BATCH_SIZE] [--max-new-tokens MAX_NEW_TOKENS] [--verbose-errors] [--track-emissions]
+                   {alice,monthiversary,memsearch}
 ```
 
-## Data downloads
-
-
-### filmfest
-
-
-### cyoa (private)
-
-1. Download monthiversary data into `downloads/cyoa/monthiversary` so that you have `downloads/cyoa/monthiversary/3_pasv`
-2. Download alice data into `downloads/cyoa/alice` so that you have `downloads/cyoa/alice/3_pasv`
-3. Run `python scripts/import_cyoa`
-
-
-### memsearch (private)
-
-1. Download the folders "Completed Scene-Matched Files" and "Trimmed Movies Annotations" and unzip them into the directory `downloads/memsearch`
-2. Run `uv run scripts/import_memsearch.py`
+_Good luck on your adventures._

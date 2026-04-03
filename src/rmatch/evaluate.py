@@ -511,7 +511,7 @@ if __name__ == "__main__":
 
     parser.add_argument(
         "-rr",
-        "--repeat_reliability",
+        "--repeat-reliability",
         action="store_true",
         default=False,
         help=(
@@ -544,7 +544,7 @@ if __name__ == "__main__":
 
     parser.add_argument(
         "-m",
-        "--model_name",
+        "--model-name",
         dest="model_name",
         type=str,
         default=None,
@@ -557,13 +557,13 @@ if __name__ == "__main__":
         help="[reranker, huggingface] Device to use. If omitted, autoselected.",
     )
     parser.add_argument(
-        "--dry_run",
+        "--dry-run",
         action="store_true",
         default=False,
         help="Estimate cost without calling the API.",
     )
     parser.add_argument(
-        "--window_size",
+        "--window-size",
         type=int,
         default=5,
         help="Size of recall context window (+/-).",
@@ -605,7 +605,7 @@ if __name__ == "__main__":
         help="[huggingface] Print verbose errors.",
     )
     parser.add_argument(
-        "--track_emissions",
+        "--track-emissions",
         action="store_true",
         default=False,
         help="Track carbon emissions with CodeCarbon during evaluation.",
@@ -625,6 +625,8 @@ if __name__ == "__main__":
             dry_run=args.dry_run,
             verbose_errors=args.verbose_errors,
             quantization=args.quantization,
+            batch_size=args.batch_size,
+            max_new_tokens=args.max_new_tokens,
             track_emissions=args.track_emissions,
         )
     else:

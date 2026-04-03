@@ -1,17 +1,13 @@
 """Load recall benchmark data from the benchmark JSON layout (see benchmark README)."""
 
-from __future__ import annotations
-
 import json
 from collections import defaultdict
 from pathlib import Path
 
 import numpy as np
-from dotenv import dotenv_values
 
+from rmatch import ENV
 from rmatch.utils import ratings_single_sub_to_matrix
-
-env = dotenv_values(".env")
 
 # transcript stem, recall JSON stem (without .json), matches filename
 _SEGMENTS: dict[str, tuple[str, str, str]] = {
@@ -32,7 +28,7 @@ _REPEAT_RELIABILITY_STORIES: dict[str, list[str]] = {
 
 
 def default_benchmark_root() -> Path:
-    env_path = env.get("BENCHMARK_ROOT")
+    env_path = ENV.get("BENCHMARK_ROOT")
     if env_path is not None:
         return Path(env_path)
     # you can always try it...

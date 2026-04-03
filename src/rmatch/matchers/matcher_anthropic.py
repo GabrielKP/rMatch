@@ -3,10 +3,11 @@ import re
 import anthropic
 from tqdm import tqdm
 
-from rmatch import get_logger
+from rmatch import ENV, get_logger
 from rmatch.matchers.matcher import Matcher
 
 log = get_logger(__name__)
+
 
 ANTHROPIC_PRICES: dict[str, tuple[float, float]] = {
     "claude-opus-4-6": (5, 25),
@@ -32,9 +33,10 @@ class MatcherAnthropic(Matcher):
             self.model_name = model_name
             log.info(f"Initializing model: {self.model_name}")
 
-        self.client = (
-            anthropic.Anthropic()
-        )  # automatically reads key from .env file, must be named "ANTHROPIC_API_KEY"
+        key = ENV.get("ANTHROPIC_API_KEY")
+        if key is None:
+            raise ValueError("ANTHROPIC_API_KEY not found in .env file")
+        self.client = anthropic.Anthropic(api_key=key)
         self.use_context = window_size > 0
         self.window_size = window_size
         self.usage_metrics = {"in_tokens": 0, "out_tokens": 0, "cost": 0.0}

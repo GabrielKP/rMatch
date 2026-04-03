@@ -28,7 +28,10 @@ class MatcherOpenAI(Matcher):
             self.model_name = model_name
             log.info(f"Initializing model: {self.model_name}")
 
-        self.client = OpenAI(api_key=ENV["OPENAI_API_KEY"])
+        key = ENV.get("OPENAI_API_KEY")
+        if key is None:
+            raise ValueError("OPENAI_API_KEY not found in .env file")
+        self.client = OpenAI(api_key=key)
         self.use_context = window_size > 0
         self.window_size = window_size
         self.usage_metrics = {"in_tokens": 0, "out_tokens": 0, "cost": 0.0}
@@ -42,11 +45,13 @@ class MatcherOpenAI(Matcher):
     def get_usage(self) -> dict | None:
         if self.dry_run:
             return self.estimated_usage_metrics
+        if self.model_name not in OPENAI_PRICES:
+            log.warning(f"No pricing found for {self.model_name}, cannot compute cost")
+            return None
         return self.usage_metrics
 
     def _calculate_cost(self, in_tokens: int, out_tokens: int) -> float:
         if self.model_name not in OPENAI_PRICES:
-            log.warning(f"No pricing found for {self.model_name}, cost set to 0")
             return 0.0
         prices = OPENAI_PRICES[self.model_name]
         return (in_tokens * prices[0] + out_tokens * prices[1]) / 1_000_000

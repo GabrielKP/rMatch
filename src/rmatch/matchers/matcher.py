@@ -19,7 +19,7 @@ class Matcher:
         self.dry_run = bool
 
     def get_usage(self) -> dict | None:
-        return {self.__class__.__name__: "not implemented"}
+        return None
 
     def _estimate_tokens(self, query: str) -> int:
         raise NotImplementedError("Subclasses must implement this method")
@@ -27,14 +27,15 @@ class Matcher:
     def _calculate_cost(self, in_tokens: int, out_tokens: int) -> float:
         raise NotImplementedError("Subclasses must implement this method")
 
-    def rate(
+    def match(
         self,
         story_name: str,
         story_segmentation_method: str | None = None,
         recall_segmentation_method: str | None = None,
         sub_ids: list[str] | None = None,
         output_scores: bool = False,
-        **kwargs: dict,
+        story_recall_segments: list[tuple[str, list[str], list[str]]] | None = None,
+        **kwargs,
     ) -> dict:
         """Return each recall segment with its referenced story segments.
 
@@ -71,14 +72,21 @@ class Matcher:
             See compute_ratings_single_sub for the format of the single_subject_ratings.
         """
         # load
-        story_recall_segments, story_segmentation_method, recall_segmentation_method = (
-            load_story_recall_segments(
+        if story_recall_segments is None:
+            loaded = load_story_recall_segments(
                 story_name=story_name,
                 story_segmentation_method=story_segmentation_method,
                 recall_segmentation_method=recall_segmentation_method,
                 sub_ids=sub_ids,
             )
-        )
+            story_recall_segments = loaded[0]
+            story_segmentation_method = loaded[1]
+            recall_segmentation_method = loaded[2]
+        elif story_segmentation_method is None or recall_segmentation_method is None:
+            raise ValueError(
+                "When story_recall_segments is provided, "
+                "story_segmentation_method and recall_segmentation_method must be set."
+            )
 
         output_dict = {
             "matcher_name": self.matcher_name,
@@ -92,14 +100,12 @@ class Matcher:
 
         # rate
         log.info("Beginning rating")
-        if sub_ids is None:
-            sub_ids_for_print = "all"
-        else:
-            sub_ids_for_print = sub_ids
+        sub_ids_for_print = [row[0] for row in story_recall_segments]
         print_config(output_dict, sub_ids=sub_ids_for_print)  # type: ignore
         ratings = self.compute_ratings(
             story_recall_segments=story_recall_segments,
             output_scores=output_scores,
+            **kwargs,
         )
         output_dict["ratings"] = ratings
 
@@ -227,8 +233,12 @@ class Matcher:
 
         return ratings
 
-    def save_to_json(self, output_dict: dict) -> Path:
-        """Save the output dict to a json file."""
+    def save_to_json(self, output_dict: dict, output_path: Path | None = None) -> Path:
+        """Save the output dict to a json file.
+
+        If output_path is None, writes under.
+        Otherwise writes to the given file path.
+        """
 
         # convert potential numpy values into python native values
         # (json cannot handle numpy values)
@@ -262,19 +272,22 @@ class Matcher:
 
         story_name = output_dict["story_name"]
         param_str = get_param_str(output_dict)
-        output_path = (
-            Path("data")
-            / "stories-and-recalls"
-            / story_name
-            / "ratings"
-            / f"{param_str}.json"
-        )
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-        with open(output_path, "w") as f_out:
+        if output_path is None:
+            final_path = (
+                Path("data")
+                / "stories-and-recalls"
+                / story_name
+                / "ratings"
+                / f"{param_str}.json"
+            )
+        else:
+            final_path = Path(output_path)
+        final_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(final_path, "w") as f_out:
             f_out.write(json.dumps(output_dict) + "\n")
-        log.info(f"Saved ratings to {output_path}")
+        log.info(f"Saved ratings to {final_path}")
 
-        return output_path
+        return final_path
 
     @property
     def matcher_name(self) -> str:

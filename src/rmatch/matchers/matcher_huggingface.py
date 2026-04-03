@@ -6,7 +6,7 @@ import torch
 from tqdm import tqdm
 from transformers import BitsAndBytesConfig, pipeline
 
-from rmatch import get_logger
+from rmatch import ENV, get_logger
 from rmatch.matchers.matcher import Matcher
 
 log = get_logger(__name__)
@@ -34,6 +34,10 @@ class MatcherHuggingFace(Matcher):
         else:
             self.model_name = model_name
             log.info(f"Initializing model: {self.model_name}")
+
+        token = ENV.get("HF_TOKEN")
+        if token is None:
+            raise ValueError("HF_TOKEN not found in .env file")
 
         # handle devices and quantization
         model_kwargs: dict = {}
@@ -73,6 +77,7 @@ class MatcherHuggingFace(Matcher):
             device_map="auto",
             dtype=torch_dtype,
             model_kwargs=model_kwargs,
+            token=token,
         )
 
         if torch.cuda.is_available() and quantization is None:
