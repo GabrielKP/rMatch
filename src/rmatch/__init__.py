@@ -1,11 +1,16 @@
 import json
 import logging
+import os
 from copy import deepcopy
 
 from dotenv import dotenv_values
 from rich.console import Console
 
-ENV = dotenv_values(".env")
+_dotenv = dotenv_values(".env")
+ENV: dict[str, str | None] = {
+    **os.environ,
+    **{k: v for k, v in _dotenv.items() if v is not None},
+}
 FORMAT = "[%(levelname)s] %(name)s.%(funcName)s - %(message)s"
 
 logging.basicConfig(format=FORMAT)

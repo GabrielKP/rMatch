@@ -38,7 +38,9 @@ class MatcherOpenAI(Matcher, matcher_name="openai"):
         if api_key is None:
             api_key = ENV.get("OPENAI_API_KEY")
             if api_key is None:
-                raise ValueError("OPENAI_API_KEY not found in .env file")
+                raise ValueError(
+                    "OPENAI_API_KEY not found in .env or environment variables."
+                )
         self.client = OpenAI(api_key=api_key)
         self.use_context = window_size > 0
         self.window_size = window_size

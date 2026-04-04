@@ -41,7 +41,7 @@ def default_benchmark_root() -> Path:
     if env_path is not None:
         return Path(env_path)
     # you can always try it...
-    maybe_path = Path("../benchmark")
+    maybe_path = Path("../rBench")
     if maybe_path.exists():
         return maybe_path
     else:

@@ -39,7 +39,9 @@ class MatcherAnthropic(Matcher, matcher_name="anthropic"):
         if api_key is None:
             api_key = ENV.get("ANTHROPIC_API_KEY")
             if api_key is None:
-                raise ValueError("ANTHROPIC_API_KEY not found in .env file")
+                raise ValueError(
+                    "ANTHROPIC_API_KEY not found in .env or environment variables."
+                )
         self.client = anthropic.Anthropic(api_key=api_key)
 
         self.use_context = window_size > 0

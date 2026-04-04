@@ -40,7 +40,7 @@ class MatcherHuggingFace(Matcher, matcher_name="huggingface"):
         if api_key is None:
             api_key = ENV.get("HF_TOKEN")
             if api_key is None:
-                raise ValueError("HF_TOKEN not found in .env file")
+                raise ValueError("HF_TOKEN not found in .env or environment variables.")
 
         # handle devices and quantization
         model_kwargs: dict = {}
