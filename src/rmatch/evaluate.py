@@ -184,7 +184,8 @@ def evaluate(
     **kwargs,
 ):
     """Evaluate given matcher on testset."""
-    matcher = Matcher(matcher_name=matcher_name, **kwargs)
+    matcher_kwargs = {k: v for k, v in kwargs.items() if v is not None}
+    matcher = Matcher(matcher_name=matcher_name, **matcher_kwargs)
     if hasattr(matcher, "model_name"):
         model_name = matcher.model_name  # type: ignore
     else:
@@ -399,7 +400,8 @@ def evaluate_repeat_reliability(
 ):
     """Evaluate the repeat reliability of the matcher."""
 
-    matcher = Matcher(matcher_name=matcher_name, **kwargs)
+    matcher_kwargs = {k: v for k, v in kwargs.items() if v is not None}
+    matcher = Matcher(matcher_name=matcher_name, **matcher_kwargs)
     if hasattr(matcher, "model_name"):
         model_name = matcher.model_name  # type: ignore
     else:
@@ -647,16 +649,16 @@ if __name__ == "__main__":
         help="[reranker, huggingface] Device to use. If omitted, autoselected.",
     )
     parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        default=None,
-        help="Estimate cost without calling the API.",
-    )
-    parser.add_argument(
         "--window-size",
         type=int,
         default=None,
         help="Size of recall context window (+/-).",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        default=None,
+        help="[anthropic, openai] Estimate cost without calling the API.",
     )
     parser.add_argument(
         "-n",
