@@ -9,13 +9,15 @@ from rmatch.matchers.matcher import Matcher
 log = get_logger(__name__)
 
 
-class MatcherReranker(Matcher):
+class MatcherReranker(Matcher, matcher_name="reranker"):
     def __init__(
         self,
         model_name: str | None = None,
         device: str | None = None,
         threshold: float | None = None,
         top_k: int | None = None,
+        # required for initialization
+        matcher_name: str | None = None,
     ):
         self.matcher_name = "reranker"
 
@@ -41,14 +43,13 @@ class MatcherReranker(Matcher):
         self.threshold = threshold
         self.top_k = top_k
 
-    def compute_ratings_single_sub(
+    def match(
         self,
         story_segments: list[str],
         recall_segments: list[str],
-        output_scores: bool = False,
         threshold: float | None = None,
         top_k: int | None = None,
-    ) -> list[tuple[int, list[int] | list[tuple[int, float]]]]:
+    ) -> list[tuple[int, list[int]]]:
         if threshold is None:
             if self.threshold is not None:
                 threshold = self.threshold
@@ -60,19 +61,16 @@ class MatcherReranker(Matcher):
             else:
                 top_k = 5
 
-        ratings_single_sub = list()
+        matches_single_sub: list[tuple[int, list[int]]] = list()
         for idx_recall, recall_segment in enumerate(
             tqdm(recall_segments, desc="(rating recall segments)", position=1)
         ):
-            ratings_single_sub.append((idx_recall, list()))
+            matches_single_sub.append((idx_recall, list()))
             rankings = self.model.rank(recall_segment, story_segments, top_k=top_k)
             for ranking in rankings:
                 score: float = ranking["score"]  #  type: ignore
                 corpus_id: int = ranking["corpus_id"]  #  type: ignore
                 if score > threshold:
-                    if output_scores:
-                        ratings_single_sub[idx_recall][1].append((corpus_id, score))
-                    else:
-                        ratings_single_sub[idx_recall][1].append(corpus_id)
+                    matches_single_sub[idx_recall][1].append(corpus_id)
 
-        return ratings_single_sub
+        return matches_single_sub
