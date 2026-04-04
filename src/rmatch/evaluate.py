@@ -649,13 +649,13 @@ if __name__ == "__main__":
     parser.add_argument(
         "--dry-run",
         action="store_true",
-        default=False,
+        default=None,
         help="Estimate cost without calling the API.",
     )
     parser.add_argument(
         "--window-size",
         type=int,
-        default=5,
+        default=None,
         help="Size of recall context window (+/-).",
     )
     parser.add_argument(
@@ -663,7 +663,7 @@ if __name__ == "__main__":
         "--n-repeats",
         dest="n_repeats",
         type=int,
-        default=5,
+        default=None,
         help="[repeat_reliability] Runs per recall. Default is 5.",
     )
     parser.add_argument(
@@ -679,25 +679,25 @@ if __name__ == "__main__":
         "--batch-size",
         dest="batch_size",
         type=int,
-        default=4,
+        default=None,
         help="[huggingface] Batch size.",
     )
     parser.add_argument(
         "--max-new-tokens",
         type=int,
-        default=64,
+        default=None,
         help="[huggingface] max_new_tokens for the matcher.",
     )
     parser.add_argument(
         "--verbose-errors",
         action="store_true",
-        default=False,
+        default=None,
         help="[huggingface] Print verbose errors.",
     )
     parser.add_argument(
         "--track-emissions",
         action="store_true",
-        default=False,
+        default=None,
         help="Track carbon emissions with CodeCarbon during evaluation.",
     )
     args = parser.parse_args()
