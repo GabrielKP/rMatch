@@ -45,4 +45,4 @@ def print_config(config: dict, **kwargs: dict):
     console.print_json(json.dumps(config_copy, indent=4))
 
 
-from rmatch.match import match  # noqa: E402,F401
+from rmatch.matchers import Matcher  # noqa: E402,F401

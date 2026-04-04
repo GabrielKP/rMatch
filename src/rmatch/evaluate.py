@@ -15,7 +15,6 @@ from sklearn.metrics import f1_score, precision_score, recall_score
 from tqdm import tqdm
 
 from rmatch import ENV, console
-from rmatch.matchers import initialize_matcher
 from rmatch.matchers.matcher import Matcher
 from rmatch.utils import ratings_single_sub_to_matrix
 
@@ -177,31 +176,15 @@ def accuracy(array_1: np.ndarray, array_2: np.ndarray) -> float:
 
 
 def evaluate(
-    matcher_name: str,
-    model_name: str | None,
     testset: str,
     benchmark_root: Path,
-    device: str | None = None,
-    window_size: int = 5,
-    dry_run: bool = False,
-    verbose_errors: bool = False,
-    quantization: Literal["4bit", "8bit"] | None = None,
-    batch_size: int = 4,
-    max_new_tokens: int = 64,
+    matcher_name: str,
     track_emissions: bool = False,
+    dry_run: bool = False,
+    **kwargs,
 ):
-    """Evaluate the matcher."""
-    matcher = initialize_matcher(
-        matcher_name=matcher_name,
-        model_name=model_name,
-        device=device,
-        window_size=window_size,
-        dry_run=dry_run,
-        verbose_errors=verbose_errors,
-        quantization=quantization,
-        batch_size=batch_size,
-        max_new_tokens=max_new_tokens,
-    )
+    """Evaluate given matcher on testset."""
+    matcher = Matcher(matcher_name=matcher_name, **kwargs)
     if hasattr(matcher, "model_name"):
         model_name = matcher.model_name  # type: ignore
     else:
@@ -256,13 +239,12 @@ def evaluate(
                 continue
 
             # b) get model ratings
-            single_sub_ratings = matcher.compute_ratings_single_sub(
+            matches = matcher.match(
                 story_segments=story_segments,
                 recall_segments=recall_segments,
-                output_scores=False,
             )
             rm_model = ratings_single_sub_to_matrix(
-                single_sub_ratings,  # type: ignore
+                matches,
                 len(story_segments),
             )
 
@@ -332,8 +314,7 @@ def evaluate(
     results_dict = {
         "testset": testset,
         "matcher_name": matcher_name,
-        "model_name": model_name,
-        "device": device,
+        **kwargs,
         "f1_macro": float(f1_macro),
         "precision_macro": float(precision_macro),
         "recall_macro": float(recall_macro),
@@ -409,31 +390,16 @@ def get_krippendorff_alpha(recall_matrices_dct: dict[str, list[np.ndarray]]) -> 
 
 def evaluate_repeat_reliability(
     n_repeats: int,
-    matcher_name: str,
-    model_name: str | None,
     testset: str,
     benchmark_root: Path,
-    device: str | None = None,
-    window_size: int = 5,
+    matcher_name: str,
     dry_run: bool = False,
-    verbose_errors: bool = False,
-    quantization: Literal["4bit", "8bit"] | None = None,
-    batch_size: int = 4,
-    max_new_tokens: int = 64,
     track_emissions: bool = False,
+    **kwargs,
 ):
     """Evaluate the repeat reliability of the matcher."""
-    matcher = initialize_matcher(
-        matcher_name=matcher_name,
-        model_name=model_name,
-        device=device,
-        window_size=window_size,
-        dry_run=dry_run,
-        verbose_errors=verbose_errors,
-        quantization=quantization,
-        batch_size=batch_size,
-        max_new_tokens=max_new_tokens,
-    )
+
+    matcher = Matcher(matcher_name=matcher_name, **kwargs)
     if hasattr(matcher, "model_name"):
         model_name = matcher.model_name  # type: ignore
     else:
@@ -492,13 +458,12 @@ def evaluate_repeat_reliability(
 
             # b) get model ratings
             for _ in range(n_repeats):
-                single_sub_ratings = matcher.compute_ratings_single_sub(
+                matches = matcher.match(
                     story_segments=story_segments,
                     recall_segments=recall_segments,
-                    output_scores=False,
                 )
                 rm_model = ratings_single_sub_to_matrix(
-                    single_sub_ratings,  # type: ignore
+                    matches,
                     len(story_segments),
                 )
                 recall_matrices_model_dct[recall_id].append(rm_model)
@@ -590,7 +555,7 @@ def evaluate_repeat_reliability(
         "testset": testset,
         "matcher_name": matcher_name,
         "model_name": model_name,
-        "device": device,
+        **kwargs,
         "n_repeats": n_repeats,
         "overall_mean_f1": float(overall_mean_f1),
         "overall_mean_precision": float(overall_mean_precision),

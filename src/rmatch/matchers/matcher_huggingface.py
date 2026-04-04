@@ -1,5 +1,3 @@
-# ruff: noqa: E501
-import re
 from typing import Literal
 
 import torch
@@ -8,11 +6,12 @@ from transformers import BitsAndBytesConfig, pipeline
 
 from rmatch import ENV, get_logger
 from rmatch.matchers.matcher import Matcher
+from rmatch.prompt import prompt_default
 
 log = get_logger(__name__)
 
 
-class MatcherHuggingFace(Matcher):
+class MatcherHuggingFace(Matcher, matcher_name="huggingface"):
     def __init__(
         self,
         model_name: str | None = None,
@@ -21,6 +20,9 @@ class MatcherHuggingFace(Matcher):
         quantization: Literal["4bit", "8bit"] | None = None,
         batch_size: int = 4,
         max_new_tokens: int = 64,
+        api_key: str | None = None,
+        # required for initialization
+        matcher_name: str | None = None,
     ):
         self.matcher_name = "huggingface"
 
@@ -35,9 +37,10 @@ class MatcherHuggingFace(Matcher):
             self.model_name = model_name
             log.info(f"Initializing model: {self.model_name}")
 
-        token = ENV.get("HF_TOKEN")
-        if token is None:
-            raise ValueError("HF_TOKEN not found in .env file")
+        if api_key is None:
+            api_key = ENV.get("HF_TOKEN")
+            if api_key is None:
+                raise ValueError("HF_TOKEN not found in .env file")
 
         # handle devices and quantization
         model_kwargs: dict = {}
@@ -77,7 +80,7 @@ class MatcherHuggingFace(Matcher):
             device_map="auto",
             dtype=torch_dtype,
             model_kwargs=model_kwargs,
-            token=token,
+            token=api_key,
         )
 
         if torch.cuda.is_available() and quantization is None:
@@ -99,113 +102,23 @@ class MatcherHuggingFace(Matcher):
             tokenizer.pad_token_id = tokenizer.eos_token_id  # type: ignore
         tokenizer.padding_side = "left"  # type: ignore
 
-    def build_message(self, story_segments: str, window: str | None) -> str:
-        message = f"""You are an expert annotator for episodic memory research. Your task is to match which numbered story elements a participant's recall segment refers to.
-
-Matching guidelines:
-- Match based on semantic content, not surface wording. Recall is often paraphrased.
-- A single recall segment may reference multiple story elements. List all that apply.
-- Do NOT match inferences or distortions unless a specific element is clearly referenced.
-- Match only what is explicitly or clearly implicitly referenced. Do not match based on vague thematic similarity.
-- The surrounding recall context aids comprehension only. Match based solely on the <target> segment.
-
-Return matching story element numbers between <> tags, or <NONE> if none match.
-
-<EXAMPLE>
-<story_elements>
-1. Sarah walked into the coffee shop.
-2. She ordered a latte.
-3. The barista spilled the drink.
-4. Sarah laughed and said it was fine.
-5. Sarah sat down at the empty table across the room.
-</story_elements>
-
-<recall_context>
-Sarah went to a order a coffee.
-<target>She laughed when the barista spilled the drink, because she is a kind person</target>
-</recall_context>
-Story segments that match the <target> segment:
-<3,4>
-</EXAMPLE>
-
-Now, given the actual story and context, return the matching story elements:
-<story_elements>
-{story_segments}
-</story_elements>
-
-<recall_context>
-{window}
-</recall_context>
-Story segments that match the <target> segment:
-"""
-        return message
-
-    def build_recall_window(
-        self, recall_segments: list[str], idx: int, window_size: int
-    ) -> str:
-        if window_size == 0:
-            return f"<target>{recall_segments[idx]}</target>"
-
-        start = max(0, idx - window_size)
-        end = min(len(recall_segments), idx + window_size + 1)
-
-        lines = []
-        for i in range(start, end):
-            clause = recall_segments[i].strip()
-            if i == idx:
-                lines.append(f"<target>{clause}</target>")
-            else:
-                lines.append(f"{clause}")
-
-        return "\n".join(lines)
-
-    def format_story_segments(self, story_segments: list[str]) -> str:
-        return "\n".join(
-            f"{i + 1}. {seg.strip()}" for i, seg in enumerate(story_segments)
-        )
-
-    def parse(self, raw: str) -> set[int] | None:
-        """Return matched indices, empty set for <NONE>, or None on parse failure."""
-
-        raw = raw.strip()
-
-        if "<NONE>" in raw:
-            return set()
-
-        match = re.search(r"<([0-9,\s]+)>", raw)
-        if not match:
-            if self.verbose_errors:
-                log.warning(f"failed to parse model output:\n{raw}")
-            return None
-
-        parsed_set = {
-            int(x.strip()) for x in match.group(1).split(",") if x.strip().isdigit()
-        }
-
-        return parsed_set
-
-    def compute_ratings_single_sub(  # type: ignore
+    def match(
         self,
         story_segments: list[str],
         recall_segments: list[str],
-        output_scores: bool = False,
         max_retries: int = 10,
-        **kwargs,
     ) -> list[tuple[int, list[int]]]:
-        if output_scores:
-            raise NotImplementedError(
-                "HuggingFace matcher does not support output_scores = True"
-            )
-
-        story_segs_formatted = self.format_story_segments(story_segments)
         n_story_segments = len(story_segments)
+
+        if len(recall_segments) == 0:
+            return []
 
         prompts: list[list[dict[str, str]]] = []
         for idx in range(len(recall_segments)):
-            window = self.build_recall_window(recall_segments, idx, self.window_size)
-
-            query = self.build_message(story_segs_formatted, window)
-            prompts.append([{"role": "user", "content": query}])
+            prompt, parser = prompt_default(
+                story_segments, recall_segments, idx, self.window_size
+            )
+            prompts.append([{"role": "user", "content": prompt}])
 
         results: dict[int, set[int]] = {}
         pending = list(range(len(recall_segments)))
@@ -231,7 +144,7 @@ Story segments that match the <target> segment:
                 position=1,
                 leave=False,
             ):
-                parsed = self.parse(response[0]["generated_text"])  # type: ignore
+                parsed = parser(response[0]["generated_text"])  # type: ignore
 
                 if parsed is not None and all(
                     1 <= i <= n_story_segments for i in parsed

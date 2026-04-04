@@ -1,11 +1,12 @@
 import argparse
 import json
 from pathlib import Path
-from typing import Literal
 
 from rmatch import console
-from rmatch.matchers import initialize_matcher
-from rmatch.utils import get_param_str
+from rmatch.matchers import Matcher
+from rmatch.utils import get_logger, get_param_str, save_to_json
+
+log = get_logger(__name__)
 
 
 def remove_empty_lines(text: str) -> list[str]:
@@ -36,23 +37,8 @@ def load_story_segments(story_path: Path) -> tuple[list[str], str]:
 
     segments = remove_empty_lines(story_path.read_text(encoding="utf-8"))
     if not segments:
-        raise ValueError(f"Story file is empty or has no  lines: {story_path}")
+        raise ValueError(f"Story file is empty or has no lines: {story_path}")
     return segments, "lines"
-
-
-def _filter_subs(
-    pairs: list[tuple[str, list[str]]],
-    sub_ids: list[str] | None,
-) -> list[tuple[str, list[str]]]:
-    if sub_ids is None:
-        return pairs
-    want = set(sub_ids)
-    out = [(sid, segs) for sid, segs in pairs if sid in want]
-    if not out:
-        raise ValueError(
-            f"No matching subjects after --sub-ids filter (wanted {sub_ids!r})."
-        )
-    return out
 
 
 def _load_recalls_json_obj(
@@ -99,11 +85,18 @@ def _merge_recall_json_files(
 ) -> tuple[list[tuple[str, list[str]]], str]:
     merged: dict[str, list[str]] = {}
     method: str | None = None
+    warned_mismatch: bool = False
     for path in paths:
         data = json.loads(path.read_text(encoding="utf-8"))
         pairs, m = _load_recalls_json_obj(data, str(path))
         if method is None:
             method = m
+        elif method != m:
+            if not warned_mismatch:
+                log.warning(
+                    f"At least two json have a recall method mismatch: {method} != {m}"
+                )
+                warned_mismatch = True
 
         for sid, segs in pairs:
             if sid in merged:
@@ -132,7 +125,12 @@ def _load_recall_txt_dir(
 def load_recall_segments(recall_path: Path) -> tuple[list[tuple[str, list[str]]], str]:
     """Load recall segments per subject.
 
-    Returns (list of (sub_id, segments), recall_method).
+    Returns
+    -------
+    recall_segments_list: list[tuple[str, list[str]]]
+        list of (sub_id, segments)
+    recall_method: str
+        recall method
     """
     recall_path = Path(recall_path)
 
@@ -160,60 +158,6 @@ def load_recall_segments(recall_path: Path) -> tuple[list[tuple[str, list[str]]]
     raise ValueError(f"Recall directory {recall_path} has no .json or .txt files.")
 
 
-def build_story_recall_segments(
-    story_path: Path,
-    recall_path: Path,
-) -> tuple[list[tuple[str, list[str], list[str]]], str, str]:
-    """Build rows for Matcher.match when loading from paths (preloaded)."""
-    story_segments, story_method = load_story_segments(story_path)
-    recall_list, recall_method = load_recall_segments(recall_path)
-    rows = [
-        (sub_id, story_segments, recall_segments)
-        for sub_id, recall_segments in recall_list
-    ]
-    return rows, story_method, recall_method
-
-
-def match(
-    story_segments: list[str],
-    recall_segments: list[str],
-    matcher: str = "anthropic",
-    model_name: str | None = None,
-    device: str | None = None,
-    quantization: Literal["4bit", "8bit"] | None = None,
-    batch_size: int = 4,
-) -> list[tuple[int, list[int]]]:
-    """Returns recall-to-story matches for a single subject.
-
-    Parameters
-    ----------
-    story_segments: list[str]
-        list of story segments
-    recall_segments: list[str]
-        list of recall segments
-    matcher: str
-        matcher to use
-
-    Returns
-    """
-    matcher_obj = initialize_matcher(
-        matcher_name=matcher,
-        model_name=model_name,
-        device=device,
-        quantization=quantization,
-        batch_size=batch_size,
-    )
-    story_recall_segments = [("default", story_segments, recall_segments)]
-    output_dict = matcher_obj.match(
-        story_name="in_memory_story",
-        story_segmentation_method="lines",
-        recall_segmentation_method="lines",
-        story_recall_segments=story_recall_segments,
-        output_scores=False,
-    )
-    return output_dict["ratings"]["default"]
-
-
 def recall_output_dir(recall_path: Path) -> Path:
     """Directory for ratings JSON: parent of a file, or the recall directory."""
     recall_path = Path(recall_path)
@@ -228,32 +172,52 @@ def run_matching(
     story_file: Path,
     recall_file: Path,
     matcher_name: str,
-    story_name: str,
-    model_name: str | None,
-    device: str | None,
-    quantization: Literal["4bit", "8bit"] | None,
-    batch_size: int,
     track_emissions: bool,
-) -> Path:
+    story_name: str | None = None,
+    story_segmentation: str | None = None,
+    recall_segmentation: str | None = None,
+    overwrite: bool = False,
+    **kwargs,
+) -> dict:
     story_file = Path(story_file)
     recall_file = Path(recall_file)
 
-    (
-        story_recall_segments,
-        story_segmentation_method,
-        recall_segmentation_method,
-    ) = build_story_recall_segments(story_file, recall_file)
-
-    matcher = initialize_matcher(
-        matcher_name=matcher_name,
-        model_name=model_name,
-        device=device,
-        quantization=quantization,
-        batch_size=batch_size,
+    # load data
+    story_segments, candidate_story_segmentation = load_story_segments(story_file)
+    candidate_story_name = story_file.stem
+    subs_and_recall_segments_list, candidate_recall_segmentation = load_recall_segments(
+        recall_file
     )
 
+    # determine story name and segmentations (user-specified overrides auto-detected)
+    story_name = story_name or candidate_story_name
+    story_segmentation = story_segmentation or candidate_story_segmentation
+    recall_segmentation = recall_segmentation or candidate_recall_segmentation
+
+    output_dict: dict = {
+        "matcher_name": matcher_name,
+        "story_name": story_name,
+        "story_segmentation": story_segmentation,
+        "recall_segmentation": recall_segmentation,
+    }
+
+    # output dir
+    param_str = get_param_str(output_dict)
     out_dir = recall_output_dir(recall_file)
     out_dir.mkdir(parents=True, exist_ok=True)
+    out_path = out_dir / f"{param_str}.json"
+    if out_path.exists() and not overwrite:
+        raise FileExistsError(f"Output path already exists: {out_path}")
+    print(f"Output path: {out_path}")
+
+    # initialize matcher — drop None values so only user-specified args are forwarded;
+    # each matcher's own __init__ defaults handle the rest.
+    matcher_kwargs = {k: v for k, v in kwargs.items() if v is not None}
+    matcher = Matcher(matcher_name=matcher_name, **matcher_kwargs)
+
+    model_name = getattr(matcher, "model_name", None)
+    if model_name is not None:
+        output_dict["model_name"] = model_name
 
     # track emissions if requested
     tracker = None
@@ -267,12 +231,12 @@ def run_matching(
         tracker.start()
 
     try:
-        output_dict = matcher.match(
-            story_name=story_name,
-            story_segmentation_method=story_segmentation_method,
-            recall_segmentation_method=recall_segmentation_method,
-            story_recall_segments=story_recall_segments,
-        )
+        matches_dict: dict[str, list[tuple[int, list[int]]]] = {}
+        for sub_id, recall_segments in subs_and_recall_segments_list:
+            matches = matcher.match(
+                story_segments=story_segments, recall_segments=recall_segments
+            )
+            matches_dict[sub_id] = matches
     finally:
         if tracker is not None:
             emissions_kg = tracker.stop()
@@ -280,12 +244,15 @@ def run_matching(
                 f"[green]Carbon emissions:[/green] {emissions_kg:.6f} kg CO2eq"
             )
 
-    param_str = get_param_str(output_dict)
-    output_path = out_dir / f"{param_str}.json"
-    return matcher.save_to_json(output_dict, output_path=output_path)
+    # add matches to output dict
+    output_dict["matches"] = matches_dict
+
+    save_to_json(out_path, output_dict)
+    return output_dict
 
 
 def main() -> None:
+    # main CLI entry point
     parser = argparse.ArgumentParser(
         description="Match recall segments to story segments (txt or JSON)."
     )
@@ -314,10 +281,37 @@ def main() -> None:
         help="Underlying model to use for matcher. If None, use Matcher's default.",
     )
     parser.add_argument(
+        "--window-size",
+        type=int,
+        default=None,
+        help=(
+            "[anthropic, openai, huggingface] "
+            "Size of recall context window (+/-). Default: 5."
+        ),
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        default=None,
+        help="[anthropic, openai] Estimate cost without calling the API.",
+    )
+    parser.add_argument(
         "--device",
         type=str,
         default=None,
-        help="[reranker, huggingface] Device for model (default: auto).",
+        help="[reranker] Device for model (default: auto).",
+    )
+    parser.add_argument(
+        "--threshold",
+        type=float,
+        default=None,
+        help="[reranker] Score threshold for matches (default: 0.09).",
+    )
+    parser.add_argument(
+        "--top-k",
+        type=int,
+        default=None,
+        help="[reranker] Number of top candidates per recall segment (default: 5).",
     )
     parser.add_argument(
         "-q",
@@ -325,14 +319,26 @@ def main() -> None:
         type=str,
         choices=["4bit", "8bit"],
         default=None,
-        help="[huggingface] Quantization: '4bit' or '8bit'",
+        help="[huggingface] Quantization: '4bit' or '8bit'.",
     )
     parser.add_argument(
         "-bs",
         "--batch-size",
         type=int,
-        default=4,
-        help="[huggingface] Batch size.",
+        default=None,
+        help="[huggingface] Batch size. Default: 4.",
+    )
+    parser.add_argument(
+        "--max-new-tokens",
+        type=int,
+        default=None,
+        help="[huggingface] max_new_tokens for the matcher. Default: 64.",
+    )
+    parser.add_argument(
+        "--verbose-errors",
+        action="store_true",
+        default=None,
+        help="[huggingface] Print verbose errors.",
     )
     parser.add_argument(
         "--track-emissions",
@@ -340,22 +346,35 @@ def main() -> None:
         default=False,
         help="Track carbon emissions with CodeCarbon (output beside recall).",
     )
+    parser.add_argument(
+        "-f",
+        "--overwrite",
+        action="store_true",
+        default=False,
+        help="Overwrite existing output file.",
+    )
 
     args = parser.parse_args()
     story_name = str(args.story_file.stem)
 
-    out = run_matching(
+    run_matching(
         story_file=args.story_file,
         recall_file=args.recall_file,
         matcher_name=args.matcher,
         story_name=story_name,
         model_name=args.model_name,
+        window_size=args.window_size,
+        dry_run=args.dry_run,
         device=args.device,
+        threshold=args.threshold,
+        top_k=args.top_k,
         quantization=args.quantization,
         batch_size=args.batch_size,
+        max_new_tokens=args.max_new_tokens,
+        verbose_errors=args.verbose_errors,
         track_emissions=args.track_emissions,
+        overwrite=args.overwrite,
     )
-    console.print(f"[green]Wrote[/green] {out}")
 
 
 if __name__ == "__main__":
