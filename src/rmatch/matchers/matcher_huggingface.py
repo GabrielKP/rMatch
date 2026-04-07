@@ -6,7 +6,7 @@ from transformers import BitsAndBytesConfig, pipeline
 
 from rmatch import ENV, get_logger
 from rmatch.matchers.matcher import Matcher
-from rmatch.prompt import prompt_default
+from rmatch.prompt import get_prompt_and_parser
 
 log = get_logger(__name__)
 
@@ -21,10 +21,13 @@ class MatcherHuggingFace(Matcher, matcher_name="huggingface"):
         batch_size: int = 4,
         max_new_tokens: int = 64,
         api_key: str | None = None,
+        prompt_type: str | None = None,
         # required for initialization
         matcher_name: str | None = None,
     ):
+        super().__init__()
         self.matcher_name = "huggingface"
+        self.prompt_type = prompt_type
 
         assert window_size >= 0, "window_size must be non-negative"
         self.window_size = window_size
@@ -115,8 +118,12 @@ class MatcherHuggingFace(Matcher, matcher_name="huggingface"):
 
         prompts: list[list[dict[str, str]]] = []
         for idx in range(len(recall_segments)):
-            prompt, parser = prompt_default(
-                story_segments, recall_segments, idx, self.window_size
+            prompt, parser = get_prompt_and_parser(
+                story_segments,
+                recall_segments,
+                idx,
+                self.window_size,
+                prompt_type=self.prompt_type,
             )
             prompts.append([{"role": "user", "content": prompt}])
 
@@ -144,7 +151,9 @@ class MatcherHuggingFace(Matcher, matcher_name="huggingface"):
                 position=1,
                 leave=False,
             ):
-                parsed = parser(response[0]["generated_text"])  # type: ignore
+                gen_text = str(response[0]["generated_text"])  # type: ignore[index]
+                self._append_prompt_response(prompts[idx][0]["content"], gen_text)
+                parsed = parser(gen_text)  # type: ignore
 
                 if parsed is not None and all(
                     1 <= i <= n_story_segments for i in parsed

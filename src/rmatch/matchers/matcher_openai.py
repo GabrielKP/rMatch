@@ -4,7 +4,7 @@ from tqdm import tqdm
 
 from rmatch import ENV, get_logger
 from rmatch.matchers.matcher import Matcher
-from rmatch.prompt import prompt_default
+from rmatch.prompt import get_prompt_and_parser
 
 log = get_logger(__name__)
 
@@ -23,10 +23,13 @@ class MatcherOpenAI(Matcher, matcher_name="openai"):
         window_size: int = 5,
         dry_run: bool = False,
         api_key: str | None = None,
+        prompt_type: str | None = None,
         # required for initialization
         matcher_name: str | None = None,
     ):
+        super().__init__()
         self.matcher_name = "openai"
+        self.prompt_type = prompt_type
 
         if model_name is None:
             self.model_name = "gpt-4.1"
@@ -92,8 +95,12 @@ class MatcherOpenAI(Matcher, matcher_name="openai"):
         ):
             parsed_response: set[int] = set()
             for attempt in range(1, max_retries + 1):
-                prompt, parser = prompt_default(
-                    story_segments, recall_segments, idx, self.window_size
+                prompt, parser = get_prompt_and_parser(
+                    story_segments,
+                    recall_segments,
+                    idx,
+                    self.window_size,
+                    prompt_type=self.prompt_type,
                 )
 
                 if self.dry_run:
@@ -120,7 +127,9 @@ class MatcherOpenAI(Matcher, matcher_name="openai"):
                     self.usage_metrics["cost"] += self._calculate_cost(
                         in_tokens, out_tokens
                     )
-                    parsed_response_ = parser(response.output_text)
+                    raw_text = response.output_text
+                    self._append_prompt_response(prompt, raw_text)
+                    parsed_response_ = parser(raw_text)
                     if parsed_response_ is not None:
                         parsed_response = parsed_response_
                         break
