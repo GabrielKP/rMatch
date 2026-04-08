@@ -360,6 +360,12 @@ def main() -> None:
         default=False,
         help="Overwrite existing output file.",
     )
+    parser.add_argument(
+        "--no-flash-attn",
+        action="store_true",
+        default=False,
+        help="[huggingface] Disable flash-attn for the model.",
+    )
 
     args = parser.parse_args()
     story_name = str(args.story_file.stem)
@@ -382,6 +388,7 @@ def main() -> None:
         track_emissions=args.track_emissions,
         prompt_type=args.prompt_type,
         overwrite=args.overwrite,
+        no_flash_attn=args.no_flash_attn,
     )
 
 

@@ -734,6 +734,12 @@ if __name__ == "__main__":
         ),
     )
     parser.add_argument(
+        "--no-flash-attn",
+        action="store_true",
+        default=False,
+        help="[huggingface] Disable flash-attn for the model.",
+    )
+    parser.add_argument(
         "--prompt",
         type=str,
         choices=[
@@ -769,6 +775,7 @@ if __name__ == "__main__":
             prompt_type=args.prompt,
             track_emissions=args.track_emissions,
             save_raw_prompts=not args.no_save_raw_prompts,
+            no_flash_attn=args.no_flash_attn,
         )
     else:
         evaluate(
@@ -786,4 +793,5 @@ if __name__ == "__main__":
             prompt_type=args.prompt,
             track_emissions=args.track_emissions,
             save_raw_prompts=not args.no_save_raw_prompts,
+            no_flash_attn=args.no_flash_attn,
         )

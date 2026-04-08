@@ -23,7 +23,7 @@ rmatch story.txt recall.txt --matcher anthropic
 rmatch story.txt recalls/ --matcher anthropic
 
 # estimate API cost without sending requests
-rmatch story.txt recalls/ --matcher openai --dry-run
+rmatch story.txt recalls/ --matcher openai --model gpt-5.4 --dry-run
 ```
 
 ### Python API
@@ -31,7 +31,7 @@ rmatch story.txt recalls/ --matcher openai --dry-run
 ```python
 from rmatch import Matcher
 
-matcher = Matcher(matcher_name="anthropic", api_key="your_api_key")
+matcher = Matcher(matcher_name="anthropic", api_key="your_api_key", model_name="claude-haiku-4-5")
 matches = matcher.match(
     story_segments=["The cat sat on the mat.", "It purred softly."],
     recall_segments=["A cat was on a mat."],
@@ -94,6 +94,16 @@ A JSON file with:
 ```
 
 Each entry in `matches` maps a subject ID to a list of `[recall_segment_id, [matched_story_segment_ids...]]` pairs.
+
+## Running local models
+
+You can run any model capable of text-generation from https://huggingface.co/models.
+
+To speed up inference, you can install flash-att
+`MAX_JOBS=8 uv pip install flash-attn --no-build-isolation`.
+Note that some models may not support flash-attn.
+If the model flash-attn is not automatically disabled for these models, pass the flag `--no-flash-attn`.
+
 
 ## Benchmarking
 
