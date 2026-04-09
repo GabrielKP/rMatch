@@ -347,11 +347,30 @@ def main() -> None:
         help="Track carbon emissions with CodeCarbon (output beside recall).",
     )
     parser.add_argument(
+        "--prompt",
+        type=str,
+        choices=[
+            "primary",
+            "primary_no_story",
+            "primary_no_cot",
+            "primary_no_story_no_cot",
+            "secondary",
+        ],
+        default=None,
+        help="[anthropic, openai, huggingface] Prompt type. Default is 'primary'.",
+    )
+    parser.add_argument(
         "-f",
         "--overwrite",
         action="store_true",
         default=False,
         help="Overwrite existing output file.",
+    )
+    parser.add_argument(
+        "--no-flash-attn",
+        action="store_true",
+        default=False,
+        help="[huggingface] Disable flash-attn for the model.",
     )
 
     args = parser.parse_args()
@@ -373,7 +392,9 @@ def main() -> None:
         max_new_tokens=args.max_new_tokens,
         verbose_errors=args.verbose_errors,
         track_emissions=args.track_emissions,
+        prompt=args.prompt,
         overwrite=args.overwrite,
+        no_flash_attn=args.no_flash_attn,
     )
 
 

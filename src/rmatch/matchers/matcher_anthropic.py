@@ -5,7 +5,7 @@ from tqdm import tqdm
 
 from rmatch import ENV, get_logger
 from rmatch.matchers.matcher import Matcher
-from rmatch.prompt import prompt_default
+from rmatch.prompt import get_prompt_and_parser
 
 log = get_logger(__name__)
 
@@ -24,10 +24,13 @@ class MatcherAnthropic(Matcher, matcher_name="anthropic"):
         window_size: int = 5,
         dry_run: bool = False,
         api_key: str | None = None,
+        prompt: str | None = None,
         # required for initialization
         matcher_name: str | None = None,
     ):
+        super().__init__()
         self.matcher_name = "anthropic"
+        self.prompt = prompt
 
         if model_name is None:
             self.model_name = "claude-opus-4-6"
@@ -117,8 +120,12 @@ class MatcherAnthropic(Matcher, matcher_name="anthropic"):
         ):
             parsed_response: set[int] = set()
             for attempt in range(1, max_retries + 1):
-                prompt, parser = prompt_default(
-                    story_segments, recall_segments, idx, self.window_size
+                prompt, parser = get_prompt_and_parser(
+                    story_segments,
+                    recall_segments,
+                    idx,
+                    self.window_size,
+                    prompt=self.prompt,
                 )
 
                 if self.dry_run:
@@ -146,7 +153,9 @@ class MatcherAnthropic(Matcher, matcher_name="anthropic"):
                     self.usage_metrics["cost"] += self._calculate_cost(
                         in_tokens, out_tokens
                     )
-                    parsed_response_ = parser(response.content[0].text)  # type: ignore
+                    raw_text = response.content[0].text  # type: ignore
+                    self._append_prompt_response(prompt, raw_text)
+                    parsed_response_ = parser(raw_text)
                     if parsed_response_ is not None:
                         parsed_response = parsed_response_
                         break

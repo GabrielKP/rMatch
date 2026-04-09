@@ -175,17 +175,32 @@ def accuracy(array_1: np.ndarray, array_2: np.ndarray) -> float:
     return np.sum(array_1 == array_2) / len(array_1)
 
 
+def save_matcher_prompt_response_raw(matcher: Matcher, output_dir: Path) -> None:
+    """Write prompt/response log to ``output_dir / raw`` as paired .txt files."""
+    pairs = matcher.prompt_response_log
+    if not pairs:
+        return
+    raw_dir = output_dir / "raw"
+    raw_dir.mkdir(parents=True, exist_ok=True)
+    for i, (prompt, response) in enumerate(pairs):
+        stem = f"{i:06d}"
+        prompt_and_reponse = f"PROMPT:\n{prompt}\n\nRESPONSE:\n{response}"
+        (raw_dir / f"{stem}.txt").write_text(prompt_and_reponse, encoding="utf-8")
+    console.print(f"Saved {len(pairs)} prompt/response pair(s) to {raw_dir}")
+
+
 def evaluate(
     testset: str,
     benchmark_root: Path,
     matcher_name: str,
     track_emissions: bool = False,
     dry_run: bool = False,
+    save_raw_prompts: bool = False,
     **kwargs,
 ):
     """Evaluate given matcher on testset."""
     matcher_kwargs = {k: v for k, v in kwargs.items() if v is not None}
-    matcher = Matcher(matcher_name=matcher_name, **matcher_kwargs)
+    matcher = Matcher(matcher_name=matcher_name, **matcher_kwargs)  # type: ignore[call-arg]
     if hasattr(matcher, "model_name"):
         model_name = matcher.model_name  # type: ignore
     else:
@@ -345,6 +360,9 @@ def evaluate(
     with open(recall_matrices_comparison_path, "wb") as f:
         pickle.dump(recall_matrices_comparison, f)
 
+    if save_raw_prompts and not dry_run:
+        save_matcher_prompt_response_raw(matcher, output_dir)
+
 
 def get_average_pairwise_f1(
     recall_matrices_dct: dict[str, list[np.ndarray]],
@@ -396,12 +414,13 @@ def evaluate_repeat_reliability(
     matcher_name: str,
     dry_run: bool = False,
     track_emissions: bool = False,
+    save_raw_prompts: bool = False,
     **kwargs,
 ):
     """Evaluate the repeat reliability of the matcher."""
 
     matcher_kwargs = {k: v for k, v in kwargs.items() if v is not None}
-    matcher = Matcher(matcher_name=matcher_name, **matcher_kwargs)
+    matcher = Matcher(matcher_name=matcher_name, **matcher_kwargs)  # type: ignore[call-arg]
     if hasattr(matcher, "model_name"):
         model_name = matcher.model_name  # type: ignore
     else:
@@ -587,6 +606,9 @@ def evaluate_repeat_reliability(
     with open(recall_matrices_comparison_path, "wb") as f:
         pickle.dump(recall_matrices_comparison_dct, f)
 
+    if save_raw_prompts and not dry_run:
+        save_matcher_prompt_response_raw(matcher, output_dir)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -702,6 +724,34 @@ if __name__ == "__main__":
         default=None,
         help="Track carbon emissions with CodeCarbon during evaluation.",
     )
+    parser.add_argument(
+        "--no-save-raw-prompts",
+        action="store_true",
+        default=False,
+        help=(
+            "After evaluation, write prompt/response pairs under "
+            "data/eval/<run>/raw/ (skipped with --dry-run)."
+        ),
+    )
+    parser.add_argument(
+        "--no-flash-attn",
+        action="store_true",
+        default=False,
+        help="[huggingface] Disable flash-attn for the model.",
+    )
+    parser.add_argument(
+        "--prompt",
+        type=str,
+        choices=[
+            "primary",
+            "primary_no_story",
+            "primary_no_cot",
+            "primary_no_story_no_cot",
+            "secondary",
+        ],
+        default=None,
+        help="[anthropic, openai, huggingface] Prompt type. Default is 'primary'.",
+    )
     args = parser.parse_args()
     benchmark_root = args.benchmark_root or default_benchmark_root()
 
@@ -719,7 +769,10 @@ if __name__ == "__main__":
             quantization=args.quantization,
             batch_size=args.batch_size,
             max_new_tokens=args.max_new_tokens,
+            prompt=args.prompt,
             track_emissions=args.track_emissions,
+            save_raw_prompts=not args.no_save_raw_prompts,
+            no_flash_attn=args.no_flash_attn,
         )
     else:
         evaluate(
@@ -734,5 +787,8 @@ if __name__ == "__main__":
             quantization=args.quantization,
             batch_size=args.batch_size,
             max_new_tokens=args.max_new_tokens,
+            prompt=args.prompt,
             track_emissions=args.track_emissions,
+            save_raw_prompts=not args.no_save_raw_prompts,
+            no_flash_attn=args.no_flash_attn,
         )

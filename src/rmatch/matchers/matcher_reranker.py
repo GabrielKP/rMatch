@@ -1,4 +1,3 @@
-import numpy as np
 import torch
 from sentence_transformers import CrossEncoder
 from tqdm import tqdm
@@ -19,6 +18,7 @@ class MatcherReranker(Matcher, matcher_name="reranker"):
         # required for initialization
         matcher_name: str | None = None,
     ):
+        super().__init__()
         self.matcher_name = "reranker"
 
         if model_name is None:

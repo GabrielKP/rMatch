@@ -6,9 +6,74 @@ from transformers import BitsAndBytesConfig, pipeline
 
 from rmatch import ENV, get_logger
 from rmatch.matchers.matcher import Matcher
-from rmatch.prompt import prompt_default
+from rmatch.prompt import get_prompt_and_parser
 
 log = get_logger(__name__)
+
+
+FLASH_ATTN_INCOMPATIBLE: list[str] = [
+    "gemma-4",
+]
+
+
+def _flash_attention_2_available() -> bool:
+    """
+    Conservative runtime check for FlashAttention2 support.
+
+    Returns True only if:
+    - CUDA is available
+    - GPU is Ampere+ (SM80+)
+    - `flash_attn` imports successfully
+    """
+
+    if not torch.cuda.is_available():
+        return False
+
+    try:
+        major, minor = torch.cuda.get_device_capability()
+    except Exception:
+        return False
+
+    if (major, minor) < (8, 0):
+        return False
+
+    try:
+        import flash_attn  # noqa: F401
+    except Exception:
+        return False
+
+    return True
+
+
+def _pick_attn_implementation(
+    *, quantization: str | None, no_flash_attn: bool, model_name: str
+) -> str:
+    """
+    Pick a Transformers `attn_implementation` string.
+
+    Preference order:
+    - bitsandbytes quantization: sdpa (most broadly compatible)
+    - CUDA + FlashAttention2 available: flash_attention_2
+    - CUDA/MPS: sdpa
+    - CPU: eager
+    """
+
+    if quantization in {"4bit", "8bit"}:
+        return "sdpa"
+
+    if (
+        not no_flash_attn
+        and not any(
+            [incompatible in model_name for incompatible in FLASH_ATTN_INCOMPATIBLE]
+        )
+        and _flash_attention_2_available()
+    ):
+        return "flash_attention_2"
+
+    if torch.cuda.is_available() or torch.backends.mps.is_available():
+        return "sdpa"
+
+    return "eager"
 
 
 class MatcherHuggingFace(Matcher, matcher_name="huggingface"):
@@ -21,17 +86,21 @@ class MatcherHuggingFace(Matcher, matcher_name="huggingface"):
         batch_size: int = 4,
         max_new_tokens: int = 64,
         api_key: str | None = None,
+        prompt: str | None = None,
+        no_flash_attn: bool = False,
         # required for initialization
         matcher_name: str | None = None,
     ):
+        super().__init__()
         self.matcher_name = "huggingface"
+        self.prompt = prompt
 
         assert window_size >= 0, "window_size must be non-negative"
         self.window_size = window_size
         self.verbose_errors = verbose_errors
 
         if model_name is None:
-            self.model_name = "meta-llama/Llama-3.2-1B-Instruct"
+            self.model_name = "google/gemma-4-E2B-it"
             log.info(f"Initializing model to default: {self.model_name}")
         else:
             self.model_name = model_name
@@ -54,25 +123,24 @@ class MatcherHuggingFace(Matcher, matcher_name="huggingface"):
                 bnb_4bit_use_double_quant=True,
             )
             torch_dtype = torch.bfloat16
-            attn_impl = "sdpa"
         elif quantization == "8bit":
             log.info("Using 8-bit quantization")
             model_kwargs["quantization_config"] = BitsAndBytesConfig(
                 load_in_8bit=True,
             )
             torch_dtype = torch.bfloat16
-            attn_impl = "sdpa"
         elif torch.cuda.is_available():
             torch_dtype = torch.bfloat16
-            attn_impl = "sdpa"
         elif torch.backends.mps.is_available():
             torch_dtype = torch.float32
-            attn_impl = "sdpa"
         else:
             torch_dtype = torch.float32
-            attn_impl = "eager"
 
-        model_kwargs["attn_implementation"] = attn_impl
+        model_kwargs["attn_implementation"] = _pick_attn_implementation(
+            quantization=quantization,
+            no_flash_attn=no_flash_attn,
+            model_name=self.model_name,
+        )
 
         self.pipe = pipeline(
             task="text-generation",
@@ -92,7 +160,9 @@ class MatcherHuggingFace(Matcher, matcher_name="huggingface"):
                     "skipping torch.compile"
                 )
             else:
-                self.pipe.model = torch.compile(self.pipe.model, mode="reduce-overhead")
+                self.pipe.model = torch.compile(  # type: ignore[assignment]
+                    self.pipe.model, mode="reduce-overhead"
+                )
 
         self.batch_size = batch_size
         self.max_new_tokens = max_new_tokens
@@ -115,8 +185,12 @@ class MatcherHuggingFace(Matcher, matcher_name="huggingface"):
 
         prompts: list[list[dict[str, str]]] = []
         for idx in range(len(recall_segments)):
-            prompt, parser = prompt_default(
-                story_segments, recall_segments, idx, self.window_size
+            prompt, parser = get_prompt_and_parser(
+                story_segments,
+                recall_segments,
+                idx,
+                self.window_size,
+                prompt=self.prompt,
             )
             prompts.append([{"role": "user", "content": prompt}])
 
@@ -144,7 +218,9 @@ class MatcherHuggingFace(Matcher, matcher_name="huggingface"):
                 position=1,
                 leave=False,
             ):
-                parsed = parser(response[0]["generated_text"])  # type: ignore
+                gen_text = str(response[0]["generated_text"])  # type: ignore[index]
+                self._append_prompt_response(prompts[idx][0]["content"], gen_text)
+                parsed = parser(gen_text)  # type: ignore
 
                 if parsed is not None and all(
                     1 <= i <= n_story_segments for i in parsed
