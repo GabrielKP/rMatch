@@ -1,10 +1,18 @@
 import argparse
+import datetime as dt
 import json
 from pathlib import Path
 
 from rmatch import console
 from rmatch.matchers import Matcher
-from rmatch.utils import get_logger, get_param_str, save_to_json
+from rmatch.utils import (
+    atomic_write_json,
+    get_logger,
+    get_param_str,
+    install_sigterm_as_keyboard_interrupt,
+    save_to_json,
+    serialize_match_output_dict,
+)
 
 log = get_logger(__name__)
 
@@ -230,13 +238,45 @@ def run_matching(
         )
         tracker.start()
 
+    checkpoint_path = out_dir / f"{param_str}.checkpoint.json"
+    install_sigterm_as_keyboard_interrupt()
+
+    def _save_match_checkpoint(
+        matches_dict_local: dict[str, list[tuple[int, list[int]]]],
+        *,
+        reason: str | None = None,
+    ) -> None:
+        ts = dt.datetime.now(dt.timezone.utc).isoformat()
+        checkpoint_data = {
+            **output_dict,
+            "matches": matches_dict_local,
+            "checkpoint": True,
+            "progress": {
+                "subjects_total": len(subs_and_recall_segments_list),
+                "subjects_done": len(matches_dict_local),
+                "subject_ids_done": list(matches_dict_local.keys()),
+                "timestamp": ts,
+                **({"reason": reason} if reason else {}),
+            },
+        }
+        serialized = serialize_match_output_dict(checkpoint_data)
+        atomic_write_json(checkpoint_path, serialized, indent=2)
+        log.info("Saved checkpoint to %s", checkpoint_path)
+
+    matches_dict: dict[str, list[tuple[int, list[int]]]] = {}
     try:
-        matches_dict: dict[str, list[tuple[int, list[int]]]] = {}
         for sub_id, recall_segments in subs_and_recall_segments_list:
             matches = matcher.match(
                 story_segments=story_segments, recall_segments=recall_segments
             )
             matches_dict[sub_id] = matches
+            _save_match_checkpoint(matches_dict)
+    except KeyboardInterrupt:
+        _save_match_checkpoint(matches_dict, reason="KeyboardInterrupt")
+        console.print(
+            f"[yellow]Interrupted; checkpoint written to[/yellow] {checkpoint_path}"
+        )
+        raise
     finally:
         if tracker is not None:
             emissions_kg = tracker.stop()
@@ -299,7 +339,7 @@ def main() -> None:
         "--device",
         type=str,
         default=None,
-        help="[reranker] Device for model (default: auto).",
+        help="[reranker, huggingface] Device for model (default: auto).",
     )
     parser.add_argument(
         "--threshold",

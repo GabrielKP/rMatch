@@ -1,12 +1,76 @@
 import json
+import os
+import pickle
+import signal
 from copy import deepcopy
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 
 from rmatch import get_logger
 
 log = get_logger(__name__)
+
+
+def atomic_write_text(path: Path, text: str, encoding: str = "utf-8") -> None:
+    """Write text to ``path`` atomically (temp file then replace)."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.parent / f".{path.name}.{os.getpid()}.tmp"
+    try:
+        tmp.write_text(text, encoding=encoding)
+        tmp.replace(path)
+    finally:
+        if tmp.exists():
+            try:
+                tmp.unlink()
+            except OSError:
+                pass
+
+
+def atomic_write_json(
+    path: Path, obj: Any, *, indent: int | None = None, default: Any = None
+) -> None:
+    """Serialize ``obj`` to JSON and write atomically."""
+    if default is None:
+
+        def default_fn(o: Any) -> Any:
+            if isinstance(o, np.generic):
+                return o.item()
+            raise TypeError(
+                f"Object of type {type(o).__name__} is not JSON serializable"
+            )
+
+    else:
+        default_fn = default  # type: ignore[assignment]
+
+    text = json.dumps(obj, indent=indent, default=default_fn) + "\n"
+    atomic_write_text(path, text)
+
+
+def atomic_write_pickle(path: Path, obj: Any) -> None:
+    """Pickle ``obj`` to ``path`` atomically."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.parent / f".{path.name}.{os.getpid()}.tmp"
+    try:
+        with open(tmp, "wb") as f:
+            pickle.dump(obj, f, protocol=pickle.HIGHEST_PROTOCOL)
+        tmp.replace(path)
+    finally:
+        if tmp.exists():
+            try:
+                tmp.unlink()
+            except OSError:
+                pass
+
+
+def install_sigterm_as_keyboard_interrupt() -> None:
+    """Map SIGTERM to :class:`KeyboardInterrupt` so checkpoint handlers can reuse it."""
+
+    def _handler(signum: int, frame: Any) -> None:
+        raise KeyboardInterrupt()
+
+    signal.signal(signal.SIGTERM, _handler)
 
 
 def get_param_str(config_dict: dict) -> str:
@@ -42,8 +106,8 @@ def ratings_single_sub_to_matrix(
     return recall_matrix
 
 
-def save_to_json(out_path: Path, output_dict: dict):
-    """Sanitize and save the output dict to a json file."""
+def serialize_match_output_dict(output_dict: dict) -> dict:
+    """Return a deep copy of ``output_dict`` with matches safe for JSON."""
 
     output_dict = deepcopy(output_dict)
 
@@ -65,9 +129,14 @@ def save_to_json(out_path: Path, output_dict: dict):
             )
     output_dict["matches"] = matches_converted
 
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    with open(out_path, "w") as f_out:
-        f_out.write(json.dumps(output_dict) + "\n")
+    return output_dict
+
+
+def save_to_json(out_path: Path, output_dict: dict):
+    """Sanitize and save the output dict to a json file."""
+
+    serialized = serialize_match_output_dict(output_dict)
+    atomic_write_json(out_path, serialized)
     log.info(f"Saved matches to {out_path}")
 
     return out_path

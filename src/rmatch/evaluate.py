@@ -16,7 +16,12 @@ from tqdm import tqdm
 
 from rmatch import ENV, console
 from rmatch.matchers.matcher import Matcher
-from rmatch.utils import ratings_single_sub_to_matrix
+from rmatch.utils import (
+    atomic_write_json,
+    atomic_write_pickle,
+    install_sigterm_as_keyboard_interrupt,
+    ratings_single_sub_to_matrix,
+)
 
 # transcript stem, recall JSON stem (without .json), matches filename
 _SEGMENTS: dict[str, tuple[str, str, str]] = {
@@ -238,6 +243,51 @@ def evaluate(
     accuracies = list()
     recall_matrices_model: list[np.ndarray] = list()
     recall_matrices_comparison: list[np.ndarray] = list()
+    n_skipped = 0
+    last_story_name: str | None = None
+    last_sub_id: str | None = None
+
+    install_sigterm_as_keyboard_interrupt()
+
+    def _save_eval_checkpoint(*, reason: str | None = None) -> None:
+        output_dir.mkdir(parents=True, exist_ok=True)
+        checkpoint_path = output_dir / "checkpoint.json"
+
+        def _pearson_json(x: float) -> float | None:
+            xf = float(x)
+            if np.isnan(xf):
+                return None
+            return xf
+
+        body: dict = {
+            "checkpoint": True,
+            "testset": testset,
+            "matcher_name": matcher_name,
+            "model_name": model_name,
+            **{k: v for k, v in kwargs.items()},
+            "progress": {
+                "total_items": len(story_recall_segments),
+                "evaluated_count": len(precisions),
+                "skipped_all_zero_count": n_skipped,
+                "last_story_name": last_story_name,
+                "last_sub_id": last_sub_id,
+                "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                **({"reason": reason} if reason is not None else {}),
+            },
+            "precisions": [float(x) for x in precisions],
+            "recalls": [float(x) for x in recalls],
+            "pearsonrs": [_pearson_json(x) for x in pearsonrs],
+            "accuracies": [float(x) for x in accuracies],
+        }
+        if matcher.get_usage() is not None:
+            body["usage"] = matcher.get_usage()
+        atomic_write_json(checkpoint_path, body, indent=2, default=str)
+
+        part_model = output_dir / "recall_matrices_model.partial.pkl"
+        part_comp = output_dir / f"recall_matrices_{testset}.partial.pkl"
+        atomic_write_pickle(part_model, recall_matrices_model)
+        atomic_write_pickle(part_comp, recall_matrices_comparison)
+
     try:
         for (
             story_name,
@@ -252,6 +302,7 @@ def evaluate(
                 console.print(
                     f"Skipping {story_name=} {sub_id=} : comparison matrix is all zero"
                 )
+                n_skipped += 1
                 continue
 
             # b) get model ratings
@@ -285,6 +336,15 @@ def evaluate(
             recalls.append(recall)
             pearsonrs.append(pearsonr_score)
             accuracies.append(accuracy_score)
+            last_story_name = story_name
+            last_sub_id = sub_id
+            _save_eval_checkpoint()
+    except KeyboardInterrupt:
+        _save_eval_checkpoint(reason="KeyboardInterrupt")
+        console.print(
+            f"[yellow]Interrupted; checkpoint written under[/yellow] {output_dir}"
+        )
+        raise
     finally:
         if tracker is not None:
             emissions_kg = tracker.stop()
@@ -408,7 +468,7 @@ def get_krippendorff_alpha(recall_matrices_dct: dict[str, list[np.ndarray]]) -> 
 
 
 def evaluate_repeat_reliability(
-    n_repeats: int,
+    n_repeats: int | None,
     testset: str,
     benchmark_root: Path,
     matcher_name: str,
@@ -418,6 +478,9 @@ def evaluate_repeat_reliability(
     **kwargs,
 ):
     """Evaluate the repeat reliability of the matcher."""
+
+    if n_repeats is None:
+        n_repeats = 5
 
     matcher_kwargs = {k: v for k, v in kwargs.items() if v is not None}
     matcher = Matcher(matcher_name=matcher_name, **matcher_kwargs)  # type: ignore[call-arg]
@@ -458,6 +521,51 @@ def evaluate_repeat_reliability(
     f1s: dict[str, list] = defaultdict(list)
     recall_matrices_model_dct: dict[str, list[np.ndarray]] = defaultdict(list)
     recall_matrices_comparison_dct: dict[str, np.ndarray] = dict()
+    last_recall_id: str | None = None
+    last_repeat_index: int | None = None
+
+    install_sigterm_as_keyboard_interrupt()
+
+    def _save_rr_checkpoint(*, reason: str | None = None) -> None:
+        output_dir.mkdir(parents=True, exist_ok=True)
+        checkpoint_path = output_dir / "checkpoint.json"
+
+        def _pearson_json(x: float) -> float | None:
+            xf = float(x)
+            if np.isnan(xf):
+                return None
+            return xf
+
+        body: dict = {
+            "checkpoint": True,
+            "testset": testset,
+            "matcher_name": matcher_name,
+            "model_name": model_name,
+            **{k: v for k, v in kwargs.items()},
+            "n_repeats": n_repeats,
+            "progress": {
+                "recall_ids_total": len(story_recall_segments),
+                "last_recall_id": last_recall_id,
+                "last_completed_repeat_index": last_repeat_index,
+                "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                **({"reason": reason} if reason is not None else {}),
+            },
+            "f1s": {k: [float(x) for x in v] for k, v in f1s.items()},
+            "precisions": {k: [float(x) for x in v] for k, v in precisions.items()},
+            "recalls": {k: [float(x) for x in v] for k, v in recalls.items()},
+            "pearsonrs": {
+                k: [_pearson_json(x) for x in v] for k, v in pearsonrs.items()
+            },
+        }
+        if matcher.get_usage() is not None:
+            body["usage"] = matcher.get_usage()
+        atomic_write_json(checkpoint_path, body, indent=2, default=str)
+
+        part_model = output_dir / "recall_matrices_model_dct.partial.pkl"
+        part_comp = output_dir / f"recall_matrices_{testset}_dct.partial.pkl"
+        atomic_write_pickle(part_model, dict(recall_matrices_model_dct))
+        atomic_write_pickle(part_comp, dict(recall_matrices_comparison_dct))
+
     try:
         for (
             story_name,
@@ -478,7 +586,7 @@ def evaluate_repeat_reliability(
                 )
 
             # b) get model ratings
-            for _ in range(n_repeats):
+            for repeat_i in range(n_repeats):
                 matches = matcher.match(
                     story_segments=story_segments,
                     recall_segments=recall_segments,
@@ -508,6 +616,15 @@ def evaluate_repeat_reliability(
                 denom = precision + recall
                 f1 = (2 * precision * recall) / denom if denom != 0 else 0.0
                 f1s[recall_id].append(f1)
+                last_recall_id = recall_id
+                last_repeat_index = repeat_i
+                _save_rr_checkpoint()
+    except KeyboardInterrupt:
+        _save_rr_checkpoint(reason="KeyboardInterrupt")
+        console.print(
+            f"[yellow]Interrupted; checkpoint written under[/yellow] {output_dir}"
+        )
+        raise
     finally:
         if tracker is not None:
             emissions_kg = tracker.stop()
