@@ -1,0 +1,67 @@
+name: Publish to PyPI
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      contents: read
+      id-token: write # trusted publishing
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check if this version is already on PyPI
+        id: version
+        run: |
+          python <<'PY'
+          import json
+          import os
+          import re
+          import tomllib
+          import urllib.error
+          import urllib.request
+
+          def normalize_name(name: str) -> str:
+              return re.sub(r"[-_.]+", "-", name).lower()
+
+          with open("pyproject.toml", "rb") as f:
+              cfg = tomllib.load(f)
+          project = cfg["project"]
+          local_version = project["version"]
+          pypi_name = normalize_name(project["name"])
+
+          should_publish = "true"
+          url = f"https://pypi.org/pypi/{pypi_name}/json"
+          try:
+              with urllib.request.urlopen(url, timeout=30) as resp:
+                  data = json.load(resp)
+              if local_version in data.get("releases", {}):
+                  should_publish = "false"
+          except urllib.error.HTTPError as e:
+              if e.code != 404:
+                  raise
+
+          out = os.environ["GITHUB_OUTPUT"]
+          with open(out, "a", encoding="utf-8") as fh:
+              fh.write(f"should_publish={should_publish}\n")
+              fh.write(f"version={local_version}\n")
+              fh.write(f"pypi_name={pypi_name}\n")
+          print(f"{pypi_name} {local_version}: publish={should_publish}")
+          PY
+
+      - name: Report skip
+        if: steps.version.outputs.should_publish != 'true'
+        run: echo "Version ${{ steps.version.outputs.version }} is already on PyPI; skipping upload."
+
+      - uses: astral-sh/setup-uv@v4
+        if: steps.version.outputs.should_publish == 'true'
+
+      - run: uv build
+        if: steps.version.outputs.should_publish == 'true'
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        if: steps.version.outputs.should_publish == 'true'
