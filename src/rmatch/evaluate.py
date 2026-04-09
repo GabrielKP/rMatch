@@ -198,7 +198,6 @@ def evaluate(
     matcher_name: str,
     track_emissions: bool = False,
     dry_run: bool = False,
-    save_raw_prompts: bool = False,
     **kwargs,
 ):
     """Evaluate given matcher on testset."""
@@ -416,7 +415,7 @@ def evaluate(
     with open(recall_matrices_comparison_path, "wb") as f:
         pickle.dump(recall_matrices_comparison, f)
 
-    if save_raw_prompts and not dry_run:
+    if not dry_run:
         save_matcher_prompt_response_raw(matcher, output_dir)
 
 
@@ -470,7 +469,6 @@ def evaluate_repeat_reliability(
     matcher_name: str,
     dry_run: bool = False,
     track_emissions: bool = False,
-    save_raw_prompts: bool = False,
     **kwargs,
 ):
     """Evaluate the repeat reliability of the matcher."""
@@ -717,7 +715,7 @@ def evaluate_repeat_reliability(
     with open(recall_matrices_comparison_path, "wb") as f:
         pickle.dump(recall_matrices_comparison_dct, f)
 
-    if save_raw_prompts and not dry_run:
+    if not dry_run:
         save_matcher_prompt_response_raw(matcher, output_dir)
 
 
@@ -836,15 +834,6 @@ if __name__ == "__main__":
         help="Track carbon emissions with CodeCarbon during evaluation.",
     )
     parser.add_argument(
-        "--no-save-raw-prompts",
-        action="store_true",
-        default=False,
-        help=(
-            "After evaluation, write prompt/response pairs under "
-            "data/eval/<run>/raw/ (skipped with --dry-run)."
-        ),
-    )
-    parser.add_argument(
         "--no-flash-attn",
         action="store_true",
         default=False,
@@ -882,7 +871,6 @@ if __name__ == "__main__":
             max_new_tokens=args.max_new_tokens,
             prompt=args.prompt,
             track_emissions=args.track_emissions,
-            save_raw_prompts=not args.no_save_raw_prompts,
             no_flash_attn=args.no_flash_attn,
         )
     else:
@@ -900,6 +888,5 @@ if __name__ == "__main__":
             max_new_tokens=args.max_new_tokens,
             prompt=args.prompt,
             track_emissions=args.track_emissions,
-            save_raw_prompts=not args.no_save_raw_prompts,
             no_flash_attn=args.no_flash_attn,
         )
