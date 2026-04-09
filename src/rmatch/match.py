@@ -347,11 +347,17 @@ def main() -> None:
         help="Track carbon emissions with CodeCarbon (output beside recall).",
     )
     parser.add_argument(
-        "--prompt-type",
+        "--prompt",
         type=str,
-        choices=["default", "alternative"],
+        choices=[
+            "primary",
+            "primary_no_story",
+            "primary_no_cot",
+            "primary_no_story_no_cot",
+            "secondary",
+        ],
         default=None,
-        help="[anthropic, openai, huggingface] Prompt type. Default is 'default'.",
+        help="[anthropic, openai, huggingface] Prompt type. Default is 'primary'.",
     )
     parser.add_argument(
         "-f",
@@ -386,7 +392,7 @@ def main() -> None:
         max_new_tokens=args.max_new_tokens,
         verbose_errors=args.verbose_errors,
         track_emissions=args.track_emissions,
-        prompt_type=args.prompt_type,
+        prompt=args.prompt,
         overwrite=args.overwrite,
         no_flash_attn=args.no_flash_attn,
     )

@@ -23,13 +23,13 @@ class MatcherOpenAI(Matcher, matcher_name="openai"):
         window_size: int = 5,
         dry_run: bool = False,
         api_key: str | None = None,
-        prompt_type: str | None = None,
+        prompt: str | None = None,
         # required for initialization
         matcher_name: str | None = None,
     ):
         super().__init__()
         self.matcher_name = "openai"
-        self.prompt_type = prompt_type
+        self.prompt = prompt
 
         if model_name is None:
             self.model_name = "gpt-4.1"
@@ -100,7 +100,7 @@ class MatcherOpenAI(Matcher, matcher_name="openai"):
                     recall_segments,
                     idx,
                     self.window_size,
-                    prompt_type=self.prompt_type,
+                    prompt=self.prompt,
                 )
 
                 if self.dry_run:

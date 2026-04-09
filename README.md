@@ -179,6 +179,7 @@ rmatch STORY_FILE RECALL_FILE [options]
 #### LLM matcher options (anthropic, openai, huggingface)
 
 - **`--window-size`** *(int)* — Number of surrounding recall segments (before and after) to include as context for each target segment. Set to `0` to disable context. Default: `5`.
+- **`--prompt`** *(str)* — Prompt type. Default: `primary`. See [Prompts](#prompts).
 - **`--dry-run`** — *anthropic & openai only.* Estimate token usage and cost without making API calls.
 
 #### Self-hosted / HuggingFace options
@@ -218,6 +219,7 @@ matches  = matcher.match(story_segments, recall_segments)
 
 - **`model_name`** *(str)* — Override the default model. Applies to all matchers.
 - **`window_size`** *(int)* — Context window radius around the target recall segment. Default: `5`. Applies to: `anthropic`, `openai`, `huggingface`.
+- **`prompt_type`** *(str)* — Prompt type. Default: `"primary"`. Applies to: `anthropic`, `openai`, `huggingface`. See [Prompts](#prompts).
 - **`dry_run`** *(bool)* — Estimate cost without calling the API. Applies to: `anthropic`, `openai`.
 - **`api_key`** *(str)* — API key. Falls back to `.env`, then environment variables. Applies to: `anthropic`, `openai`, `huggingface`.
 - **`device`** *(str)* — PyTorch device string. Applies to: `reranker`.
@@ -262,3 +264,15 @@ results = run_matching(
 ```
 
 Loads story and recall files, runs matching for every subject, and saves a JSON results file. Returns the output dictionary.
+
+### Prompts
+
+All LLM matchers share the same set of prompt templates. The default is `primary`.
+
+| Prompt | Full story | Segmented story | Chain of thought | Notes |
+|---|---|---|---|---|
+| `primary` | yes | yes | yes | Default; most complete prompt. |
+| `primary_no_story` | no | yes | yes | Useful for long stories where the full text would exceed the context window. |
+| `primary_no_cot` | yes | yes | no | Ablation: removes chain-of-thought reasoning. |
+| `primary_no_story_no_cot` | no | yes | no | Ablation: minimal prompt with only segments and recall window. |
+| `secondary` | yes | yes | yes | Alternative prompt wording with XML-structured output. |

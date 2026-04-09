@@ -86,14 +86,14 @@ class MatcherHuggingFace(Matcher, matcher_name="huggingface"):
         batch_size: int = 4,
         max_new_tokens: int = 64,
         api_key: str | None = None,
-        prompt_type: str | None = None,
+        prompt: str | None = None,
         no_flash_attn: bool = False,
         # required for initialization
         matcher_name: str | None = None,
     ):
         super().__init__()
         self.matcher_name = "huggingface"
-        self.prompt_type = prompt_type
+        self.prompt = prompt
 
         assert window_size >= 0, "window_size must be non-negative"
         self.window_size = window_size
@@ -190,7 +190,7 @@ class MatcherHuggingFace(Matcher, matcher_name="huggingface"):
                 recall_segments,
                 idx,
                 self.window_size,
-                prompt_type=self.prompt_type,
+                prompt=self.prompt,
             )
             prompts.append([{"role": "user", "content": prompt}])
 
