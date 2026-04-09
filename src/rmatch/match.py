@@ -9,9 +9,6 @@ from rmatch.utils import (
     atomic_write_json,
     get_logger,
     get_param_str,
-    install_sigterm_as_keyboard_interrupt,
-    save_to_json,
-    serialize_match_output_dict,
 )
 
 log = get_logger(__name__)
@@ -239,7 +236,6 @@ def run_matching(
         tracker.start()
 
     checkpoint_path = out_dir / f"{param_str}.checkpoint.json"
-    install_sigterm_as_keyboard_interrupt()
 
     def _save_match_checkpoint(
         matches_dict_local: dict[str, list[tuple[int, list[int]]]],
@@ -259,8 +255,7 @@ def run_matching(
                 **({"reason": reason} if reason else {}),
             },
         }
-        serialized = serialize_match_output_dict(checkpoint_data)
-        atomic_write_json(checkpoint_path, serialized, indent=2)
+        atomic_write_json(checkpoint_path, checkpoint_data, indent=2)
         log.info("Saved checkpoint to %s", checkpoint_path)
 
     matches_dict: dict[str, list[tuple[int, list[int]]]] = {}
@@ -287,7 +282,8 @@ def run_matching(
     # add matches to output dict
     output_dict["matches"] = matches_dict
 
-    save_to_json(out_path, output_dict)
+    atomic_write_json(out_path, output_dict)
+    log.info(f"Saved matches to {out_path}")
     return output_dict
 
 

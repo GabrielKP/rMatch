@@ -1,8 +1,5 @@
 import json
 import os
-import pickle
-import signal
-from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
@@ -48,43 +45,12 @@ def atomic_write_json(
     atomic_write_text(path, text)
 
 
-def atomic_write_pickle(path: Path, obj: Any) -> None:
-    """Pickle ``obj`` to ``path`` atomically."""
-    path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.parent / f".{path.name}.{os.getpid()}.tmp"
-    try:
-        with open(tmp, "wb") as f:
-            pickle.dump(obj, f, protocol=pickle.HIGHEST_PROTOCOL)
-        tmp.replace(path)
-    finally:
-        if tmp.exists():
-            try:
-                tmp.unlink()
-            except OSError:
-                pass
-
-
-def install_sigterm_as_keyboard_interrupt() -> None:
-    """Map SIGTERM to :class:`KeyboardInterrupt` so checkpoint handlers can reuse it."""
-
-    def _handler(signum: int, frame: Any) -> None:
-        raise KeyboardInterrupt()
-
-    signal.signal(signal.SIGTERM, _handler)
-
-
 def get_param_str(config_dict: dict) -> str:
-    """Get the param string from the output dict."""
-
-    param_str_ls = list()
-    matcher_name = config_dict["matcher_name"]
-    param_str_ls.append(matcher_name)
-    recall_segmentation = config_dict["recall_segmentation"]
-    param_str_ls.append(recall_segmentation)
-    story_segmentation = config_dict["story_segmentation"]
-    param_str_ls.append(story_segmentation)
-
-    return "-".join(param_str_ls)
+    """Build a filename-safe param string from matcher + segmentation config."""
+    m = config_dict["matcher_name"]
+    r = config_dict["recall_segmentation"]
+    s = config_dict["story_segmentation"]
+    return f"{m}-{r}-{s}"
 
 
 def ratings_single_sub_to_matrix(
@@ -104,39 +70,3 @@ def ratings_single_sub_to_matrix(
         for idx_story_segment in story_segment_indices:
             recall_matrix[idx_story_segment, idx_recall_segment] = 1
     return recall_matrix
-
-
-def serialize_match_output_dict(output_dict: dict) -> dict:
-    """Return a deep copy of ``output_dict`` with matches safe for JSON."""
-
-    output_dict = deepcopy(output_dict)
-
-    # convert potential numpy values into python native values
-    # (json cannot handle numpy values)
-    matches_converted = dict()
-    for sub_id, single_sub_matches in output_dict["matches"].items():
-        matches_converted[sub_id] = list()
-        for recall_segment_id, story_segment_ids in single_sub_matches:
-            story_segment_ids_converted = list()
-            for story_segment_id in story_segment_ids:
-                if isinstance(story_segment_id, np.generic):
-                    story_segment_id = story_segment_id.item()
-
-                story_segment_ids_converted.append(story_segment_id)
-
-            matches_converted[sub_id].append(
-                (recall_segment_id, story_segment_ids_converted)
-            )
-    output_dict["matches"] = matches_converted
-
-    return output_dict
-
-
-def save_to_json(out_path: Path, output_dict: dict):
-    """Sanitize and save the output dict to a json file."""
-
-    serialized = serialize_match_output_dict(output_dict)
-    atomic_write_json(out_path, serialized)
-    log.info(f"Saved matches to {out_path}")
-
-    return out_path

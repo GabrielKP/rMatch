@@ -1,11 +1,11 @@
 import argparse
 import datetime
 import json
+import os
 import pickle
 from collections import defaultdict
 from itertools import combinations
 from pathlib import Path
-from typing import Literal
 
 import krippendorff
 import numpy as np
@@ -14,12 +14,10 @@ from scipy.stats import pearsonr
 from sklearn.metrics import f1_score, precision_score, recall_score
 from tqdm import tqdm
 
-from rmatch import ENV, console
+from rmatch import console
 from rmatch.matchers.matcher import Matcher
 from rmatch.utils import (
     atomic_write_json,
-    atomic_write_pickle,
-    install_sigterm_as_keyboard_interrupt,
     ratings_single_sub_to_matrix,
 )
 
@@ -42,7 +40,7 @@ _REPEAT_RELIABILITY_STORIES: dict[str, list[str]] = {
 
 
 def default_benchmark_root() -> Path:
-    env_path = ENV.get("BENCHMARK_ROOT")
+    env_path = os.environ.get("BENCHMARK_ROOT")
     if env_path is not None:
         return Path(env_path)
     # you can always try it...
@@ -247,8 +245,6 @@ def evaluate(
     last_story_name: str | None = None
     last_sub_id: str | None = None
 
-    install_sigterm_as_keyboard_interrupt()
-
     def _save_eval_checkpoint(*, reason: str | None = None) -> None:
         output_dir.mkdir(parents=True, exist_ok=True)
         checkpoint_path = output_dir / "checkpoint.json"
@@ -283,10 +279,10 @@ def evaluate(
             body["usage"] = matcher.get_usage()
         atomic_write_json(checkpoint_path, body, indent=2, default=str)
 
-        part_model = output_dir / "recall_matrices_model.partial.pkl"
-        part_comp = output_dir / f"recall_matrices_{testset}.partial.pkl"
-        atomic_write_pickle(part_model, recall_matrices_model)
-        atomic_write_pickle(part_comp, recall_matrices_comparison)
+        with open(output_dir / "recall_matrices_model.partial.pkl", "wb") as f:
+            pickle.dump(recall_matrices_model, f)
+        with open(output_dir / f"recall_matrices_{testset}.partial.pkl", "wb") as f:
+            pickle.dump(recall_matrices_comparison, f)
 
     try:
         for (
@@ -524,8 +520,6 @@ def evaluate_repeat_reliability(
     last_recall_id: str | None = None
     last_repeat_index: int | None = None
 
-    install_sigterm_as_keyboard_interrupt()
-
     def _save_rr_checkpoint(*, reason: str | None = None) -> None:
         output_dir.mkdir(parents=True, exist_ok=True)
         checkpoint_path = output_dir / "checkpoint.json"
@@ -561,10 +555,10 @@ def evaluate_repeat_reliability(
             body["usage"] = matcher.get_usage()
         atomic_write_json(checkpoint_path, body, indent=2, default=str)
 
-        part_model = output_dir / "recall_matrices_model_dct.partial.pkl"
-        part_comp = output_dir / f"recall_matrices_{testset}_dct.partial.pkl"
-        atomic_write_pickle(part_model, dict(recall_matrices_model_dct))
-        atomic_write_pickle(part_comp, dict(recall_matrices_comparison_dct))
+        with open(output_dir / "recall_matrices_model_dct.partial.pkl", "wb") as f:
+            pickle.dump(dict(recall_matrices_model_dct), f)
+        with open(output_dir / f"recall_matrices_{testset}_dct.partial.pkl", "wb") as f:
+            pickle.dump(dict(recall_matrices_comparison_dct), f)
 
     try:
         for (

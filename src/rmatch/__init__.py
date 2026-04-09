@@ -1,20 +1,27 @@
 import json
 import logging
-import os
+import signal
 from copy import deepcopy
 
-from dotenv import dotenv_values
+from dotenv import load_dotenv
 from rich.console import Console
 
-_dotenv = dotenv_values(".env")
-ENV: dict[str, str | None] = {
-    **os.environ,
-    **{k: v for k, v in _dotenv.items() if v is not None},
-}
+load_dotenv()
+
 FORMAT = "[%(levelname)s] %(name)s.%(funcName)s - %(message)s"
 
 logging.basicConfig(format=FORMAT)
 console = Console()
+
+
+def _sigterm_handler(_signum, _frame):
+    raise KeyboardInterrupt()
+
+
+try:
+    signal.signal(signal.SIGTERM, _sigterm_handler)
+except ValueError:
+    pass
 
 
 def get_logger(

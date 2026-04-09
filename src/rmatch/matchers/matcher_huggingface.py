@@ -1,10 +1,11 @@
+import os
 from typing import Literal
 
 import torch
 from tqdm import tqdm
 from transformers import BitsAndBytesConfig, pipeline
 
-from rmatch import ENV, get_logger
+from rmatch import get_logger
 from rmatch.matchers.matcher import Matcher
 from rmatch.prompt import get_prompt_and_parser
 
@@ -107,7 +108,7 @@ class MatcherHuggingFace(Matcher, matcher_name="huggingface"):
             log.info(f"Initializing model: {self.model_name}")
 
         if api_key is None:
-            api_key = ENV.get("HF_TOKEN")
+            api_key = os.environ.get("HF_TOKEN")
             if api_key is None:
                 raise ValueError("HF_TOKEN not found in .env or environment variables.")
 
