@@ -684,6 +684,70 @@ Return ONLY a set of numbers in angle brackets, for example:
     )
 
 
+def prompt_alternative_no_story_cot(
+    story_segments: list[str],
+    recall_segments: list[str],
+    target_idx: int,
+    window_size: int,
+    verbose_errors: bool = False,
+) -> tuple[str, Callable[[str], set[int] | None]]:
+    """Return prompt and parser."""
+
+    # 1. format story segments
+    story_segments_str = format_story_segments(story_segments)
+
+    # 2. build recall window
+    window_str = build_recall_window(
+        recall_segments, target_idx, window_size, start_marker=">>> ", end_marker=" <<<"
+    )
+
+    def _parse_output(raw: str) -> set[int] | None:
+        raw = raw.strip()
+
+        if "<NONE>" in raw:
+            return set()
+
+        match = re.search(r"<([0-9,\s]+)>", raw)
+        if not match:
+            if verbose_errors:
+                log.warning(f"failed to parse model output:\n{raw}")
+            return None
+
+        parsed_set = {
+            int(x.strip()) for x in match.group(1).split(",") if x.strip().isdigit()
+        }
+
+        return parsed_set
+
+    return (
+        f"""This is the original story broken down into the following independent pieces of information:
+{story_segments_str}
+
+Below is a window of consecutive clauses from a participant's recall.
+The TARGET clause is marked with >>> <<<.
+The other clauses are provided _only as context_.
+
+Recall window:
+{window_str}
+
+Which of the numbered information pieces are
+expressed by the >>> TARGET <<< clause?
+
+Use the surrounding clauses only to resolve references (e.g., pronouns),
+but DO NOT attribute information expressed only in neighboring clauses.
+If a numbered information piece is not explicitly expressed in the TARGET
+clause itself, do NOT include it.
+
+If none apply, return "<NONE>".
+
+First reason about the TARGET clause and which story elements it maps to.
+
+Return ONLY a set of numbers in angle brackets, for example:
+<3, 7, 12>""",
+        _parse_output,
+    )
+
+
 def get_prompt_and_parser(
     story_segments: list[str],
     recall_segments: list[str],
@@ -725,6 +789,10 @@ def get_prompt_and_parser(
         )
     elif prompt_type == "alternative_no_story":
         return prompt_alternative_no_story(
+            story_segments, recall_segments, target_idx, window_size, verbose_errors
+        )
+    elif prompt_type == "alternative_no_story_cot":
+        return prompt_alternative_no_story_cot(
             story_segments, recall_segments, target_idx, window_size, verbose_errors
         )
     else:
