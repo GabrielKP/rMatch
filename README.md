@@ -173,7 +173,6 @@ rmatch STORY_FILE RECALL_FILE [options]
 - **`RECALL_FILE`** *(positional, required)* — Path to a recall `.txt`/`.json` file or a directory of them.
 - **`-M`, `--matcher`** *(str)* — Which matcher backend to use. One of: `anthropic`, `openai`, `reranker`, `huggingface`. Default: `anthropic`.
 - **`-m`, `--model-name`** *(str)* — Override the matcher's default model (see defaults below).
-- **`--track-emissions`** — Enable [CodeCarbon](https://github.com/mlco2/codecarbon) carbon-emissions tracking. Results are saved beside the output file.
 - **`-f`, `--overwrite`** — Overwrite the output file if it already exists.
 
 #### LLM matcher options (anthropic, openai, huggingface)
@@ -254,7 +253,6 @@ results = run_matching(
     story_file,            # Path — story .txt or .json
     recall_file,           # Path — recall file or directory
     matcher_name,          # str  — "anthropic", "openai", "reranker", "huggingface"
-    track_emissions,       # bool — enable CodeCarbon tracking
     story_name=None,       # str | None — override auto-detected story name
     story_segmentation=None,   # str | None — override detected segmentation method
     recall_segmentation=None,  # str | None — override detected segmentation method

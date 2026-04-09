@@ -177,7 +177,6 @@ def run_matching(
     story_file: Path,
     recall_file: Path,
     matcher_name: str,
-    track_emissions: bool,
     story_name: str | None = None,
     story_segmentation: str | None = None,
     recall_segmentation: str | None = None,
@@ -226,7 +225,9 @@ def run_matching(
 
     # track emissions if requested
     tracker = None
+    track_emissions = matcher_name == "huggingface"
     if track_emissions:
+        console.print("[green]Tracking emissions.[/green]")
         from codecarbon import EmissionsTracker
 
         tracker = EmissionsTracker(
@@ -377,12 +378,6 @@ def main() -> None:
         help="[huggingface] Print verbose errors.",
     )
     parser.add_argument(
-        "--track-emissions",
-        action="store_true",
-        default=False,
-        help="Track carbon emissions with CodeCarbon (output beside recall).",
-    )
-    parser.add_argument(
         "--prompt",
         type=str,
         choices=[
@@ -427,7 +422,6 @@ def main() -> None:
         batch_size=args.batch_size,
         max_new_tokens=args.max_new_tokens,
         verbose_errors=args.verbose_errors,
-        track_emissions=args.track_emissions,
         prompt=args.prompt,
         overwrite=args.overwrite,
         no_flash_attn=args.no_flash_attn,

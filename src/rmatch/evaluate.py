@@ -196,7 +196,6 @@ def evaluate(
     testset: str,
     benchmark_root: Path,
     matcher_name: str,
-    track_emissions: bool = False,
     dry_run: bool = False,
     **kwargs,
 ):
@@ -227,12 +226,13 @@ def evaluate(
     )
 
     tracker = None
+    track_emissions = matcher_name == "huggingface"
     if track_emissions:
+        console.print("[green]Tracking emissions.[/green]")
         tracker = EmissionsTracker(
             project_name=f"rmatch-eval-{matcher_name}",
             output_dir=str(output_dir),
         )
-        tracker.start()
 
     precisions = list()
     recalls = list()
@@ -468,7 +468,6 @@ def evaluate_repeat_reliability(
     benchmark_root: Path,
     matcher_name: str,
     dry_run: bool = False,
-    track_emissions: bool = False,
     **kwargs,
 ):
     """Evaluate the repeat reliability of the matcher."""
@@ -502,7 +501,9 @@ def evaluate_repeat_reliability(
     )
 
     tracker = None
+    track_emissions = matcher_name == "huggingface"
     if track_emissions:
+        console.print("[green]Tracking emissions.[/green]")
         tracker = EmissionsTracker(
             project_name=f"rmatch-eval-rr-{matcher_name}",
             output_dir=str(output_dir),
@@ -828,12 +829,6 @@ if __name__ == "__main__":
         help="[huggingface] Print verbose errors.",
     )
     parser.add_argument(
-        "--track-emissions",
-        action="store_true",
-        default=None,
-        help="Track carbon emissions with CodeCarbon during evaluation.",
-    )
-    parser.add_argument(
         "--no-flash-attn",
         action="store_true",
         default=False,
@@ -870,7 +865,6 @@ if __name__ == "__main__":
             batch_size=args.batch_size,
             max_new_tokens=args.max_new_tokens,
             prompt=args.prompt,
-            track_emissions=args.track_emissions,
             no_flash_attn=args.no_flash_attn,
         )
     else:
@@ -887,6 +881,5 @@ if __name__ == "__main__":
             batch_size=args.batch_size,
             max_new_tokens=args.max_new_tokens,
             prompt=args.prompt,
-            track_emissions=args.track_emissions,
             no_flash_attn=args.no_flash_attn,
         )
