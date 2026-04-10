@@ -224,6 +224,29 @@ class TestMatcherOpenAIMatch:
         openai_matcher.match(STORY_SEGMENTS, RECALL_SEGMENTS, max_retries=3)
         assert len(openai_matcher.prompt_response_log) == len(RECALL_SEGMENTS)
 
+    def test_single_story_segment(self, openai_matcher, mock_openai_client):
+        mock_openai_client.responses.create.return_value = make_openai_response("<1>")
+        result = openai_matcher.match(["Only segment"], ["recall"], max_retries=3)
+        assert result == [(0, [0])]
+
+    def test_usage_metrics_updated(self, openai_matcher, mock_openai_client):
+        mock_openai_client.responses.create.return_value = make_openai_response(
+            "<1>", in_tokens=100, out_tokens=20
+        )
+        openai_matcher.match(STORY_SEGMENTS, ["recall"], max_retries=3)
+        usage = openai_matcher.get_usage()
+        assert usage["in_tokens"] == 100
+        assert usage["out_tokens"] == 20
+        assert usage["cost"] > 0
+
+    def test_recall_index_in_output_matches_position(
+        self, openai_matcher, mock_openai_client
+    ):
+        mock_openai_client.responses.create.return_value = make_openai_response("<1>")
+        result = openai_matcher.match(STORY_SEGMENTS, RECALL_SEGMENTS, max_retries=3)
+        for expected_idx, (actual_idx, _) in enumerate(result):
+            assert actual_idx == expected_idx
+
 
 # ── MatcherHuggingFace ────────────────────────────────────────────────────────
 
@@ -328,3 +351,51 @@ class TestMatcherHuggingFaceMatch:
         self._set_pipe_response(mock_hf_pipe, ["<1>", "<2>"])
         huggingface_matcher.match(STORY_SEGMENTS, RECALL_SEGMENTS, max_retries=3)
         assert len(huggingface_matcher.prompt_response_log) == len(RECALL_SEGMENTS)
+
+
+# ── Matcher factory ───────────────────────────────────────────────────────────
+
+
+class TestMatcherFactory:
+    """The public Python API entry point is Matcher(matcher_name=...).
+
+    All matcher fixtures bypass the factory and instantiate subclasses directly,
+    so breakage in Matcher.__new__ dispatch would go undetected without these tests.
+    """
+
+    def test_factory_returns_anthropic_instance(self):
+        with patch("anthropic.Anthropic"):
+            from rmatch.matchers import Matcher, MatcherAnthropic
+
+            m = Matcher(matcher_name="anthropic", api_key="test-key")
+        assert isinstance(m, MatcherAnthropic)
+
+    def test_factory_returns_openai_instance(self):
+        with patch("rmatch.matchers.matcher_openai.OpenAI"):
+            from rmatch.matchers import Matcher, MatcherOpenAI
+
+            m = Matcher(matcher_name="openai", api_key="test-key")
+        assert isinstance(m, MatcherOpenAI)
+
+    def test_factory_returns_huggingface_instance(self):
+        pipe = MagicMock()
+        pipe.tokenizer.pad_token_id = None
+        pipe.tokenizer.eos_token_id = 2
+        pipe.tokenizer.padding_side = "right"
+        with patch("rmatch.matchers.matcher_huggingface.pipeline", return_value=pipe):
+            from rmatch.matchers import Matcher, MatcherHuggingFace
+
+            m = Matcher(matcher_name="huggingface", api_key="test-hf-token")
+        assert isinstance(m, MatcherHuggingFace)
+
+    def test_factory_unknown_name_raises_value_error(self):
+        from rmatch.matchers import Matcher
+
+        with pytest.raises(ValueError, match="Unknown matcher"):
+            Matcher(matcher_name="nonexistent_backend")
+
+    def test_factory_missing_name_raises_type_error(self):
+        from rmatch.matchers import Matcher
+
+        with pytest.raises(TypeError, match="matcher_name"):
+            Matcher()
