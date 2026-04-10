@@ -51,7 +51,7 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          pytest tests/ \
+          uv run --no-sync pytest tests/ \
             --cov=src/rmatch \
             --cov-report=term-missing \
             --cov-report=xml \
