@@ -1,9 +1,16 @@
 .DS_Store
-.env
-outputs
-downloads
-data/cyoa
+
+.cursor
 .vscode
 __pycache__
+
+outputs
+downloads
 data
-.cursor
+.env
+.coverage
+htmlcov
+
+# cluster
+logs
+run_gpu*.sh

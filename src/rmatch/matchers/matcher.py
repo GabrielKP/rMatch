@@ -1,10 +1,16 @@
-from rmatch import get_logger
+from rmatch import get_logger, matchlist_type
 
 log = get_logger(__name__)
 
 
 class Matcher:
     _registry: dict[str, type["Matcher"]] = {}
+
+    def __init__(self, **kwargs) -> None:
+        self.prompt_response_log: list[tuple[str, str]] = []
+
+    def _append_prompt_response(self, prompt: str, response: str) -> None:
+        self.prompt_response_log.append((prompt, response))
 
     def __init_subclass__(cls, matcher_name: str | None = None, **kwargs):
         super().__init_subclass__(**kwargs)
@@ -48,8 +54,11 @@ class Matcher:
         self,
         story_segments: list[str],
         recall_segments: list[str],
-    ) -> list[tuple[int, list[int]]]:
+    ) -> matchlist_type:
         """Return each recall segment with its referenced story segments.
+
+        Implementations should call ``_append_prompt_response`` after each model
+        interaction (prompt and raw response text) for debugging and optional export.
 
         Parameters
         ----------
@@ -60,7 +69,7 @@ class Matcher:
 
         Returns
         -------
-        matches: list[tuple[int, list[int]]]
+        match_list: list[tuple[int, list[int]]]
             list of matches:
             [
                 (recall_segment_id_1, [story_segment_id_x, story_segment_id_y, ..]),

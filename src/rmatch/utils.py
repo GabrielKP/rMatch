@@ -1,30 +1,103 @@
 import json
-from copy import deepcopy
+import os
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 
-from rmatch import get_logger
+from rmatch import get_logger, matchlist_type
 
 log = get_logger(__name__)
 
 
+def atomic_write_text(path: Path, text: str, encoding: str = "utf-8") -> None:
+    """Write text to ``path`` atomically (temp file then replace)."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.parent / f".{path.name}.{os.getpid()}.tmp"
+    try:
+        tmp.write_text(text, encoding=encoding)
+        tmp.replace(path)
+    finally:
+        if tmp.exists():
+            try:
+                tmp.unlink()
+            except OSError:
+                pass
+
+
+def atomic_write_json(
+    path: Path, obj: Any, *, indent: int | None = None, default: Any = None
+) -> None:
+    """Serialize ``obj`` to JSON and write atomically."""
+    if default is None:
+
+        def default_fn(o: Any) -> Any:
+            if isinstance(o, np.generic):
+                return o.item()
+            raise TypeError(
+                f"Object of type {type(o).__name__} is not JSON serializable"
+            )
+
+    else:
+        default_fn = default  # type: ignore[assignment]
+
+    text = json.dumps(obj, indent=indent, default=default_fn) + "\n"
+    atomic_write_text(path, text)
+
+
 def get_param_str(config_dict: dict) -> str:
-    """Get the param string from the output dict."""
-
-    param_str_ls = list()
-    matcher_name = config_dict["matcher_name"]
-    param_str_ls.append(matcher_name)
-    recall_segmentation = config_dict["recall_segmentation"]
-    param_str_ls.append(recall_segmentation)
-    story_segmentation = config_dict["story_segmentation"]
-    param_str_ls.append(story_segmentation)
-
-    return "-".join(param_str_ls)
+    """Build a filename-safe param string from matcher + segmentation config."""
+    m = config_dict["matcher_name"]
+    r = config_dict["recall_segmentation"]
+    s = config_dict["story_segmentation"]
+    return f"{m}-{r}-{s}"
 
 
-def ratings_single_sub_to_matrix(
-    ratings_single_sub: list[tuple[int, list[int]]], n_story_segments: int
+def pearsonr(x: np.ndarray, y: np.ndarray) -> float:
+    """Pearson correlation coefficient."""
+    n = len(x)
+    if n < 2:
+        return np.nan
+
+    xm = x - x.mean()
+    ym = y - y.mean()
+    ss_xx = float(np.dot(xm, xm))
+    ss_yy = float(np.dot(ym, ym))
+    if ss_xx == 0.0 or ss_yy == 0.0:
+        return np.nan
+
+    r = float(np.dot(xm, ym) / np.sqrt(ss_xx * ss_yy))
+    r = max(-1.0, min(1.0, r))
+
+    return r
+
+
+def binary_precision(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    """Precision for binary labels: TP / (TP + FP)."""
+    tp = int(np.sum((y_true == 1) & (y_pred == 1)))
+    fp = int(np.sum((y_true == 0) & (y_pred == 1)))
+    denom = tp + fp
+    return tp / denom if denom > 0 else 0.0
+
+
+def binary_recall(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    """Recall for binary labels: TP / (TP + FN)."""
+    tp = int(np.sum((y_true == 1) & (y_pred == 1)))
+    fn = int(np.sum((y_true == 1) & (y_pred == 0)))
+    denom = tp + fn
+    return tp / denom if denom > 0 else 0.0
+
+
+def binary_f1(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    """F1 score for binary labels: 2*P*R / (P + R)."""
+    p = binary_precision(y_true, y_pred)
+    r = binary_recall(y_true, y_pred)
+    denom = p + r
+    return (2 * p * r) / denom if denom > 0 else 0.0
+
+
+def match_list_to_matrix(
+    match_list: matchlist_type, n_story_segments: int
 ) -> np.ndarray:
     """Convert the ratings to a recall matrix.
 
@@ -33,41 +106,10 @@ def ratings_single_sub_to_matrix(
     recall_matrix: np.ndarray
         recall matrix of shape (n_story_segments, n_recall_segments)
     """
-    n_recall_segments = len(ratings_single_sub)
+    n_recall_segments = len(match_list)
     recall_matrix = np.zeros((n_story_segments, n_recall_segments), dtype=int)
 
-    for idx_recall_segment, story_segment_indices in ratings_single_sub:
+    for idx_recall_segment, story_segment_indices in match_list:
         for idx_story_segment in story_segment_indices:
             recall_matrix[idx_story_segment, idx_recall_segment] = 1
     return recall_matrix
-
-
-def save_to_json(out_path: Path, output_dict: dict):
-    """Sanitize and save the output dict to a json file."""
-
-    output_dict = deepcopy(output_dict)
-
-    # convert potential numpy values into python native values
-    # (json cannot handle numpy values)
-    matches_converted = dict()
-    for sub_id, single_sub_matches in output_dict["matches"].items():
-        matches_converted[sub_id] = list()
-        for recall_segment_id, story_segment_ids in single_sub_matches:
-            story_segment_ids_converted = list()
-            for story_segment_id in story_segment_ids:
-                if isinstance(story_segment_id, np.generic):
-                    story_segment_id = story_segment_id.item()
-
-                story_segment_ids_converted.append(story_segment_id)
-
-            matches_converted[sub_id].append(
-                (recall_segment_id, story_segment_ids_converted)
-            )
-    output_dict["matches"] = matches_converted
-
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    with open(out_path, "w") as f_out:
-        f_out.write(json.dumps(output_dict) + "\n")
-    log.info(f"Saved matches to {out_path}")
-
-    return out_path

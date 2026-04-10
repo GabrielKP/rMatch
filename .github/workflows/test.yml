@@ -1,0 +1,59 @@
+name: Tests
+
+on:
+  push:
+    branches: ["main", "dev"]
+  pull_request:
+    branches: ["main", "dev"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      # Install from lock file, but skip heavy GPU/ML packages that the
+      # test suite stubs out via sys.modules in conftest.py.
+      - name: Install dependencies (skip heavy GPU packages)
+        run: |
+          uv sync --extra test \
+            --no-install-package torch \
+            --no-install-package torchvision \
+            --no-install-package transformers \
+            --no-install-package sentence-transformers \
+            --no-install-package accelerate \
+            --no-install-package bitsandbytes \
+            --no-install-package einops \
+            --no-install-package huggingface \
+            --no-install-package flash-attn \
+            --no-install-package kaleido
+
+      - name: Run tests with coverage
+        run: |
+          uv run --no-sync pytest tests/ \
+            --cov=src/rmatch \
+            --cov-report=term-missing \
+            --cov-report=xml \
+            -v \
+            -m "not integration"
+        env:
+          # No real API keys in CI — all external calls are mocked
+          ANTHROPIC_API_KEY: ""
+          OPENAI_API_KEY: ""
+          HF_TOKEN: ""
+
+      - name: Upload coverage report
+        if: always()
+        uses: codecov/codecov-action@v4
+        with:
+          file: coverage.xml
+          fail_ci_if_error: false
