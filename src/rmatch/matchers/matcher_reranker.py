@@ -1,8 +1,10 @@
+import os
+
 import torch
 from sentence_transformers import CrossEncoder
 from tqdm import tqdm
 
-from rmatch import ENV, get_logger
+from rmatch import get_logger
 from rmatch.matchers.matcher import Matcher
 
 log = get_logger(__name__)
@@ -28,7 +30,7 @@ class MatcherReranker(Matcher, matcher_name="reranker"):
             self.model_name = model_name
             log.info(f"Initializing model: {self.model_name}")
 
-        token = ENV.get("HF_TOKEN")
+        token = os.environ.get("HF_TOKEN")
 
         self.model = CrossEncoder(
             self.model_name,

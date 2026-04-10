@@ -21,9 +21,7 @@ dependencies = [
     "rich>=14.2.0,<15",
     "accelerate>=1.10.1,<2",
     "sentence-transformers>=5.1.1,<6",
-    "spacy>=3.8.7,<4",
     "einops>=0.8.1",
-    "scikit-learn>=1.7.2",
     "nltk>=3.9.2",
     "chardet>=5.2.0",
     "openai>=2.15.0",
@@ -37,12 +35,37 @@ dependencies = [
     "codecarbon>=2.8.3",
 ]
 
+[project.optional-dependencies]
+flash = ["flash-attn"]
+test = [
+    "pytest>=8.0",
+    "pytest-mock>=3.14",
+    "pytest-cov>=6.0",
+]
+
 [project.scripts]
 rmatch = "rmatch.match:main"
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.uv]
+no-build-isolation-package = ["flash-attn"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = ["--tb=short", "--strict-markers"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m not slow')",
+    "integration: marks tests that invoke subprocesses",
+]
+
+[tool.coverage.run]
+source = ["src/rmatch"]
+
+[tool.coverage.report]
+show_missing = true
 
 [tool.ruff]
 line-length = 88

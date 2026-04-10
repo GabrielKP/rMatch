@@ -1,10 +1,11 @@
+import os
 from typing import Literal
 
 import torch
 from tqdm import tqdm
 from transformers import BitsAndBytesConfig, pipeline
 
-from rmatch import ENV, get_logger
+from rmatch import get_logger
 from rmatch.matchers.matcher import Matcher
 from rmatch.prompt import get_prompt_and_parser
 
@@ -83,8 +84,8 @@ class MatcherHuggingFace(Matcher, matcher_name="huggingface"):
         window_size: int = 5,
         verbose_errors: bool = False,
         quantization: Literal["4bit", "8bit"] | None = None,
-        batch_size: int = 4,
-        max_new_tokens: int = 64,
+        batch_size: int | None = None,
+        max_new_tokens: int | None = None,
         api_key: str | None = None,
         prompt: str | None = None,
         no_flash_attn: bool = False,
@@ -98,16 +99,20 @@ class MatcherHuggingFace(Matcher, matcher_name="huggingface"):
         assert window_size >= 0, "window_size must be non-negative"
         self.window_size = window_size
         self.verbose_errors = verbose_errors
+        self.batch_size = batch_size or 64
+        log.info(f"Batch size: {self.batch_size}")
+        self.max_new_tokens = max_new_tokens or 210
+        log.info(f"Max new tokens: {self.max_new_tokens}")
 
         if model_name is None:
-            self.model_name = "google/gemma-4-E2B-it"
+            self.model_name = "google/gemma-4-E4B-it"
             log.info(f"Initializing model to default: {self.model_name}")
         else:
             self.model_name = model_name
             log.info(f"Initializing model: {self.model_name}")
 
         if api_key is None:
-            api_key = ENV.get("HF_TOKEN")
+            api_key = os.environ.get("HF_TOKEN")
             if api_key is None:
                 raise ValueError("HF_TOKEN not found in .env or environment variables.")
 
@@ -163,9 +168,6 @@ class MatcherHuggingFace(Matcher, matcher_name="huggingface"):
                 self.pipe.model = torch.compile(  # type: ignore[assignment]
                     self.pipe.model, mode="reduce-overhead"
                 )
-
-        self.batch_size = batch_size
-        self.max_new_tokens = max_new_tokens
 
         tokenizer = self.pipe.tokenizer
         if tokenizer.pad_token_id is None:  # type: ignore

@@ -8,6 +8,8 @@ outputs
 downloads
 data
 .env
+.coverage
+htmlcov
 
 # cluster
 logs
