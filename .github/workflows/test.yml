@@ -1,0 +1,68 @@
+name: Tests
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      # Install the package + test extras WITHOUT the heavy GPU packages.
+      # The test suite stubs out torch, transformers, sentence-transformers,
+      # bitsandbytes, etc. via sys.modules in conftest.py, so they don't need
+      # to be installed for the tests to pass.
+      - name: Install lightweight test dependencies
+        run: |
+          uv pip install --system \
+            "anthropic>=0.84.0" \
+            "openai>=2.15.0" \
+            "tiktoken>=0.12.0" \
+            "numpy>=2.3.0" \
+            "pandas>=2.0" \
+            "python-dotenv>=1.1.0" \
+            "rich>=14.0.0" \
+            "krippendorff>=0.8.0" \
+            "codecarbon>=2.8.0" \
+            "tqdm>=4.67.0" \
+            "plotly>=6.0.0" \
+            "nltk>=3.9.0" \
+            "chardet>=5.2.0" \
+            "pytest>=8.0" \
+            "pytest-mock>=3.14" \
+            "pytest-cov>=6.0" \
+            -e . --no-deps
+
+      - name: Run tests with coverage
+        run: |
+          pytest tests/ \
+            --cov=src/rmatch \
+            --cov-report=term-missing \
+            --cov-report=xml \
+            -v \
+            -m "not integration"
+        env:
+          # No real API keys in CI — all external calls are mocked
+          ANTHROPIC_API_KEY: ""
+          OPENAI_API_KEY: ""
+          HF_TOKEN: ""
+
+      - name: Upload coverage report
+        if: always()
+        uses: codecov/codecov-action@v4
+        with:
+          file: coverage.xml
+          fail_ci_if_error: false

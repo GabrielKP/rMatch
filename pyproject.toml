@@ -37,6 +37,11 @@ dependencies = [
 
 [project.optional-dependencies]
 flash = ["flash-attn"]
+test = [
+    "pytest>=8.0",
+    "pytest-mock>=3.14",
+    "pytest-cov>=6.0",
+]
 
 [project.scripts]
 rmatch = "rmatch.match:main"
@@ -47,6 +52,20 @@ build-backend = "hatchling.build"
 
 [tool.uv]
 no-build-isolation-package = ["flash-attn"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = ["--tb=short", "--strict-markers"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m not slow')",
+    "integration: marks tests that invoke subprocesses",
+]
+
+[tool.coverage.run]
+source = ["src/rmatch"]
+
+[tool.coverage.report]
+show_missing = true
 
 [tool.ruff]
 line-length = 88
