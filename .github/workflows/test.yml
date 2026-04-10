@@ -21,33 +21,21 @@ jobs:
       - name: Set up Python
         run: uv python install 3.12
 
-      - name: Create virtualenv
-        run: uv venv
-
-      # Install the package + test extras WITHOUT the heavy GPU packages.
-      # The test suite stubs out torch, transformers, sentence-transformers,
-      # bitsandbytes, etc. via sys.modules in conftest.py, so they don't need
-      # to be installed for the tests to pass.
-      - name: Install lightweight test dependencies
+      # Install from lock file, but skip heavy GPU/ML packages that the
+      # test suite stubs out via sys.modules in conftest.py.
+      - name: Install dependencies (skip heavy GPU packages)
         run: |
-          uv pip install \
-            "anthropic>=0.84.0" \
-            "openai>=2.15.0" \
-            "tiktoken>=0.12.0" \
-            "numpy>=2.3.0" \
-            "pandas>=2.0" \
-            "python-dotenv>=1.1.0" \
-            "rich>=14.0.0" \
-            "krippendorff>=0.8.0" \
-            "codecarbon>=2.8.0" \
-            "tqdm>=4.67.0" \
-            "plotly>=6.0.0" \
-            "nltk>=3.9.0" \
-            "chardet>=5.2.0" \
-            "pytest>=8.0" \
-            "pytest-mock>=3.14" \
-            "pytest-cov>=6.0" \
-            -e . --no-deps
+          uv sync --extra test \
+            --no-install-package torch \
+            --no-install-package torchvision \
+            --no-install-package transformers \
+            --no-install-package sentence-transformers \
+            --no-install-package accelerate \
+            --no-install-package bitsandbytes \
+            --no-install-package einops \
+            --no-install-package huggingface \
+            --no-install-package flash-attn \
+            --no-install-package kaleido
 
       - name: Run tests with coverage
         run: |
