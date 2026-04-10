@@ -5,7 +5,7 @@ from typing import Any
 
 import numpy as np
 
-from rmatch import get_logger
+from rmatch import get_logger, matchlist_type
 
 log = get_logger(__name__)
 
@@ -53,8 +53,51 @@ def get_param_str(config_dict: dict) -> str:
     return f"{m}-{r}-{s}"
 
 
-def ratings_single_sub_to_matrix(
-    ratings_single_sub: list[tuple[int, list[int]]], n_story_segments: int
+def pearsonr(x: np.ndarray, y: np.ndarray) -> float:
+    """Pearson correlation coefficient."""
+    n = len(x)
+    if n < 2:
+        return np.nan
+
+    xm = x - x.mean()
+    ym = y - y.mean()
+    ss_xx = float(np.dot(xm, xm))
+    ss_yy = float(np.dot(ym, ym))
+    if ss_xx == 0.0 or ss_yy == 0.0:
+        return np.nan
+
+    r = float(np.dot(xm, ym) / np.sqrt(ss_xx * ss_yy))
+    r = max(-1.0, min(1.0, r))
+
+    return r
+
+
+def binary_precision(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    """Precision for binary labels: TP / (TP + FP)."""
+    tp = int(np.sum((y_true == 1) & (y_pred == 1)))
+    fp = int(np.sum((y_true == 0) & (y_pred == 1)))
+    denom = tp + fp
+    return tp / denom if denom > 0 else 0.0
+
+
+def binary_recall(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    """Recall for binary labels: TP / (TP + FN)."""
+    tp = int(np.sum((y_true == 1) & (y_pred == 1)))
+    fn = int(np.sum((y_true == 1) & (y_pred == 0)))
+    denom = tp + fn
+    return tp / denom if denom > 0 else 0.0
+
+
+def binary_f1(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    """F1 score for binary labels: 2*P*R / (P + R)."""
+    p = binary_precision(y_true, y_pred)
+    r = binary_recall(y_true, y_pred)
+    denom = p + r
+    return (2 * p * r) / denom if denom > 0 else 0.0
+
+
+def match_list_to_matrix(
+    match_list: matchlist_type, n_story_segments: int
 ) -> np.ndarray:
     """Convert the ratings to a recall matrix.
 
@@ -63,10 +106,10 @@ def ratings_single_sub_to_matrix(
     recall_matrix: np.ndarray
         recall matrix of shape (n_story_segments, n_recall_segments)
     """
-    n_recall_segments = len(ratings_single_sub)
+    n_recall_segments = len(match_list)
     recall_matrix = np.zeros((n_story_segments, n_recall_segments), dtype=int)
 
-    for idx_recall_segment, story_segment_indices in ratings_single_sub:
+    for idx_recall_segment, story_segment_indices in match_list:
         for idx_story_segment in story_segment_indices:
             recall_matrix[idx_story_segment, idx_recall_segment] = 1
     return recall_matrix

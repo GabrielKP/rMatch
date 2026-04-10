@@ -1,4 +1,4 @@
-from rmatch import get_logger
+from rmatch import get_logger, matchlist_type
 
 log = get_logger(__name__)
 
@@ -54,7 +54,7 @@ class Matcher:
         self,
         story_segments: list[str],
         recall_segments: list[str],
-    ) -> list[tuple[int, list[int]]]:
+    ) -> matchlist_type:
         """Return each recall segment with its referenced story segments.
 
         Implementations should call ``_append_prompt_response`` after each model
@@ -69,7 +69,7 @@ class Matcher:
 
         Returns
         -------
-        matches: list[tuple[int, list[int]]]
+        match_list: list[tuple[int, list[int]]]
             list of matches:
             [
                 (recall_segment_id_1, [story_segment_id_x, story_segment_id_y, ..]),

@@ -13,6 +13,8 @@ FORMAT = "[%(levelname)s] %(name)s.%(funcName)s - %(message)s"
 logging.basicConfig(format=FORMAT)
 console = Console()
 
+matchlist_type = list[tuple[int, list[int]]]
+
 
 def _sigterm_handler(_signum, _frame):
     raise KeyboardInterrupt()
