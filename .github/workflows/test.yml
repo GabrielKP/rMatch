@@ -21,13 +21,16 @@ jobs:
       - name: Set up Python
         run: uv python install 3.12
 
+      - name: Create virtualenv
+        run: uv venv
+
       # Install the package + test extras WITHOUT the heavy GPU packages.
       # The test suite stubs out torch, transformers, sentence-transformers,
       # bitsandbytes, etc. via sys.modules in conftest.py, so they don't need
       # to be installed for the tests to pass.
       - name: Install lightweight test dependencies
         run: |
-          uv pip install --system \
+          uv pip install \
             "anthropic>=0.84.0" \
             "openai>=2.15.0" \
             "tiktoken>=0.12.0" \
