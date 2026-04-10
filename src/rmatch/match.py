@@ -111,7 +111,7 @@ def _merge_recall_json_files(
                 )
             merged[sid] = segs
 
-    out_pairs = [(sid, merged[sid]) for sid in sorted(merged.keys())]
+    out_pairs = sorted(merged.items())
     return out_pairs, (method or "json")
 
 
@@ -212,7 +212,7 @@ def run_matching(
     out_path = out_dir / f"{param_str}.json"
     if out_path.exists() and not overwrite:
         raise FileExistsError(f"Output path already exists: {out_path}")
-    print(f"Output path: {out_path}")
+    console.print(f"Output path: {out_path}")
 
     # initialize matcher — drop None values so only user-specified args are forwarded;
     # each matcher's own __init__ defaults handle the rest.
@@ -257,7 +257,7 @@ def run_matching(
             },
         }
         atomic_write_json(checkpoint_path, checkpoint_data, indent=2)
-        log.info("Saved checkpoint to %s", checkpoint_path)
+        log.info(f"Saved checkpoint to {checkpoint_path}")
 
     matches_dict: dict[str, list[tuple[int, list[int]]]] = {}
     try:
@@ -285,6 +285,11 @@ def run_matching(
 
     atomic_write_json(out_path, output_dict)
     log.info(f"Saved matches to {out_path}")
+
+    if checkpoint_path.exists():
+        checkpoint_path.unlink()
+        log.info(f"Removed checkpoint {checkpoint_path}")
+
     return output_dict
 
 
@@ -400,18 +405,16 @@ def main() -> None:
     parser.add_argument(
         "--no-flash-attn",
         action="store_true",
-        default=False,
+        default=None,
         help="[huggingface] Disable flash-attn for the model.",
     )
 
     args = parser.parse_args()
-    story_name = str(args.story_file.stem)
 
     run_matching(
         story_file=args.story_file,
         recall_file=args.recall_file,
         matcher_name=args.matcher,
-        story_name=story_name,
         model_name=args.model_name,
         window_size=args.window_size,
         dry_run=args.dry_run,
