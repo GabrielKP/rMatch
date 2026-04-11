@@ -311,7 +311,7 @@ def main() -> None:
     parser.add_argument(
         "-M",
         "--matcher",
-        choices=["anthropic", "reranker", "openai", "huggingface"],
+        choices=["anthropic", "openai", "huggingface"],
         default="anthropic",
         help="Matcher to use. Default: anthropic.",
     )
@@ -341,19 +341,7 @@ def main() -> None:
         "--device",
         type=str,
         default=None,
-        help="[reranker, huggingface] Device for model (default: auto).",
-    )
-    parser.add_argument(
-        "--threshold",
-        type=float,
-        default=None,
-        help="[reranker] Score threshold for matches (default: 0.09).",
-    )
-    parser.add_argument(
-        "--top-k",
-        type=int,
-        default=None,
-        help="[reranker] Number of top candidates per recall segment (default: 5).",
+        help="[huggingface] Device for model (default: auto).",
     )
     parser.add_argument(
         "-q",

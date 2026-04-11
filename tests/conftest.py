@@ -1,5 +1,5 @@
 # Heavy-module stubs must be installed BEFORE any rmatch imports.
-# matcher_huggingface.py, matcher_reranker.py, and evaluate.py import torch,
+# matcher_huggingface.py, and evaluate.py import torch,
 # transformers, sentence_transformers, bitsandbytes, and other GPU packages at
 # module level. Replacing them with MagicMocks lets the test suite run without
 # a GPU or those packages installed.

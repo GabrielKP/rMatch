@@ -778,7 +778,6 @@ if __name__ == "__main__":
         "--matcher",
         choices=[
             "anthropic",
-            "reranker",
             "openai",
             "huggingface",
         ],
@@ -792,13 +791,13 @@ if __name__ == "__main__":
         dest="model_name",
         type=str,
         default=None,
-        help="[reranker, openai, huggingface] Name of the model to use.",
+        help="[openai, huggingface] Name of the model to use.",
     )
     parser.add_argument(
         "--device",
         type=str,
         default=None,
-        help="[reranker, huggingface] Device to use. If omitted, autoselected.",
+        help="[huggingface] Device to use. If omitted, autoselected.",
     )
     parser.add_argument(
         "--window-size",
