@@ -9,7 +9,6 @@ from pathlib import Path
 
 import krippendorff
 import numpy as np
-from codecarbon import EmissionsTracker
 from tqdm import tqdm
 
 from rmatch import console, matchlist_type
@@ -391,18 +390,6 @@ def evaluate(
             benchmark_root, testset
         )
 
-    tracker = None
-    track_emissions = matcher_name == "huggingface"
-    if track_emissions:
-        console.print("[green]Tracking emissions.[/green]")
-        tracker = EmissionsTracker(
-            project_name=(
-                f"rmatch-eval{'-rr' if repeat_reliability else ''}-{matcher_name}"
-            ),
-            output_dir=str(output_dir),
-        )
-        tracker.start()
-
     # Metrics keyed by recall_id; list length is 1 (full eval) or n_repeats (RR).
     precisions: dict[str, list[float]] = defaultdict(list)
     recalls_metric: dict[str, list[float]] = defaultdict(list)
@@ -584,12 +571,6 @@ def evaluate(
             f"[yellow]Interrupted; checkpoint written under[/yellow] {output_dir}"
         )
         raise
-    finally:
-        if tracker is not None:
-            emissions_kg = tracker.stop()
-            console.print(
-                f"[green]Carbon emissions:[/green] {emissions_kg:.6f} kg CO2eq"
-            )
 
     if dry_run:
         console.print(f"[DRY RUN] Estimated Usage: {matcher.get_usage()}")
@@ -669,8 +650,6 @@ def evaluate(
             "recalls": {k: [float(x) for x in v] for k, v in recalls_metric.items()},
             "pearsonrs": {k: [float(x) for x in v] for k, v in pearsonrs.items()},
         }
-        if track_emissions:
-            results_dict["emissions_kg_co2eq"] = float(emissions_kg)  # type: ignore[possibly-undefined]
 
         results_path = output_dir / "results.json"
         with open(results_path, "w") as f:
@@ -729,9 +708,6 @@ def evaluate(
         if matcher.get_usage() is not None:
             console.print(f"Total API usage: {matcher.get_usage()}")
             results_dict["usage"] = matcher.get_usage()
-
-        if track_emissions:
-            results_dict["emissions_kg_co2eq"] = float(emissions_kg)  # type: ignore[possibly-undefined]
 
         results_path = output_dir / "results.json"
         with open(results_path, "w") as f:

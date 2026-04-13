@@ -223,19 +223,6 @@ def run_matching(
     if model_name is not None:
         output_dict["model_name"] = model_name
 
-    # track emissions if requested
-    tracker = None
-    track_emissions = matcher_name == "huggingface"
-    if track_emissions:
-        console.print("[green]Tracking emissions.[/green]")
-        from codecarbon import EmissionsTracker
-
-        tracker = EmissionsTracker(
-            project_name=f"rmatch-match-{matcher_name}",
-            output_dir=str(out_dir),
-        )
-        tracker.start()
-
     checkpoint_path = out_dir / f"{param_str}.checkpoint.json"
 
     def _save_match_checkpoint(
@@ -273,12 +260,6 @@ def run_matching(
             f"[yellow]Interrupted; checkpoint written to[/yellow] {checkpoint_path}"
         )
         raise
-    finally:
-        if tracker is not None:
-            emissions_kg = tracker.stop()
-            console.print(
-                f"[green]Carbon emissions:[/green] {emissions_kg:.6f} kg CO2eq"
-            )
 
     # add matches to output dict
     output_dict["matches"] = matches_dict

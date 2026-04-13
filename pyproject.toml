@@ -32,7 +32,6 @@ dependencies = [
     "kaleido>=1.2.0",
     "huggingface>=0.0.1",
     "bitsandbytes>=0.45.0",
-    "codecarbon>=2.8.3",
 ]
 
 [project.optional-dependencies]
