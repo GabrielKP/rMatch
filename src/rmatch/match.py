@@ -407,8 +407,6 @@ def main() -> None:
         window_size=args.window_size,
         dry_run=args.dry_run,
         device=args.device,
-        threshold=args.threshold,
-        top_k=args.top_k,
         quantization=args.quantization,
         batch_size=args.batch_size,
         max_new_tokens=args.max_new_tokens,

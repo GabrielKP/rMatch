@@ -203,31 +203,53 @@ def save_raw_response(
     raw_response_incorrect_dir: Path,
     story_name: str,
     sub_id: str,
-    repeat_idx: int,
     recall_segment_idx: int,
-    is_correct: bool,
-    parsed_response: str,
-    correct_response: str,
+    repeat_idx: int,
+    attempt: int,
+    human_response: list[int],
+    parsed_response_set: set[int] | None,
+    prompt: str,
+    response: str,
     pearsonr: float,
     f1: float,
     precision: float,
     recall: float,
-    prompt: str,
-    response: str,
 ):
+    if parsed_response_set is None:
+        is_correct = False
+        parsed_response_str = "PARSED RESPONSE: < parsing failed >"
+    else:
+        model_response = list(parsed_response_set)
+        is_correct = len(human_response) == len(model_response) and all(
+            x == y
+            for x, y in zip(
+                sorted(model_response),
+                sorted(human_response),
+            )
+        )
+        parsed_response_str = (
+            f"PARSED RESPONSE: {', '.join(str(x) for x in human_response)}"
+        )
+
+    desc = (
+        f"{story_name} - {sub_id} - repeat: {repeat_idx} - recall idx:"
+        f" {recall_segment_idx:03d} - attempt {attempt}"
+    )
+    separator1 = "-" * len(desc)
     correct = "-- CORRECT --\n" if is_correct else "-- INCORRECT --"
-    correct_response_str = f"CORRECT RESPONSE: {correct_response}"
-    parsed_response_str = f"PARSED RESPONSE: {parsed_response}"
+    correct_response_str = f"HUMAN RESPONSE: {','.join(str(x) for x in human_response)}"
     story_metrics_str = "STORY METRICS (entire recall):\n"
     pearsonr_str = f"PEARSONR: {pearsonr:.3f}"
     f1_str = f"F1: {f1:.3f}"
     precision_str = f"PRECISION: {precision:.3f}"
     recall_str = f"RECALL: {recall:.3f}"
-    separator = "\n------------------------------------------------\n"
+    separator2 = "\n------------------------------------------------\n"
     prompt_and_reponse = f"PROMPT:\n{prompt}\n\nRESPONSE:\n{response}"
 
     output_text = "\n".join(
         [
+            desc,
+            separator1,
             correct,
             correct_response_str,
             parsed_response_str,
@@ -236,7 +258,7 @@ def save_raw_response(
             f1_str,
             precision_str,
             recall_str,
-            separator,
+            separator2,
             prompt_and_reponse,
         ]
     )
@@ -244,7 +266,9 @@ def save_raw_response(
     file_sub_path = (
         Path(story_name)
         / sub_id
-        / f"recall_{recall_segment_idx:03d}_r{repeat_idx:03d}.txt"
+        / (
+            f"recall_repeat{repeat_idx:03d}_rec-seg-{recall_segment_idx:03d}_a{attempt}.txt"
+        )
     )
     output_path = raw_response_dir / file_sub_path
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -501,9 +525,11 @@ def evaluate(
                 continue
 
             for repeat_i in range(n_repeats):
+                match_key = f"{story_name}_{sub_id}_{repeat_i}"
                 match_list_model = matcher.match(
                     story_segments=story_segments,
                     recall_segments=recall_segments,
+                    match_key=match_key,
                 )
 
                 rm_model = match_list_to_matrix(
@@ -524,49 +550,29 @@ def evaluate(
                 f1s[recall_id].append(metrics["f1"])
 
                 # save raw responses
+                prompt_responses = matcher.prompt_response_log[match_key]
                 for recall_segment_idx in range(len(recall_segments)):
-                    matched_segment_indices_model = match_list_model[
-                        recall_segment_idx
-                    ][1]
-                    matched_segment_indices_human = match_list_human[
-                        recall_segment_idx
-                    ][1]
-                    is_correct = len(matched_segment_indices_model) == len(
-                        matched_segment_indices_human
-                    ) and all(
-                        x == y
-                        for x, y in zip(
-                            sorted(matched_segment_indices_model),
-                            sorted(matched_segment_indices_human),
+                    human_response = match_list_human[recall_segment_idx][1]
+                    for attempt, (prompt, response, parsed_response_set) in enumerate(
+                        prompt_responses[recall_segment_idx]
+                    ):
+                        save_raw_response(
+                            raw_response_dir,
+                            raw_response_incorrect_dir,
+                            story_name=story_name,
+                            sub_id=sub_id,
+                            recall_segment_idx=recall_segment_idx,
+                            repeat_idx=repeat_i,
+                            attempt=attempt,
+                            human_response=human_response,
+                            parsed_response_set=parsed_response_set,
+                            prompt=prompt,
+                            response=response,
+                            pearsonr=metrics["pearsonr"],
+                            f1=metrics["f1"],
+                            precision=metrics["precision"],
+                            recall=metrics["recall"],
                         )
-                    )
-                    parsed_response = ",".join(
-                        str(x) for x in matched_segment_indices_model
-                    )
-                    correct_response = ",".join(
-                        str(x) for x in matched_segment_indices_human
-                    )
-
-                    backwards_idx = len(recall_segments) - recall_segment_idx - 1
-                    prompt, response = matcher.prompt_response_log[backwards_idx]
-
-                    save_raw_response(
-                        raw_response_dir,
-                        raw_response_incorrect_dir,
-                        story_name=story_name,
-                        sub_id=sub_id,
-                        repeat_idx=repeat_i,
-                        recall_segment_idx=recall_segment_idx,
-                        is_correct=is_correct,
-                        parsed_response=parsed_response,
-                        correct_response=correct_response,
-                        pearsonr=metrics["pearsonr"],
-                        f1=metrics["f1"],
-                        precision=metrics["precision"],
-                        recall=metrics["recall"],
-                        prompt=prompt,
-                        response=response,
-                    )
 
                 last_story_name = story_name
                 last_sub_id = sub_id

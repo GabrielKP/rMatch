@@ -83,9 +83,12 @@ def mock_eval_matcher():
     m = MagicMock()
     m.match.return_value = [(i, []) for i in range(len(RECALL_SEGMENTS))]
     # prompt_response_log must be indexable for save_raw_response
-    m.prompt_response_log = [("prompt_text", "response_text")] * (
-        len(RECALL_SEGMENTS) * 10
-    )
+    m.prompt_response_log = {
+        "story1_sub01_0": [
+            [("prompt_text", "response_text", None)]
+            for _ in range(len(RECALL_SEGMENTS))
+        ]
+    }
     m.get_usage.return_value = None
     m.model_name = None
     return m
