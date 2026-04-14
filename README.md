@@ -9,6 +9,14 @@
 <a href="https://pre-commit.com/"><img alt="pre-commit" src="https://img.shields.io/badge/tool-Pre%20Commit-yellow?logo=Pre-Commit"></a>
 
 
+Automated matching of recall segments to respective story segments.
+Compared to human ratings, best performance is achieved with Claude Opus 4.6. However, [google/gemma-4-31B-it](https://huggingface.co/google/gemma-4-31B-it) runs locally and achieves comparable performance:
+
+| Model                 | short text (N=21) | long  text (N=19) | movie transcripts (N=138) |
+| --------------------- | ----------------- | ----------------- | ------------------------- |
+| Claude Opus 4.6       | _0.87_            | _0.8_             | _0.7_                     |
+| google/gemma-4-31B-it | _0.84_            | _?_               | _0.67_                    |
+
 ## Quick start
 
 ### Command line
@@ -17,21 +25,37 @@
 pip install rmatch
 
 # single recall file
-rmatch story.txt recall.txt --matcher anthropic
+rmatch story.txt sub-001-recall.txt --matcher anthropic
 
 # directory of recall files (one per subject)
-rmatch story.txt recalls/ --matcher anthropic
+rmatch story.txt recalls/ --matcher openai --model gpt-5.4
 
 # estimate API cost without sending requests
 rmatch story.txt recalls/ --matcher openai --model gpt-5.4 --dry-run
+
+# run rMatch locally, -q flag quantizes the model
+rmatch story.txt recalls/ --matcher huggingface --model google/gemma-4-31B-it -q 4bit
 ```
+
+* Each `sub-001-recall.txt` contains data for one subject.
+* Each line is considered a separate segment (e.g. each line could be a sentence, or event.)
 
 ### Python API
 
 ```python
 from rmatch import Matcher
 
+# cloud
 matcher = Matcher(matcher_name="anthropic", api_key="your_api_key", model_name="claude-haiku-4-5")
+matches = matcher.match(
+    story_segments=["The cat sat on the mat.", "It purred softly."],
+    recall_segments=["A cat was on a mat."],
+)
+# [(0, [0])]  — recall segment 0 matched story segment 0
+
+
+# local
+matcher = Matcher(matcher_name="huggingface", model_name="google/gemma-4-E4B-it", quantization="4bit")
 matches = matcher.match(
     story_segments=["The cat sat on the mat.", "It purred softly."],
     recall_segments=["A cat was on a mat."],
@@ -193,7 +217,7 @@ rmatch STORY_FILE RECALL_FILE [options]
 
 - **anthropic** — `claude-opus-4-6`
 - **openai** — `gpt-4.1`
-- **huggingface** — `meta-llama/Llama-3.2-1B-Instruct`
+- **huggingface** — `google/gemma-4-E4B-it`
 
 ### Python API
 
