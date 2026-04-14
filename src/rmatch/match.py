@@ -223,19 +223,6 @@ def run_matching(
     if model_name is not None:
         output_dict["model_name"] = model_name
 
-    # track emissions if requested
-    tracker = None
-    track_emissions = matcher_name == "huggingface"
-    if track_emissions:
-        console.print("[green]Tracking emissions.[/green]")
-        from codecarbon import EmissionsTracker
-
-        tracker = EmissionsTracker(
-            project_name=f"rmatch-match-{matcher_name}",
-            output_dir=str(out_dir),
-        )
-        tracker.start()
-
     checkpoint_path = out_dir / f"{param_str}.checkpoint.json"
 
     def _save_match_checkpoint(
@@ -273,12 +260,6 @@ def run_matching(
             f"[yellow]Interrupted; checkpoint written to[/yellow] {checkpoint_path}"
         )
         raise
-    finally:
-        if tracker is not None:
-            emissions_kg = tracker.stop()
-            console.print(
-                f"[green]Carbon emissions:[/green] {emissions_kg:.6f} kg CO2eq"
-            )
 
     # add matches to output dict
     output_dict["matches"] = matches_dict
@@ -311,7 +292,7 @@ def main() -> None:
     parser.add_argument(
         "-M",
         "--matcher",
-        choices=["anthropic", "reranker", "openai", "huggingface"],
+        choices=["anthropic", "openai", "huggingface"],
         default="anthropic",
         help="Matcher to use. Default: anthropic.",
     )
@@ -341,19 +322,7 @@ def main() -> None:
         "--device",
         type=str,
         default=None,
-        help="[reranker, huggingface] Device for model (default: auto).",
-    )
-    parser.add_argument(
-        "--threshold",
-        type=float,
-        default=None,
-        help="[reranker] Score threshold for matches (default: 0.09).",
-    )
-    parser.add_argument(
-        "--top-k",
-        type=int,
-        default=None,
-        help="[reranker] Number of top candidates per recall segment (default: 5).",
+        help="[huggingface] Device for model (default: auto).",
     )
     parser.add_argument(
         "-q",
@@ -419,8 +388,6 @@ def main() -> None:
         window_size=args.window_size,
         dry_run=args.dry_run,
         device=args.device,
-        threshold=args.threshold,
-        top_k=args.top_k,
         quantization=args.quantization,
         batch_size=args.batch_size,
         max_new_tokens=args.max_new_tokens,

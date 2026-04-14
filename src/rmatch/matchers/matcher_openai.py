@@ -26,6 +26,7 @@ class MatcherOpenAI(Matcher, matcher_name="openai"):
         dry_run: bool = False,
         api_key: str | None = None,
         prompt: str | None = None,
+        max_retries: int | None = None,
         # required for initialization
         matcher_name: str | None = None,
     ):
@@ -39,6 +40,12 @@ class MatcherOpenAI(Matcher, matcher_name="openai"):
         else:
             self.model_name = model_name
             log.info(f"Initializing model: {self.model_name}")
+
+        if max_retries is None:
+            self.max_retries = 10
+            log.info(f"Set max retries to {self.max_retries}")
+        else:
+            self.max_retries = max_retries
 
         if api_key is None:
             api_key = os.environ.get("OPENAI_API_KEY")
@@ -81,7 +88,7 @@ class MatcherOpenAI(Matcher, matcher_name="openai"):
         self,
         story_segments: list[str],
         recall_segments: list[str],
-        max_retries: int = 10,
+        match_key: str | None = None,
     ) -> list[tuple[int, list[int]]]:
         matches: list[tuple[int, list[int]]] = list()
 
@@ -95,7 +102,7 @@ class MatcherOpenAI(Matcher, matcher_name="openai"):
             )
         ):
             parsed_response: set[int] = set()
-            for attempt in range(1, max_retries + 1):
+            for attempt in range(1, self.max_retries + 1):
                 prompt, parser = get_prompt_and_parser(
                     story_segments,
                     recall_segments,
@@ -129,13 +136,20 @@ class MatcherOpenAI(Matcher, matcher_name="openai"):
                         in_tokens, out_tokens
                     )
                     raw_text = response.output_text
-                    self._append_prompt_response(prompt, raw_text)
                     parsed_response_ = parser(raw_text)
+                    if match_key is not None:
+                        self._log_prompt_response(
+                            match_key=match_key,
+                            idx_recall=idx,
+                            prompt=prompt,
+                            response=raw_text,
+                            parsed_response=parsed_response_,
+                        )
                     if parsed_response_ is not None:
                         parsed_response = parsed_response_
                         break
                 log.warning(
-                    f"Attempt {attempt}/{max_retries}:"
+                    f"Attempt {attempt}/{self.max_retries}:"
                     f" segmeent needs retry for segment {idx}"
                 )
             else:

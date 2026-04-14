@@ -4,7 +4,7 @@ import re
 import anthropic
 from tqdm import tqdm
 
-from rmatch import get_logger
+from rmatch import get_logger, matchlist_type
 from rmatch.matchers.matcher import Matcher
 from rmatch.prompt import get_prompt_and_parser
 
@@ -26,6 +26,7 @@ class MatcherAnthropic(Matcher, matcher_name="anthropic"):
         dry_run: bool = False,
         api_key: str | None = None,
         prompt: str | None = None,
+        max_retries: int | None = None,
         # required for initialization
         matcher_name: str | None = None,
     ):
@@ -39,6 +40,12 @@ class MatcherAnthropic(Matcher, matcher_name="anthropic"):
         else:
             self.model_name = model_name
             log.info(f"Initializing model: {self.model_name}")
+
+        if max_retries is None:
+            self.max_retries = 10
+            log.info(f"Set max retries to {self.max_retries}")
+        else:
+            self.max_retries = max_retries
 
         if api_key is None:
             api_key = os.environ.get("ANTHROPIC_API_KEY")
@@ -82,8 +89,8 @@ class MatcherAnthropic(Matcher, matcher_name="anthropic"):
         self,
         story_segments: list[str],
         recall_segments: list[str],
-        max_retries: int = 10,
-    ) -> list[tuple[int, list[int]]]:
+        match_key: str | None = None,
+    ) -> matchlist_type:
         """Anthropic-based matcher.
 
         Parameters
@@ -119,7 +126,7 @@ class MatcherAnthropic(Matcher, matcher_name="anthropic"):
             )
         ):
             parsed_response: set[int] = set()
-            for attempt in range(1, max_retries + 1):
+            for attempt in range(1, self.max_retries + 1):
                 prompt, parser = get_prompt_and_parser(
                     story_segments,
                     recall_segments,
@@ -154,13 +161,20 @@ class MatcherAnthropic(Matcher, matcher_name="anthropic"):
                         in_tokens, out_tokens
                     )
                     raw_text = response.content[0].text  # type: ignore
-                    self._append_prompt_response(prompt, raw_text)
                     parsed_response_ = parser(raw_text)
+                    if match_key is not None:
+                        self._log_prompt_response(
+                            match_key=match_key,
+                            idx_recall=idx,
+                            prompt=prompt,
+                            response=raw_text,
+                            parsed_response=parsed_response_,
+                        )
                     if parsed_response_ is not None:
                         parsed_response = parsed_response_
                         break
                 log.warning(
-                    f"Attempt {attempt}/{max_retries}:"
+                    f"Attempt {attempt}/{self.max_retries}:"
                     f" segmeent needs retry for segment {idx}"
                 )
             else:

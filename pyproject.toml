@@ -1,6 +1,6 @@
 [project]
 name = "rMatch"
-version = "0.3.0"
+version = "0.3.1"
 description = "Match recall segments with story segments."
 authors = [{ name = "Gabriel Kressin Palacios", email = "gkressi1@jhu.edu" }]
 requires-python = ">=3.12,<3.14"
@@ -32,7 +32,6 @@ dependencies = [
     "kaleido>=1.2.0",
     "huggingface>=0.0.1",
     "bitsandbytes>=0.45.0",
-    "codecarbon>=2.8.3",
 ]
 
 [project.optional-dependencies]

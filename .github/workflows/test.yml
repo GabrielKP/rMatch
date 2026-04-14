@@ -51,9 +51,7 @@ jobs:
           OPENAI_API_KEY: ""
           HF_TOKEN: ""
 
-      - name: Upload coverage report
+      - name: Coverage summary
         if: always()
-        uses: codecov/codecov-action@v4
-        with:
-          file: coverage.xml
-          fail_ci_if_error: false
+        run: |
+          uv run --no-sync coverage report --format=markdown >> $GITHUB_STEP_SUMMARY

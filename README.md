@@ -9,6 +9,14 @@
 <a href="https://pre-commit.com/"><img alt="pre-commit" src="https://img.shields.io/badge/tool-Pre%20Commit-yellow?logo=Pre-Commit"></a>
 
 
+Automated matching of recall segments to respective story segments.
+Compared to human ratings, best performance is achieved with Claude Opus 4.6. However, [google/gemma-4-31B-it](https://huggingface.co/google/gemma-4-31B-it) runs locally and achieves comparable performance:
+
+| Model                 | short text (N=21) | long  text (N=19) | movie transcripts (N=138) |
+| --------------------- | ----------------- | ----------------- | ------------------------- |
+| Claude Opus 4.6       | _0.87_            | _0.8_             | _0.7_                     |
+| google/gemma-4-31B-it | _0.84_            | _?_               | _0.67_                    |
+
 ## Quick start
 
 ### Command line
@@ -17,21 +25,37 @@
 pip install rmatch
 
 # single recall file
-rmatch story.txt recall.txt --matcher anthropic
+rmatch story.txt sub-001-recall.txt --matcher anthropic
 
 # directory of recall files (one per subject)
-rmatch story.txt recalls/ --matcher anthropic
+rmatch story.txt recalls/ --matcher openai --model gpt-5.4
 
 # estimate API cost without sending requests
 rmatch story.txt recalls/ --matcher openai --model gpt-5.4 --dry-run
+
+# run rMatch locally, -q flag quantizes the model
+rmatch story.txt recalls/ --matcher huggingface --model google/gemma-4-31B-it -q 4bit
 ```
+
+* Each `sub-001-recall.txt` contains data for one subject.
+* Each line is considered a separate segment (e.g. each line could be a sentence, or event.)
 
 ### Python API
 
 ```python
 from rmatch import Matcher
 
+# cloud
 matcher = Matcher(matcher_name="anthropic", api_key="your_api_key", model_name="claude-haiku-4-5")
+matches = matcher.match(
+    story_segments=["The cat sat on the mat.", "It purred softly."],
+    recall_segments=["A cat was on a mat."],
+)
+# [(0, [0])]  — recall segment 0 matched story segment 0
+
+
+# local
+matcher = Matcher(matcher_name="huggingface", model_name="google/gemma-4-E4B-it", quantization="4bit")
 matches = matcher.match(
     story_segments=["The cat sat on the mat.", "It purred softly."],
     recall_segments=["A cat was on a mat."],
@@ -171,7 +195,7 @@ rmatch STORY_FILE RECALL_FILE [options]
 
 - **`STORY_FILE`** *(positional, required)* — Path to the story `.txt` or `.json` file.
 - **`RECALL_FILE`** *(positional, required)* — Path to a recall `.txt`/`.json` file or a directory of them.
-- **`-M`, `--matcher`** *(str)* — Which matcher backend to use. One of: `anthropic`, `openai`, `reranker`, `huggingface`. Default: `anthropic`.
+- **`-M`, `--matcher`** *(str)* — Which matcher backend to use. One of: `anthropic`, `openai`, `huggingface`. Default: `anthropic`.
 - **`-m`, `--model-name`** *(str)* — Override the matcher's default model (see defaults below).
 - **`-f`, `--overwrite`** — Overwrite the output file if it already exists.
 
@@ -188,18 +212,12 @@ rmatch STORY_FILE RECALL_FILE [options]
 - **`--max-new-tokens`** *(int)* — Maximum tokens the model may generate per prompt. Default: `64`.
 - **`--verbose-errors`** — Print the raw model output when parsing fails. Useful for debugging prompt issues.
 
-#### Reranker options
-
-- **`--device`** *(str)* — PyTorch device for the reranker model (e.g. `cpu`, `cuda`, `mps`). Default: auto.
-- **`--threshold`** *(float)* — Minimum similarity score for a story segment to be considered a match. Default: `0.09`.
-- **`--top-k`** *(int)* — Number of top-scoring story candidates to evaluate per recall segment. Default: `5`.
 
 ### Default models
 
 - **anthropic** — `claude-opus-4-6`
 - **openai** — `gpt-4.1`
-- **reranker** — `BAAI/bge-reranker-v2-m3`
-- **huggingface** — `meta-llama/Llama-3.2-1B-Instruct`
+- **huggingface** — `google/gemma-4-E4B-it`
 
 ### Python API
 
@@ -221,9 +239,7 @@ matches  = matcher.match(story_segments, recall_segments)
 - **`prompt_type`** *(str)* — Prompt type. Default: `"primary"`. Applies to: `anthropic`, `openai`, `huggingface`. See [Prompts](#prompts).
 - **`dry_run`** *(bool)* — Estimate cost without calling the API. Applies to: `anthropic`, `openai`.
 - **`api_key`** *(str)* — API key. Falls back to `.env`, then environment variables. Applies to: `anthropic`, `openai`, `huggingface`.
-- **`device`** *(str)* — PyTorch device string. Applies to: `reranker`.
-- **`threshold`** *(float)* — Score threshold for matches. Default: `0.09`. Applies to: `reranker`.
-- **`top_k`** *(int)* — Top-k candidates per recall segment. Default: `5`. Applies to: `reranker`.
+- **`device`** *(str)* — PyTorch device string. Applies to: `huggingface`.
 - **`quantization`** *(str)* — `"4bit"` or `"8bit"`. Applies to: `huggingface`.
 - **`batch_size`** *(int)* — Batch size for inference. Default: `4`. Applies to: `huggingface`.
 - **`max_new_tokens`** *(int)* — Max generated tokens. Default: `64`. Applies to: `huggingface`.
@@ -252,7 +268,7 @@ from rmatch.match import run_matching
 results = run_matching(
     story_file,            # Path — story .txt or .json
     recall_file,           # Path — recall file or directory
-    matcher_name,          # str  — "anthropic", "openai", "reranker", "huggingface"
+    matcher_name,          # str  — "anthropic", "openai", "huggingface"
     story_name=None,       # str | None — override auto-detected story name
     story_segmentation=None,   # str | None — override detected segmentation method
     recall_segmentation=None,  # str | None — override detected segmentation method
@@ -267,10 +283,10 @@ Loads story and recall files, runs matching for every subject, and saves a JSON 
 
 All LLM matchers share the same set of prompt templates. The default is `primary`.
 
-| Prompt | Full story | Segmented story | Chain of thought | Notes |
-|---|---|---|---|---|
-| `primary` | yes | yes | yes | Default; most complete prompt. |
-| `primary_no_story` | no | yes | yes | Useful for long stories where the full text would exceed the context window. |
-| `primary_no_cot` | yes | yes | no | Ablation: removes chain-of-thought reasoning. |
-| `primary_no_story_no_cot` | no | yes | no | Ablation: minimal prompt with only segments and recall window. |
-| `secondary` | yes | yes | yes | Alternative prompt wording with XML-structured output. |
+| Prompt                    | Full story | Segmented story | Chain of thought | Notes                                                                        |
+| ------------------------- | ---------- | --------------- | ---------------- | ---------------------------------------------------------------------------- |
+| `primary`                 | yes        | yes             | yes              | Default; most complete prompt.                                               |
+| `primary_no_story`        | no         | yes             | yes              | Useful for long stories where the full text would exceed the context window. |
+| `primary_no_cot`          | yes        | yes             | no               | Ablation: removes chain-of-thought reasoning.                                |
+| `primary_no_story_no_cot` | no         | yes             | no               | Ablation: minimal prompt with only segments and recall window.               |
+| `secondary`               | yes        | yes             | yes              | Alternative prompt wording with XML-structured output.                       |

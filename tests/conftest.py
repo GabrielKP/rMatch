@@ -1,5 +1,5 @@
 # Heavy-module stubs must be installed BEFORE any rmatch imports.
-# matcher_huggingface.py, matcher_reranker.py, and evaluate.py import torch,
+# matcher_huggingface.py, and evaluate.py import torch,
 # transformers, sentence_transformers, bitsandbytes, and other GPU packages at
 # module level. Replacing them with MagicMocks lets the test suite run without
 # a GPU or those packages installed.
@@ -162,7 +162,7 @@ def anthropic_matcher(mock_anthropic_client):
     with patch("anthropic.Anthropic", return_value=mock_anthropic_client):
         from rmatch.matchers.matcher_anthropic import MatcherAnthropic
 
-        m = MatcherAnthropic(api_key="test-anthropic-key")
+        m = MatcherAnthropic(api_key="test-anthropic-key", max_retries=3)
     return m
 
 
@@ -178,7 +178,7 @@ def openai_matcher(mock_openai_client):
     ):
         from rmatch.matchers.matcher_openai import MatcherOpenAI
 
-        m = MatcherOpenAI(api_key="test-openai-key")
+        m = MatcherOpenAI(api_key="test-openai-key", max_retries=3)
     return m
 
 
@@ -198,5 +198,5 @@ def huggingface_matcher(mock_hf_pipe):
     ):
         from rmatch.matchers.matcher_huggingface import MatcherHuggingFace
 
-        m = MatcherHuggingFace(api_key="test-hf-token")
+        m = MatcherHuggingFace(api_key="test-hf-token", max_retries=3)
     return m
