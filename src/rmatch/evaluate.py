@@ -219,15 +219,17 @@ def save_raw_response(
         parsed_response_str = "PARSED RESPONSE: < parsing failed >"
     else:
         model_response = list(parsed_response_set)
-        is_correct = len(human_response) == len(model_response) and all(
-            int(x) == int(y)
-            for x, y in zip(
-                sorted(model_response),
-                sorted(human_response),
+        is_correct = (len(human_response) == len(model_response)) and (
+            all(
+                int(x) == int(y)
+                for x, y in zip(
+                    sorted(model_response),
+                    sorted(human_response),
+                )
             )
         )
         parsed_response_str = (
-            f"PARSED RESPONSE: {', '.join(str(x) for x in human_response)}"
+            f"PARSED RESPONSE: {','.join(str(x) for x in model_response)}"
         )
 
     desc = (
