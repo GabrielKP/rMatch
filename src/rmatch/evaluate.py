@@ -220,7 +220,7 @@ def save_raw_response(
     else:
         model_response = list(parsed_response_set)
         is_correct = len(human_response) == len(model_response) and all(
-            x == y
+            int(x) == int(y)
             for x, y in zip(
                 sorted(model_response),
                 sorted(human_response),
@@ -832,7 +832,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--no-flash-attn",
         action="store_true",
-        default=False,
+        default=None,
         help="[huggingface] Disable flash-attn for the model.",
     )
     parser.add_argument(

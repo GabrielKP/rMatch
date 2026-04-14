@@ -89,7 +89,7 @@ class MatcherHuggingFace(Matcher, matcher_name="huggingface"):
         max_new_tokens: int | None = None,
         api_key: str | None = None,
         prompt: str | None = None,
-        no_flash_attn: bool = False,
+        no_flash_attn: bool | None = False,
         max_retries: int | None = None,
         # required for initialization
         matcher_name: str | None = None,
@@ -102,6 +102,8 @@ class MatcherHuggingFace(Matcher, matcher_name="huggingface"):
         self.window_size = window_size
         self.verbose_errors = verbose_errors
         self.batch_size = batch_size or 64
+
+        self.no_flash_attn = no_flash_attn or False
 
         if max_retries is None:
             self.max_retries = 10
@@ -151,17 +153,25 @@ class MatcherHuggingFace(Matcher, matcher_name="huggingface"):
 
         model_kwargs["attn_implementation"] = _pick_attn_implementation(
             quantization=quantization,
-            no_flash_attn=no_flash_attn,
+            no_flash_attn=self.no_flash_attn,
             model_name=self.model_name,
         )
 
-        model_kwargs["device_map"] = "auto"
+        if torch.cuda.is_available() or quantization in {"4bit", "8bit"}:
+            model_kwargs["device_map"] = "auto"
+            pipe_kwargs: dict = {}
+        elif torch.backends.mps.is_available():
+            pipe_kwargs = {"device": "mps"}
+        else:
+            pipe_kwargs = {"device": "cpu"}
+
         self.pipe = pipeline(
             task="text-generation",
             model=self.model_name,
             dtype=torch_dtype,
             model_kwargs=model_kwargs,
             token=api_key,
+            **pipe_kwargs,
         )
 
         if torch.cuda.is_available() and quantization is None:
@@ -216,7 +226,7 @@ class MatcherHuggingFace(Matcher, matcher_name="huggingface"):
                 pending_prompts,
                 batch_size=self.batch_size,
                 return_full_text=False,
-                max_new_tokens=self.max_new_tokens,
+                max_len=self.max_new_tokens,
                 pad_token_id=self.pipe.tokenizer.eos_token_id,  # type: ignore
             )
 
