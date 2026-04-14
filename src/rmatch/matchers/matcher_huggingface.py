@@ -226,7 +226,7 @@ class MatcherHuggingFace(Matcher, matcher_name="huggingface"):
                 pending_prompts,
                 batch_size=self.batch_size,
                 return_full_text=False,
-                max_len=self.max_new_tokens,
+                max_new_tokens=self.max_new_tokens,
                 pad_token_id=self.pipe.tokenizer.eos_token_id,  # type: ignore
             )
 
