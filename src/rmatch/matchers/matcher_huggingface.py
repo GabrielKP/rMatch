@@ -115,7 +115,7 @@ class MatcherHuggingFace(Matcher, matcher_name="huggingface"):
         log.info(f"Max new tokens: {self.max_new_tokens}")
 
         if model_name is None:
-            self.model_name = "google/gemma-4-E4B-it"
+            self.model_name = "google/gemma-4-31B-it"
             log.info(f"Initializing model to default: {self.model_name}")
         else:
             self.model_name = model_name
@@ -137,19 +137,16 @@ class MatcherHuggingFace(Matcher, matcher_name="huggingface"):
                 bnb_4bit_quant_type="nf4",
                 bnb_4bit_use_double_quant=True,
             )
-            torch_dtype = torch.bfloat16
         elif quantization == "8bit":
             log.info("Using 8-bit quantization")
             model_kwargs["quantization_config"] = BitsAndBytesConfig(
                 load_in_8bit=True,
             )
-            torch_dtype = torch.bfloat16
-        elif torch.cuda.is_available():
-            torch_dtype = torch.bfloat16
-        elif torch.backends.mps.is_available():
-            torch_dtype = torch.float32
+
+        if torch.backends.mps.is_available():
+            torch_dtype = torch.float32  # MPS bfloat16 support is incomplete
         else:
-            torch_dtype = torch.float32
+            torch_dtype = "auto"  # trust the model config (CUDA, CPU, quantized)
 
         model_kwargs["attn_implementation"] = _pick_attn_implementation(
             quantization=quantization,
