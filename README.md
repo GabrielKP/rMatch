@@ -1,61 +1,35 @@
 <h1 align="center">rMatch</h1>
 
-<p align="center">Automatic recall & story matching tool.</p>
+<p align="center">Automated matching of recall segments to story segments.</p>
 
 <p align="center">
 <a href="https://www.python.org/"><img alt="" src="https://img.shields.io/badge/code-Python-blue?logo=Python"></a>
 <a href="https://docs.astral.sh/ruff/"><img alt="Ruff" src="https://img.shields.io/badge/code%20style-Ruff-green?logo=Ruff"></a>
 <a href="https://docs.astral.sh/uv/"><img alt="packaging framework: uv" src="https://img.shields.io/badge/packaging-uv-lightblue?logo=uv"></a>
 <a href="https://pre-commit.com/"><img alt="pre-commit" src="https://img.shields.io/badge/tool-Pre%20Commit-yellow?logo=Pre-Commit"></a>
+</p>
 
+Use **Claude** via API for best accuracy. Use **`google/gemma-4-31B-it`** to run fully locally, no API needed:
 
-Automated matching of recall segments to respective story segments.
-Compared to human ratings, best performance is achieved with Claude Opus 4.6. However, [google/gemma-4-31B-it](https://huggingface.co/google/gemma-4-31B-it) runs locally and achieves comparable performance:
+| Model                 | short text (N=21) | long text (N=19) | movie transcripts (N=138) |
+| --------------------- | :---------------: | :--------------: | :-----------------------: |
+| Claude Opus 4.6       |      _0.87_       |      _0.8_       |           _0.7_           |
+| google/gemma-4-31B-it |      _0.84_       |       _?_        |          _0.67_           |
 
-| Model                 | short text (N=21) | long  text (N=19) | movie transcripts (N=138) |
-| --------------------- | ----------------- | ----------------- | ------------------------- |
-| Claude Opus 4.6       | _0.87_            | _0.8_             | _0.7_                     |
-| google/gemma-4-31B-it | _0.84_            | _?_               | _0.67_                    |
+Pearson *r* with human ratings.
 
 ## Quick start
 
-### Command line
-
 ```sh
 pip install rmatch
-
-# single recall file
-rmatch story.txt sub-001-recall.txt --matcher anthropic
-
-# directory of recall files (one per subject)
-rmatch story.txt recalls/ --matcher openai --model gpt-5.4
-
-# estimate API cost without sending requests
-rmatch story.txt recalls/ --matcher openai --model gpt-5.4 --dry-run
-
-# run rMatch locally, -q flag quantizes the model
-rmatch story.txt recalls/ --matcher huggingface --model google/gemma-4-31B-it -q 4bit
 ```
 
-* Each `sub-001-recall.txt` contains data for one subject.
-* Each line is considered a separate segment (e.g. each line could be a sentence, or event.)
-
-### Python API
+### Claude (API)
 
 ```python
 from rmatch import Matcher
 
-# cloud
-matcher = Matcher(matcher_name="anthropic", api_key="your_api_key", model_name="claude-haiku-4-5")
-matches = matcher.match(
-    story_segments=["The cat sat on the mat.", "It purred softly."],
-    recall_segments=["A cat was on a mat."],
-)
-# [(0, [0])]  — recall segment 0 matched story segment 0
-
-
-# local
-matcher = Matcher(matcher_name="huggingface", model_name="google/gemma-4-E4B-it", quantization="4bit")
+matcher = Matcher(matcher_name="anthropic", api_key="your_api_key")
 matches = matcher.match(
     story_segments=["The cat sat on the mat.", "It purred softly."],
     recall_segments=["A cat was on a mat."],
@@ -63,7 +37,26 @@ matches = matcher.match(
 # [(0, [0])]  — recall segment 0 matched story segment 0
 ```
 
-Or use `run_matching` to load files, run matching, and save results in one call:
+Set `ANTHROPIC_API_KEY` in your environment or a `.env` file to avoid passing `api_key` directly.
+
+### Local (gemma-4-31B-it)
+
+Requires ~? GB VRAM (or ~? GB with 4-bit quantization).
+
+```python
+from rmatch import Matcher
+
+matcher = Matcher(matcher_name="huggingface", model_name="google/gemma-4-31B-it", quantization="4bit")
+matches = matcher.match(
+    story_segments=["The cat sat on the mat.", "It purred softly."],
+    recall_segments=["A cat was on a mat."],
+)
+# [(0, [0])]  — recall segment 0 matched story segment 0
+```
+
+### File-level convenience
+
+Use `run_matching` to load files, run matching for every subject, and save results in one call:
 
 ```python
 from rmatch.match import run_matching
@@ -74,30 +67,6 @@ results = run_matching(
     matcher_name="anthropic",
     api_key="your_api_key",
 )
-```
-
-## Setup API keys
-
-API keys are resolved in this order (first match wins):
-
-1. **`api_key` argument** passed directly in Python
-2. **`.env` file** in the current working directory
-3. **Environment variables** already set in your shell
-
-Set them as environment variables:
-
-```sh
-export ANTHROPIC_API_KEY="your_api_key"   # for --matcher anthropic (default)
-export OPENAI_API_KEY="your_api_key"      # for --matcher openai
-export HF_TOKEN="your_hf_token"           # for --matcher huggingface
-```
-
-Or put a `.env` file in your working directory:
-
-```sh
-ANTHROPIC_API_KEY="your_api_key"
-OPENAI_API_KEY="your_api_key"
-HF_TOKEN="your_hf_token"
 ```
 
 ## Output format
@@ -118,35 +87,6 @@ A JSON file with:
 ```
 
 Each entry in `matches` maps a subject ID to a list of `[recall_segment_id, [matched_story_segment_ids...]]` pairs.
-
-## Running local models
-
-You can run any model capable of text-generation from https://huggingface.co/models.
-
-To speed up inference, you can install flash-att
-`MAX_JOBS=8 uv pip install flash-attn --no-build-isolation`.
-Note that some models may not support flash-attn.
-If the model flash-attn is not automatically disabled for these models, pass the flag `--no-flash-attn`.
-
-
-## Benchmarking
-
-Requires [rBench](https://github.com/GabrielKP/rBench):
-
-```sh
-# outside of this dir
-git clone git@github.com:GabrielKP/rBench.git
-```
-
-Add to `.env` or environment:
-```sh
-BENCHMARK_ROOT="path/to/rBench"
-```
-
-Run:
-```sh
-uv run src/rmatch/evaluate.py {alice,monthiversary,memsearch}
-```
 
 ---
 
@@ -184,40 +124,6 @@ uv run src/rmatch/evaluate.py {alice,monthiversary,memsearch}
   }
 }
 ```
-
-### CLI reference
-
-```
-rmatch STORY_FILE RECALL_FILE [options]
-```
-
-#### General options
-
-- **`STORY_FILE`** *(positional, required)* — Path to the story `.txt` or `.json` file.
-- **`RECALL_FILE`** *(positional, required)* — Path to a recall `.txt`/`.json` file or a directory of them.
-- **`-M`, `--matcher`** *(str)* — Which matcher backend to use. One of: `anthropic`, `openai`, `huggingface`. Default: `anthropic`.
-- **`-m`, `--model-name`** *(str)* — Override the matcher's default model (see defaults below).
-- **`-f`, `--overwrite`** — Overwrite the output file if it already exists.
-
-#### LLM matcher options (anthropic, openai, huggingface)
-
-- **`--window-size`** *(int)* — Number of surrounding recall segments (before and after) to include as context for each target segment. Set to `0` to disable context. Default: `5`.
-- **`--prompt`** *(str)* — Prompt type. Default: `primary`. See [Prompts](#prompts).
-- **`--dry-run`** — *anthropic & openai only.* Estimate token usage and cost without making API calls.
-
-#### Self-hosted / HuggingFace options
-
-- **`-q`, `--quantization`** *(str)* — Load the model in reduced precision: `4bit` (NF4) or `8bit`. Requires `bitsandbytes`.
-- **`-bs`, `--batch-size`** *(int)* — Number of prompts to process in parallel. Default: `4`.
-- **`--max-new-tokens`** *(int)* — Maximum tokens the model may generate per prompt. Default: `64`.
-- **`--verbose-errors`** — Print the raw model output when parsing fails. Useful for debugging prompt issues.
-
-
-### Default models
-
-- **anthropic** — `claude-opus-4-6`
-- **openai** — `gpt-4.1`
-- **huggingface** — `google/gemma-4-E4B-it`
 
 ### Python API
 
@@ -279,6 +185,70 @@ results = run_matching(
 
 Loads story and recall files, runs matching for every subject, and saves a JSON results file. Returns the output dictionary.
 
+### CLI reference
+
+```
+rmatch STORY_FILE RECALL_FILE [options]
+```
+
+```sh
+# single recall file
+rmatch story.txt sub-001-recall.txt --matcher anthropic
+
+# directory of recall files (one per subject)
+rmatch story.txt recalls/ --matcher anthropic --model haiku-4-5
+
+# estimate API cost without sending requests
+rmatch story.txt recalls/ --matcher openai --model gpt-5.4 --dry-run
+
+# run rMatch locally, -q flag quantizes the model
+rmatch story.txt recalls/ --matcher huggingface --model google/gemma-4-31B-it -q 4bit
+```
+
+* Each `sub-001-recall.txt` contains data for one subject.
+* Each line is considered a separate segment (e.g. each line could be a sentence, or event.)
+
+#### General options
+
+- **`STORY_FILE`** *(positional, required)* — Path to the story `.txt` or `.json` file.
+- **`RECALL_FILE`** *(positional, required)* — Path to a recall `.txt`/`.json` file or a directory of them.
+- **`-M`, `--matcher`** *(str)* — Which matcher backend to use. One of: `anthropic`, `openai`, `huggingface`. Default: `anthropic`.
+- **`-m`, `--model-name`** *(str)* — Override the matcher's default model (see defaults below).
+- **`-f`, `--overwrite`** — Overwrite the output file if it already exists.
+
+#### LLM matcher options (anthropic, openai, huggingface)
+
+- **`--window-size`** *(int)* — Number of surrounding recall segments (before and after) to include as context for each target segment. Set to `0` to disable context. Default: `5`.
+- **`--prompt`** *(str)* — Prompt type. Default: `primary`. See [Prompts](#prompts).
+- **`--dry-run`** — *anthropic & openai only.* Estimate token usage and cost without making API calls.
+
+#### Self-hosted / HuggingFace options
+
+- **`-q`, `--quantization`** *(str)* — Load the model in reduced precision: `4bit` (NF4) or `8bit`. Requires `bitsandbytes`.
+- **`-bs`, `--batch-size`** *(int)* — Number of prompts to process in parallel. Default: `4`.
+- **`--max-new-tokens`** *(int)* — Maximum tokens the model may generate per prompt. Default: `64`.
+- **`--verbose-errors`** — Print the raw model output when parsing fails. Useful for debugging prompt issues.
+
+### Default models
+
+- **anthropic** — `claude-opus-4-6`
+- **openai** — `gpt-4.1`
+- **huggingface** — `google/gemma-4-31B-it`
+
+### API keys
+
+Keys are resolved in this order (first match wins):
+
+1. **`api_key` argument** passed directly in Python (or `--api-key` on the CLI)
+2. **`.env` file** in the current working directory
+3. **Environment variables** already set in your shell
+
+```sh
+ANTHROPIC_API_KEY="your_api_key"   # for --matcher anthropic (default)
+OPENAI_API_KEY="your_api_key"      # for --matcher openai
+HF_TOKEN="your_hf_token"           # for --matcher huggingface
+```
+
 ### Prompts
 
 All LLM matchers share the same set of prompt templates. The default is `primary`.
@@ -290,3 +260,23 @@ All LLM matchers share the same set of prompt templates. The default is `primary
 | `primary_no_cot`          | yes        | yes             | no               | Ablation: removes chain-of-thought reasoning.                                |
 | `primary_no_story_no_cot` | no         | yes             | no               | Ablation: minimal prompt with only segments and recall window.               |
 | `secondary`               | yes        | yes             | yes              | Alternative prompt wording with XML-structured output.                       |
+
+
+## Benchmarking
+
+Requires [rBench](https://github.com/GabrielKP/rBench):
+
+```sh
+# outside of this dir
+git clone git@github.com:GabrielKP/rBench.git
+```
+
+Add to `.env` or environment:
+```sh
+BENCHMARK_ROOT="path/to/rBench"
+```
+
+Run:
+```sh
+uv run src/rmatch/evaluate.py {alice,monthiversary,memsearch}
+```
