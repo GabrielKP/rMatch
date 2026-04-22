@@ -1,81 +1,13 @@
 import os
-from collections import defaultdict
 from typing import Literal
 
-import torch
 from tqdm import tqdm
-from transformers import BitsAndBytesConfig, pipeline
 
 from rmatch import get_logger
 from rmatch.matchers.matcher import Matcher
 from rmatch.prompt import get_prompt_and_parser
 
 log = get_logger(__name__)
-
-
-FLASH_ATTN_INCOMPATIBLE: list[str] = [
-    "gemma-4",
-]
-
-
-def _flash_attention_2_available() -> bool:
-    """
-    Conservative runtime check for FlashAttention2 support.
-
-    Returns True only if:
-    - CUDA is available
-    - GPU is Ampere+ (SM80+)
-    - `flash_attn` imports successfully
-    """
-
-    if not torch.cuda.is_available():
-        return False
-
-    try:
-        major, minor = torch.cuda.get_device_capability()
-    except Exception:
-        return False
-
-    if (major, minor) < (8, 0):
-        return False
-
-    try:
-        import flash_attn  # noqa: F401 # type: ignore
-    except Exception:
-        return False
-
-    return True
-
-
-def _pick_attn_implementation(
-    *, quantization: str | None, no_flash_attn: bool, model_name: str
-) -> str:
-    """
-    Pick a Transformers `attn_implementation` string.
-
-    Preference order:
-    - bitsandbytes quantization: sdpa (most broadly compatible)
-    - CUDA + FlashAttention2 available: flash_attention_2
-    - CUDA/MPS: sdpa
-    - CPU: eager
-    """
-
-    if quantization in {"4bit", "8bit"}:
-        return "sdpa"
-
-    if (
-        not no_flash_attn
-        and not any(
-            [incompatible in model_name for incompatible in FLASH_ATTN_INCOMPATIBLE]
-        )
-        and _flash_attention_2_available()
-    ):
-        return "flash_attention_2"
-
-    if torch.cuda.is_available() or torch.backends.mps.is_available():
-        return "sdpa"
-
-    return "eager"
 
 
 class MatcherHuggingFace(Matcher, matcher_name="huggingface"):
@@ -89,7 +21,6 @@ class MatcherHuggingFace(Matcher, matcher_name="huggingface"):
         max_new_tokens: int | None = None,
         api_key: str | None = None,
         prompt: str | None = None,
-        no_flash_attn: bool | None = False,
         max_retries: int | None = None,
         # required for initialization
         matcher_name: str | None = None,
@@ -103,15 +34,13 @@ class MatcherHuggingFace(Matcher, matcher_name="huggingface"):
         self.verbose_errors = verbose_errors
         self.batch_size = batch_size or 64
 
-        self.no_flash_attn = no_flash_attn or False
-
         if max_retries is None:
             self.max_retries = 10
             log.info(f"Set max retries to {self.max_retries}")
         else:
             self.max_retries = max_retries
         log.info(f"Batch size: {self.batch_size}")
-        self.max_new_tokens = max_new_tokens or 210
+        self.max_new_tokens = max_new_tokens or 300
         log.info(f"Max new tokens: {self.max_new_tokens}")
 
         if model_name is None:
@@ -125,6 +54,9 @@ class MatcherHuggingFace(Matcher, matcher_name="huggingface"):
             api_key = os.environ.get("HF_TOKEN")
             if api_key is None:
                 raise ValueError("HF_TOKEN not found in .env or environment variables.")
+
+        import torch
+        from transformers import BitsAndBytesConfig, pipeline
 
         # handle devices and quantization
         model_kwargs: dict = {}
@@ -148,11 +80,10 @@ class MatcherHuggingFace(Matcher, matcher_name="huggingface"):
         else:
             torch_dtype = "auto"  # trust the model config (CUDA, CPU, quantized)
 
-        model_kwargs["attn_implementation"] = _pick_attn_implementation(
-            quantization=quantization,
-            no_flash_attn=self.no_flash_attn,
-            model_name=self.model_name,
-        )
+        if torch.cuda.is_available() or torch.backends.mps.is_available():
+            model_kwargs["attn_implementation"] = "sdpa"
+        else:
+            model_kwargs["attn_implementation"] = "eager"
 
         if torch.cuda.is_available() or quantization in {"4bit", "8bit"}:
             model_kwargs["device_map"] = "auto"

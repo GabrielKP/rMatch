@@ -292,7 +292,7 @@ def main() -> None:
     parser.add_argument(
         "-M",
         "--matcher",
-        choices=["anthropic", "openai", "huggingface"],
+        choices=["anthropic", "openai", "mlx", "vllm", "huggingface"],
         default="anthropic",
         help="Matcher to use. Default: anthropic.",
     )
@@ -371,12 +371,6 @@ def main() -> None:
         default=False,
         help="Overwrite existing output file.",
     )
-    parser.add_argument(
-        "--no-flash-attn",
-        action="store_true",
-        default=None,
-        help="[huggingface] Disable flash-attn for the model.",
-    )
 
     args = parser.parse_args()
 
@@ -394,7 +388,6 @@ def main() -> None:
         verbose_errors=args.verbose_errors,
         prompt=args.prompt,
         overwrite=args.overwrite,
-        no_flash_attn=args.no_flash_attn,
     )
 
 

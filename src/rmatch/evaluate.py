@@ -763,6 +763,8 @@ if __name__ == "__main__":
         choices=[
             "anthropic",
             "openai",
+            "vllm",
+            "mlx",
             "huggingface",
         ],
         default="anthropic",
