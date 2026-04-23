@@ -27,6 +27,7 @@ for _mod in _HEAVY:
 # during MatcherHuggingFace.__init__. MagicMock() is truthy by default, which
 # would activate torch.compile – set them explicitly to False.
 sys.modules["torch"].cuda.is_available.return_value = False
+sys.modules["torch"].cuda.device_count.return_value = 0
 sys.modules["torch"].backends.mps.is_available.return_value = False
 # dtype sentinels used as arguments to pipeline (which is itself mocked)
 sys.modules["torch"].bfloat16 = "bfloat16"  # type: ignore

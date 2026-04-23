@@ -1,17 +1,10 @@
+from typing import cast
+
 from rmatch import get_logger
 from rmatch.matchers.matcher import Matcher
 from rmatch.prompt import get_prompt_and_parser
 
 log = get_logger(__name__)
-
-
-# Quantization types supported as pre-quantized model formats
-VLLM_QUANT_MAP: dict[str, str] = {
-    "awq": "awq",
-    "gptq": "gptq",
-    "fp8": "fp8",
-    "squeezellm": "squeezellm",
-}
 
 
 class MatcherVLLM(Matcher, matcher_name="vllm"):
@@ -21,14 +14,15 @@ class MatcherVLLM(Matcher, matcher_name="vllm"):
         window_size: int = 5,
         verbose_errors: bool = False,
         # e.g. "awq", "gptq", "fp8", or "bitsandbytes" for on-the-fly 4/8bit
-        quantization: str | None = None,
-        batch_size: int | None = None,
         max_new_tokens: int | None = None,
+        max_model_len: int | None = None,
         api_key: str | None = None,
         prompt: str | None = None,
         max_retries: int | None = None,
-        tensor_parallel_size: int = 1,  # number of GPUs to shard across
+        # gpu params, seehttps://docs.vllm.ai/en/v0.8.0/api/offline_inference/llm.html#vllm.LLM
+        tensor_parallel_size: int | None = None,  # number of GPUs to shard across
         gpu_memory_utilization: float = 0.90,
+        # required for init
         matcher_name: str | None = None,
     ):
         super().__init__()
@@ -36,13 +30,15 @@ class MatcherVLLM(Matcher, matcher_name="vllm"):
         self.prompt = prompt
         self.window_size = window_size
         self.verbose_errors = verbose_errors
-        self.batch_size = batch_size or 64  # vLLM handles its own internal batching,
-        # but this controls your prompt chunking
         self.max_new_tokens = max_new_tokens or 300
         self.max_retries = max_retries or 10
-
         self.model_name = model_name or "google/gemma-4-31B-it"
+
         log.info(f"Initializing vLLM model: {self.model_name}")
+        log.info(f"Recall context window size: {self.window_size}")
+        log.info(f"Max new tokens: {self.max_new_tokens}")
+        log.info(f"Max retries: {self.max_retries}")
+        log.info(f"Verbose errors: {self.verbose_errors}")
 
         import os
 
@@ -54,22 +50,38 @@ class MatcherVLLM(Matcher, matcher_name="vllm"):
                 "Install with: pip install rMatch[cuda]"
             )
 
+        if tensor_parallel_size is None:
+            import torch
+
+            tensor_parallel_size = max(1, torch.cuda.device_count())
+            log.info(
+                f"GPUs (tensor_parallel_size): {tensor_parallel_size} (Auto-detected)"
+            )
+        else:
+            log.info(f"GPUs (tensor_parallel_size): {tensor_parallel_size}")
+
+        log.info(f"GPU memory utilization: {gpu_memory_utilization}")
+        if max_model_len == "auto":
+            self.max_model_len = None
+        else:
+            self.max_model_len = max_model_len or 90000
+        log.info(f"Max model length: {self.max_model_len}")
+
         hf_token = api_key or os.environ.get("HF_TOKEN")
         if hf_token:
             os.environ["HF_TOKEN"] = hf_token  # vLLM picks this up automatically
 
         self.llm = LLM(
             model=self.model_name,
-            quantization=quantization,  # "awq", "gptq", "fp8", "bitsandbytes"
             tensor_parallel_size=tensor_parallel_size,
             gpu_memory_utilization=gpu_memory_utilization,
-            max_model_len=4096,  # adjust to your context needs
+            max_model_len=self.max_model_len,  # adjust to your context needs
             trust_remote_code=True,  # needed for Gemma-4
         )
 
         self.tokenizer = self.llm.get_tokenizer()
         if self.tokenizer.pad_token_id is None:
-            self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
+            self.tokenizer.pad_token_id = self.tokenizer.eos_token_id  # type: ignore
 
         self.sampling_params = SamplingParams(
             max_tokens=self.max_new_tokens,
@@ -78,10 +90,13 @@ class MatcherVLLM(Matcher, matcher_name="vllm"):
 
     def _apply_chat_template(self, messages: list[dict[str, str]]) -> str:
         """Convert messages list to single prompt string using model's template."""
-        return self.tokenizer.apply_chat_template(
-            messages,
-            tokenize=False,
-            add_generation_prompt=True,
+        return cast(
+            str,
+            self.tokenizer.apply_chat_template(
+                messages,  # type: ignore[arg-type]
+                tokenize=False,
+                add_generation_prompt=True,
+            ),
         )
 
     def match(

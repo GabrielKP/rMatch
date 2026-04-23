@@ -343,7 +343,18 @@ def main() -> None:
         "--max-new-tokens",
         type=int,
         default=None,
-        help="[huggingface] max_new_tokens for the matcher. Default: 64.",
+        help="[huggingface, vllm] max_new_tokens for the matcher. Default: 64.",
+    )
+    parser.add_argument(
+        "--max-model-len",
+        type=int,
+        default=None,
+        help=(
+            "[vllm] Maximum sequence length of the model (prompt + generation). "
+            "Default: 90000. "
+            "Set to 'auto' to auto-detect the max from model config."
+            "Set this lower to reduce memory usage. "
+        ),
     )
     parser.add_argument(
         "--verbose-errors",
@@ -385,6 +396,7 @@ def main() -> None:
         quantization=args.quantization,
         batch_size=args.batch_size,
         max_new_tokens=args.max_new_tokens,
+        max_model_len=args.max_model_len,
         verbose_errors=args.verbose_errors,
         prompt=args.prompt,
         overwrite=args.overwrite,
