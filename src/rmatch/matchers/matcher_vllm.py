@@ -1,3 +1,4 @@
+import os
 from typing import cast
 
 from rmatch import get_logger
@@ -15,7 +16,7 @@ class MatcherVLLM(Matcher, matcher_name="vllm"):
         verbose_errors: bool = False,
         # e.g. "awq", "gptq", "fp8", or "bitsandbytes" for on-the-fly 4/8bit
         max_new_tokens: int | None = None,
-        max_model_len: int | None = None,
+        max_model_len: str | int | None = None,
         api_key: str | None = None,
         prompt: str | None = None,
         max_retries: int | None = None,
@@ -39,8 +40,6 @@ class MatcherVLLM(Matcher, matcher_name="vllm"):
         log.info(f"Max new tokens: {self.max_new_tokens}")
         log.info(f"Max retries: {self.max_retries}")
         log.info(f"Verbose errors: {self.verbose_errors}")
-
-        import os
 
         try:
             from vllm import LLM, SamplingParams
@@ -75,7 +74,7 @@ class MatcherVLLM(Matcher, matcher_name="vllm"):
             model=self.model_name,
             tensor_parallel_size=tensor_parallel_size,
             gpu_memory_utilization=gpu_memory_utilization,
-            max_model_len=self.max_model_len,  # adjust to your context needs
+            max_model_len=self.max_model_len,
             trust_remote_code=True,  # needed for Gemma-4
         )
 
@@ -85,11 +84,10 @@ class MatcherVLLM(Matcher, matcher_name="vllm"):
 
         self.sampling_params = SamplingParams(
             max_tokens=self.max_new_tokens,
-            temperature=0.0,  # greedy; set higher for sampling
+            temperature=0.0,
         )
 
     def _apply_chat_template(self, messages: list[dict[str, str]]) -> str:
-        """Convert messages list to single prompt string using model's template."""
         return cast(
             str,
             self.tokenizer.apply_chat_template(
@@ -110,10 +108,9 @@ class MatcherVLLM(Matcher, matcher_name="vllm"):
         if not recall_segments:
             return []
 
-        # Build prompts (same as before)
         raw_prompts: list[list[dict[str, str]]] = []
         parsers = []
-        for idx in range(len(recall_segments)):
+        for idx, _ in enumerate(recall_segments):
             prompt_text, parser = get_prompt_and_parser(
                 story_segments,
                 recall_segments,
