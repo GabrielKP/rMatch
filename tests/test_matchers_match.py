@@ -5,6 +5,7 @@ The tests verify output format, correct index handling (1-based parser → 0-bas
 output), retry logic, and graceful degradation when responses are always malformed.
 """
 
+import sys
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -13,7 +14,9 @@ from tests.conftest import (
     RECALL_SEGMENTS,
     STORY_SEGMENTS,
     make_anthropic_response,
+    make_mlx_response,
     make_openai_response,
+    make_vllm_output,
 )
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -467,6 +470,281 @@ class TestMatcherHuggingFaceMatch:
         assert sorted(x - 1 for x in parsed1) == story_indices_1
 
 
+# ── MatcherVLLM ───────────────────────────────────────────────────────────────
+
+
+class TestMatcherVLLMMatch:
+    def _set_generate_response(self, mock_vllm_llm, texts: list[str]):
+        """Configure llm.generate to return one output per prompt."""
+        mock_vllm_llm.generate.return_value = [make_vllm_output(t) for t in texts]
+
+    def test_returns_correct_type(self, vllm_matcher, mock_vllm_llm):
+        self._set_generate_response(mock_vllm_llm, ["<1>", "<2>"])
+        result = vllm_matcher.match(STORY_SEGMENTS, RECALL_SEGMENTS)
+        assert _is_valid_matchlist(result)
+
+    def test_single_recall_valid_response(self, vllm_matcher, mock_vllm_llm):
+        self._set_generate_response(mock_vllm_llm, ["<2>"])
+        result = vllm_matcher.match(STORY_SEGMENTS, ["recall"])
+        assert result == [(0, [1])]
+
+    def test_multi_recall_correct_output(self, vllm_matcher, mock_vllm_llm):
+        self._set_generate_response(mock_vllm_llm, ["<1>", "<3>"])
+        result = vllm_matcher.match(STORY_SEGMENTS, RECALL_SEGMENTS)
+        assert result == [(0, [0]), (1, [2])]
+
+    def test_none_response_returns_empty_story_indices(
+        self, vllm_matcher, mock_vllm_llm
+    ):
+        self._set_generate_response(mock_vllm_llm, ["<NONE>"])
+        result = vllm_matcher.match(STORY_SEGMENTS, ["recall"])
+        assert result == [(0, [])]
+
+    def test_batches_all_segments_in_first_call(self, vllm_matcher, mock_vllm_llm):
+        self._set_generate_response(mock_vllm_llm, ["<1>", "<2>"])
+        vllm_matcher.match(STORY_SEGMENTS, RECALL_SEGMENTS)
+        assert mock_vllm_llm.generate.call_count == 1
+        first_call_input = mock_vllm_llm.generate.call_args[0][0]
+        assert len(first_call_input) == len(RECALL_SEGMENTS)
+
+    def test_malformed_response_triggers_retry(self, vllm_matcher, mock_vllm_llm):
+        mock_vllm_llm.generate.side_effect = [
+            [make_vllm_output("could not parse")],
+            [make_vllm_output("<1>")],
+        ]
+        result = vllm_matcher.match(STORY_SEGMENTS, ["recall"])
+        assert mock_vllm_llm.generate.call_count == 2
+        assert result == [(0, [0])]
+
+    def test_all_retries_exhausted_returns_empty(self, vllm_matcher, mock_vllm_llm):
+        mock_vllm_llm.generate.return_value = [make_vllm_output("unparseable")]
+        result = vllm_matcher.match(STORY_SEGMENTS, ["recall"])
+        assert mock_vllm_llm.generate.call_count == 3
+        assert result == [(0, [])]
+
+    def test_empty_recall_returns_empty_list(self, vllm_matcher, mock_vllm_llm):
+        result = vllm_matcher.match(STORY_SEGMENTS, [])
+        assert result == []
+        mock_vllm_llm.generate.assert_not_called()
+
+    def test_out_of_bounds_index_is_treated_as_malformed(
+        self, vllm_matcher, mock_vllm_llm
+    ):
+        mock_vllm_llm.generate.side_effect = [
+            [make_vllm_output("<999>")],
+            [make_vllm_output("<1>")],
+        ]
+        result = vllm_matcher.match(STORY_SEGMENTS, ["recall"])
+        assert result == [(0, [0])]
+
+    def test_partial_batch_retry(self, vllm_matcher, mock_vllm_llm):
+        mock_vllm_llm.generate.side_effect = [
+            [make_vllm_output("<1>"), make_vllm_output("bad")],
+            [make_vllm_output("<2>")],
+        ]
+        result = vllm_matcher.match(STORY_SEGMENTS, RECALL_SEGMENTS)
+        assert result == [(0, [0]), (1, [1])]
+        assert mock_vllm_llm.generate.call_count == 2
+
+    def test_output_indices_sorted(self, vllm_matcher, mock_vllm_llm):
+        self._set_generate_response(mock_vllm_llm, ["<3, 1>"])
+        result = vllm_matcher.match(STORY_SEGMENTS, ["recall"])
+        story_indices = result[0][1]
+        assert story_indices == sorted(story_indices)
+
+    def test_prompt_response_log_populated(self, vllm_matcher, mock_vllm_llm):
+        self._set_generate_response(mock_vllm_llm, ["<1>", "<2>"])
+        vllm_matcher.match(STORY_SEGMENTS, RECALL_SEGMENTS, "story1_sub-01_1")
+        assert len(vllm_matcher.prompt_response_log["story1_sub-01_1"]) == len(
+            RECALL_SEGMENTS
+        )
+
+    def test_recall_index_in_output_matches_position(self, vllm_matcher, mock_vllm_llm):
+        self._set_generate_response(mock_vllm_llm, ["<1>", "<2>"])
+        result = vllm_matcher.match(STORY_SEGMENTS, RECALL_SEGMENTS)
+        for expected_idx, (actual_idx, _) in enumerate(result):
+            assert actual_idx == expected_idx
+
+    def test_prompt_response_log_content(self, vllm_matcher, mock_vllm_llm):
+        # recall 0: attempt 1 malformed
+        # ->retried alone with "<2>"; recall 1: succeeds "<1>"
+        mock_vllm_llm.generate.side_effect = [
+            [make_vllm_output("bad response"), make_vllm_output("<1>")],
+            [make_vllm_output("<2>")],
+        ]
+        key = "story1_sub-01_1"
+        result = vllm_matcher.match(STORY_SEGMENTS, RECALL_SEGMENTS, key)
+
+        log = vllm_matcher.prompt_response_log[key]
+
+        assert len(log[0]) == 2
+        prompt0_a1, response0_a1, parsed0_a1 = log[0][0]
+        assert f">>> {RECALL_SEGMENTS[0]}" in prompt0_a1
+        assert response0_a1 == "bad response"
+        assert parsed0_a1 is None
+
+        prompt0_a2, response0_a2, parsed0_a2 = log[0][1]
+        assert f">>> {RECALL_SEGMENTS[0]}" in prompt0_a2
+        assert response0_a2 == "<2>"
+        assert parsed0_a2 == {2}
+
+        assert len(log[1]) == 1
+        prompt1, response1, parsed1 = log[1][0]
+        assert f">>> {RECALL_SEGMENTS[1]}" in prompt1
+        assert response1 == "<1>"
+        assert parsed1 == {1}
+
+        _, story_indices_0 = result[0]
+        assert sorted(x - 1 for x in parsed0_a2) == story_indices_0
+        _, story_indices_1 = result[1]
+        assert sorted(x - 1 for x in parsed1) == story_indices_1
+
+
+# ── MatcherMLX ────────────────────────────────────────────────────────────────
+
+
+class TestMatcherMLXMatch:
+    def test_returns_correct_type(self, mlx_matcher, mock_mlx_generate):
+        mock_mlx_generate.side_effect = [
+            make_mlx_response("<1>"),
+            make_mlx_response("<2>"),
+        ]
+        result = mlx_matcher.match(STORY_SEGMENTS, RECALL_SEGMENTS)
+        assert _is_valid_matchlist(result)
+
+    def test_single_recall_valid_response(self, mlx_matcher, mock_mlx_generate):
+        mock_mlx_generate.return_value = make_mlx_response("<2>")
+        result = mlx_matcher.match(STORY_SEGMENTS, ["recall"])
+        assert result == [(0, [1])]
+
+    def test_multi_recall_correct_output(self, mlx_matcher, mock_mlx_generate):
+        mock_mlx_generate.side_effect = [
+            make_mlx_response("<1>"),
+            make_mlx_response("<3>"),
+        ]
+        result = mlx_matcher.match(STORY_SEGMENTS, RECALL_SEGMENTS)
+        assert result == [(0, [0]), (1, [2])]
+
+    def test_none_response_returns_empty_story_indices(
+        self, mlx_matcher, mock_mlx_generate
+    ):
+        mock_mlx_generate.return_value = make_mlx_response("<NONE>")
+        result = mlx_matcher.match(STORY_SEGMENTS, ["recall"])
+        assert result == [(0, [])]
+
+    def test_processes_segments_sequentially(self, mlx_matcher, mock_mlx_generate):
+        mock_mlx_generate.side_effect = [
+            make_mlx_response("<1>"),
+            make_mlx_response("<2>"),
+        ]
+        mlx_matcher.match(STORY_SEGMENTS, RECALL_SEGMENTS)
+        assert mock_mlx_generate.call_count == len(RECALL_SEGMENTS)
+
+    def test_malformed_response_triggers_retry(self, mlx_matcher, mock_mlx_generate):
+        mock_mlx_generate.side_effect = [
+            make_mlx_response("could not parse"),
+            make_mlx_response("<1>"),
+        ]
+        result = mlx_matcher.match(STORY_SEGMENTS, ["recall"])
+        assert mock_mlx_generate.call_count == 2
+        assert result == [(0, [0])]
+
+    def test_all_retries_exhausted_returns_empty(self, mlx_matcher, mock_mlx_generate):
+        mock_mlx_generate.return_value = make_mlx_response("unparseable")
+        result = mlx_matcher.match(STORY_SEGMENTS, ["recall"])
+        assert mock_mlx_generate.call_count == 3
+        assert result == [(0, [])]
+
+    def test_empty_recall_returns_empty_list(self, mlx_matcher, mock_mlx_generate):
+        result = mlx_matcher.match(STORY_SEGMENTS, [])
+        assert result == []
+        mock_mlx_generate.assert_not_called()
+
+    def test_out_of_bounds_index_is_accepted(self, mlx_matcher, mock_mlx_generate):
+        # MLX does not validate bounds; any parseable index is stored as-is
+        mock_mlx_generate.return_value = make_mlx_response("<999>")
+        result = mlx_matcher.match(STORY_SEGMENTS, ["recall"])
+        assert result == [(0, [998])]
+        assert mock_mlx_generate.call_count == 1
+
+    def test_output_indices_sorted(self, mlx_matcher, mock_mlx_generate):
+        mock_mlx_generate.return_value = make_mlx_response("<3, 1>")
+        result = mlx_matcher.match(STORY_SEGMENTS, ["recall"])
+        story_indices = result[0][1]
+        assert story_indices == sorted(story_indices)
+
+    def test_usage_metrics_updated(self, mlx_matcher, mock_mlx_generate):
+        mock_mlx_generate.return_value = make_mlx_response(
+            "<1>",
+            prompt_tokens=50,
+            generation_tokens=10,
+            generation_tps=25.0,
+            peak_memory=2.0,
+        )
+        mlx_matcher.match(STORY_SEGMENTS, ["recall"])
+        usage = mlx_matcher.get_usage()
+        assert usage["total_prompt_tokens"] == 50
+        assert usage["total_generation_tokens"] == 10
+        assert usage["avg_token_per_second"] == 25.0
+        assert usage["peak_memory"] == 2.0
+
+    def test_recall_index_in_output_matches_position(
+        self, mlx_matcher, mock_mlx_generate
+    ):
+        mock_mlx_generate.side_effect = [
+            make_mlx_response("<1>"),
+            make_mlx_response("<2>"),
+        ]
+        result = mlx_matcher.match(STORY_SEGMENTS, RECALL_SEGMENTS)
+        for expected_idx, (actual_idx, _) in enumerate(result):
+            assert actual_idx == expected_idx
+
+    def test_prompt_response_log_populated(self, mlx_matcher, mock_mlx_generate):
+        mock_mlx_generate.side_effect = [
+            make_mlx_response("<1>"),
+            make_mlx_response("<2>"),
+        ]
+        mlx_matcher.match(STORY_SEGMENTS, RECALL_SEGMENTS, "story1_sub-01_1")
+        assert len(mlx_matcher.prompt_response_log["story1_sub-01_1"]) == len(
+            RECALL_SEGMENTS
+        )
+
+    def test_prompt_response_log_content(self, mlx_matcher, mock_mlx_generate):
+        # recall 0: attempt 1 malformed
+        # -> attempt 2 succeeds "<2>"; recall 1: succeeds "<1>"
+        mock_mlx_generate.side_effect = [
+            make_mlx_response("bad response"),
+            make_mlx_response("<2>"),
+            make_mlx_response("<1>"),
+        ]
+        key = "story1_sub-01_1"
+        result = mlx_matcher.match(STORY_SEGMENTS, RECALL_SEGMENTS, key)
+
+        log = mlx_matcher.prompt_response_log[key]
+
+        assert len(log[0]) == 2
+        prompt0_a1, response0_a1, parsed0_a1 = log[0][0]
+        assert f">>> {RECALL_SEGMENTS[0]}" in prompt0_a1
+        assert response0_a1 == "bad response"
+        assert parsed0_a1 is None
+
+        prompt0_a2, response0_a2, parsed0_a2 = log[0][1]
+        assert f">>> {RECALL_SEGMENTS[0]}" in prompt0_a2
+        assert response0_a2 == "<2>"
+        assert parsed0_a2 == {2}
+
+        assert len(log[1]) == 1
+        prompt1, response1, parsed1 = log[1][0]
+        assert f">>> {RECALL_SEGMENTS[1]}" in prompt1
+        assert response1 == "<1>"
+        assert parsed1 == {1}
+
+        _, story_indices_0 = result[0]
+        assert sorted(x - 1 for x in parsed0_a2) == story_indices_0
+        _, story_indices_1 = result[1]
+        assert sorted(x - 1 for x in parsed1) == story_indices_1
+
+
 # ── max_retries init ─────────────────────────────────────────────────────────
 
 
@@ -481,22 +759,46 @@ class TestMaxRetriesInit:
         assert m.max_retries == 5
 
     def test_openai_max_retries_stored_from_init(self, mock_openai_client):
-        with patch(
-            "rmatch.matchers.matcher_openai.OpenAI", return_value=mock_openai_client
-        ):
+        mock_openai_mod = MagicMock()
+        mock_openai_mod.OpenAI.return_value = mock_openai_client
+        with patch.dict("sys.modules", {"openai": mock_openai_mod}):
             from rmatch.matchers.matcher_openai import MatcherOpenAI
 
             m = MatcherOpenAI(api_key="test-key", max_retries=7)
         assert m.max_retries == 7
 
     def test_huggingface_max_retries_stored_from_init(self, mock_hf_pipe):
-        with patch(
-            "rmatch.matchers.matcher_huggingface.pipeline", return_value=mock_hf_pipe
-        ):
-            from rmatch.matchers.matcher_huggingface import MatcherHuggingFace
+        sys.modules["transformers"].pipeline.return_value = mock_hf_pipe
+        from rmatch.matchers.matcher_huggingface import MatcherHuggingFace
 
-            m = MatcherHuggingFace(api_key="test-hf-token", max_retries=2)
+        m = MatcherHuggingFace(api_key="test-hf-token", max_retries=2)
         assert m.max_retries == 2
+
+    def test_vllm_max_retries_stored_from_init(self):
+        mock_vllm = MagicMock()
+        mock_vllm.LLM.return_value.get_tokenizer.return_value.pad_token_id = None
+        mock_vllm.LLM.return_value.get_tokenizer.return_value.eos_token_id = 2
+        with patch.dict("sys.modules", {"vllm": mock_vllm}):
+            from rmatch.matchers.matcher_vllm import MatcherVLLM
+
+            m = MatcherVLLM(model_name="test-model", max_retries=5)
+        assert m.max_retries == 5
+
+    def test_mlx_max_retries_stored_from_init(self):
+        mock_mlx = MagicMock()
+        mock_mlx.load.return_value = (MagicMock(), MagicMock())
+        with patch.dict(
+            "sys.modules",
+            {
+                "mlx_vlm": mock_mlx,
+                "mlx_vlm.utils": MagicMock(),
+                "mlx_vlm.prompt_utils": MagicMock(),
+            },
+        ):
+            from rmatch.matchers.matcher_mlx import MatcherMLX
+
+            m = MatcherMLX(model_name="test-model", max_retries=7)
+        assert m.max_retries == 7
 
     def test_default_max_retries_when_not_specified(self, mock_anthropic_client):
         with patch("anthropic.Anthropic", return_value=mock_anthropic_client):
@@ -524,7 +826,7 @@ class TestMatcherFactory:
         assert isinstance(m, MatcherAnthropic)
 
     def test_factory_returns_openai_instance(self):
-        with patch("rmatch.matchers.matcher_openai.OpenAI"):
+        with patch.dict("sys.modules", {"openai": MagicMock()}):
             from rmatch.matchers import Matcher, MatcherOpenAI
 
             m = Matcher(matcher_name="openai", api_key="test-key")
@@ -534,12 +836,37 @@ class TestMatcherFactory:
         pipe = MagicMock()
         pipe.tokenizer.pad_token_id = None
         pipe.tokenizer.eos_token_id = 2
-        pipe.tokenizer.padding_side = "right"
-        with patch("rmatch.matchers.matcher_huggingface.pipeline", return_value=pipe):
-            from rmatch.matchers import Matcher, MatcherHuggingFace
+        sys.modules["transformers"].pipeline.return_value = pipe
+        from rmatch.matchers import Matcher, MatcherHuggingFace
 
-            m = Matcher(matcher_name="huggingface", api_key="test-hf-token")
+        m = Matcher(matcher_name="huggingface", api_key="test-hf-token")
         assert isinstance(m, MatcherHuggingFace)
+
+    def test_factory_returns_vllm_instance(self):
+        mock_vllm = MagicMock()
+        mock_vllm.LLM.return_value.get_tokenizer.return_value.pad_token_id = None
+        mock_vllm.LLM.return_value.get_tokenizer.return_value.eos_token_id = 2
+        with patch.dict("sys.modules", {"vllm": mock_vllm}):
+            from rmatch.matchers import Matcher, MatcherVLLM
+
+            m = Matcher(matcher_name="vllm", model_name="test-model")
+        assert isinstance(m, MatcherVLLM)
+
+    def test_factory_returns_mlx_instance(self):
+        mock_mlx = MagicMock()
+        mock_mlx.load.return_value = (MagicMock(), MagicMock())
+        with patch.dict(
+            "sys.modules",
+            {
+                "mlx_vlm": mock_mlx,
+                "mlx_vlm.utils": MagicMock(),
+                "mlx_vlm.prompt_utils": MagicMock(),
+            },
+        ):
+            from rmatch.matchers import Matcher, MatcherMLX
+
+            m = Matcher(matcher_name="mlx", model_name="test-model")
+        assert isinstance(m, MatcherMLX)
 
     def test_factory_unknown_name_raises_value_error(self):
         from rmatch.matchers import Matcher
