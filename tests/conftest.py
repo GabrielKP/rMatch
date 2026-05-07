@@ -27,6 +27,7 @@ for _mod in _HEAVY:
 # during MatcherHuggingFace.__init__. MagicMock() is truthy by default, which
 # would activate torch.compile – set them explicitly to False.
 sys.modules["torch"].cuda.is_available.return_value = False
+sys.modules["torch"].cuda.device_count.return_value = 0
 sys.modules["torch"].backends.mps.is_available.return_value = False
 # dtype sentinels used as arguments to pipeline (which is itself mocked)
 sys.modules["torch"].bfloat16 = "bfloat16"  # type: ignore
@@ -173,9 +174,9 @@ def mock_openai_client():
 
 @pytest.fixture
 def openai_matcher(mock_openai_client):
-    with patch(
-        "rmatch.matchers.matcher_openai.OpenAI", return_value=mock_openai_client
-    ):
+    mock_openai_mod = MagicMock()
+    mock_openai_mod.OpenAI.return_value = mock_openai_client
+    with patch.dict("sys.modules", {"openai": mock_openai_mod}):
         from rmatch.matchers.matcher_openai import MatcherOpenAI
 
         m = MatcherOpenAI(api_key="test-openai-key", max_retries=3)
@@ -193,10 +194,81 @@ def mock_hf_pipe():
 
 @pytest.fixture
 def huggingface_matcher(mock_hf_pipe):
-    with patch(
-        "rmatch.matchers.matcher_huggingface.pipeline", return_value=mock_hf_pipe
-    ):
-        from rmatch.matchers.matcher_huggingface import MatcherHuggingFace
+    sys.modules["transformers"].pipeline.return_value = mock_hf_pipe
+    from rmatch.matchers.matcher_huggingface import MatcherHuggingFace
 
-        m = MatcherHuggingFace(api_key="test-hf-token", max_retries=3)
+    m = MatcherHuggingFace(api_key="test-hf-token", max_retries=3)
+    return m
+
+
+# ── vLLM helpers & fixtures ───────────────────────────────────────────────────
+
+
+def make_vllm_output(text: str):
+    """Create a mock vLLM RequestOutput with a single completion."""
+    output = MagicMock()
+    output.outputs[0].text = text
+    return output
+
+
+@pytest.fixture
+def mock_vllm_llm():
+    llm = MagicMock()
+    llm.get_tokenizer.return_value.pad_token_id = None
+    llm.get_tokenizer.return_value.eos_token_id = 2
+    return llm
+
+
+@pytest.fixture
+def vllm_matcher(mock_vllm_llm):
+    mock_vllm = MagicMock()
+    mock_vllm.LLM.return_value = mock_vllm_llm
+    with patch.dict("sys.modules", {"vllm": mock_vllm}):
+        from rmatch.matchers.matcher_vllm import MatcherVLLM
+
+        m = MatcherVLLM(model_name="test-model", max_retries=3)
+    return m
+
+
+# ── MLX helpers & fixtures ────────────────────────────────────────────────────
+
+
+def make_mlx_response(
+    text: str,
+    prompt_tokens: int = 50,
+    generation_tokens: int = 10,
+    generation_tps: float = 20.0,
+    peak_memory: float = 1.0,
+):
+    """Create a mock mlx-vlm GenerationResult."""
+    resp = MagicMock()
+    resp.text = text
+    resp.prompt_tokens = prompt_tokens
+    resp.generation_tokens = generation_tokens
+    resp.generation_tps = generation_tps
+    resp.peak_memory = peak_memory
+    return resp
+
+
+@pytest.fixture
+def mock_mlx_generate():
+    return MagicMock()
+
+
+@pytest.fixture
+def mlx_matcher(mock_mlx_generate):
+    mock_mlx = MagicMock()
+    mock_mlx.generate = mock_mlx_generate
+    mock_mlx.load.return_value = (MagicMock(), MagicMock())
+    with patch.dict(
+        "sys.modules",
+        {
+            "mlx_vlm": mock_mlx,
+            "mlx_vlm.utils": MagicMock(),
+            "mlx_vlm.prompt_utils": MagicMock(),
+        },
+    ):
+        from rmatch.matchers.matcher_mlx import MatcherMLX
+
+        m = MatcherMLX(model_name="test-model", max_retries=3)
     return m

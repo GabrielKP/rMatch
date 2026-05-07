@@ -1,7 +1,5 @@
 import os
-import re
 
-import anthropic
 from tqdm import tqdm
 
 from rmatch import get_logger, matchlist_type
@@ -53,6 +51,8 @@ class MatcherAnthropic(Matcher, matcher_name="anthropic"):
                 raise ValueError(
                     "ANTHROPIC_API_KEY not found in .env or environment variables."
                 )
+        import anthropic
+
         self.client = anthropic.Anthropic(api_key=api_key)
 
         self.window_size = window_size

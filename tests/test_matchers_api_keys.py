@@ -68,7 +68,7 @@ class TestOpenAIApiKey:
                 MatcherOpenAI(api_key=None)
 
     def test_explicit_key_bypasses_env_lookup(self):
-        with patch("rmatch.matchers.matcher_openai.OpenAI") as mock_cls:
+        with patch("openai.OpenAI") as mock_cls:
             mock_cls.return_value = MagicMock()
             from rmatch.matchers.matcher_openai import MatcherOpenAI
 
@@ -79,7 +79,7 @@ class TestOpenAIApiKey:
     def test_env_var_key_used_when_no_explicit_key(self):
         with patch("rmatch.matchers.matcher_openai.os") as mock_os:
             mock_os.environ.get.return_value = "sk-openai-env"
-            with patch("rmatch.matchers.matcher_openai.OpenAI") as mock_cls:
+            with patch("openai.OpenAI") as mock_cls:
                 mock_cls.return_value = MagicMock()
                 from rmatch.matchers.matcher_openai import MatcherOpenAI
 
@@ -111,7 +111,7 @@ class TestHuggingFaceApiKey:
     def test_missing_key_raises_value_error(self):
         with patch("rmatch.matchers.matcher_huggingface.os") as mock_os:
             mock_os.environ.get.return_value = None
-            with patch("rmatch.matchers.matcher_huggingface.pipeline"):
+            with patch("transformers.pipeline"):
                 from rmatch.matchers.matcher_huggingface import MatcherHuggingFace
 
                 with pytest.raises(ValueError, match="HF_TOKEN"):
@@ -119,7 +119,7 @@ class TestHuggingFaceApiKey:
 
     def test_explicit_key_bypasses_env_lookup(self):
         pipe = self._make_pipe_mock()
-        with patch("rmatch.matchers.matcher_huggingface.pipeline", return_value=pipe):
+        with patch("transformers.pipeline", return_value=pipe):
             from rmatch.matchers.matcher_huggingface import MatcherHuggingFace
 
             m = MatcherHuggingFace(api_key="hf-explicit-token")
@@ -129,9 +129,7 @@ class TestHuggingFaceApiKey:
         pipe = self._make_pipe_mock()
         with patch("rmatch.matchers.matcher_huggingface.os") as mock_os:
             mock_os.environ.get.return_value = "hf-env-token"
-            with patch(
-                "rmatch.matchers.matcher_huggingface.pipeline", return_value=pipe
-            ) as mock_pipeline:
+            with patch("transformers.pipeline", return_value=pipe) as mock_pipeline:
                 from rmatch.matchers.matcher_huggingface import MatcherHuggingFace
 
                 m = MatcherHuggingFace(api_key=None)
@@ -143,7 +141,7 @@ class TestHuggingFaceApiKey:
     def test_missing_key_error_message_is_helpful(self):
         with patch("rmatch.matchers.matcher_huggingface.os") as mock_os:
             mock_os.environ.get.return_value = None
-            with patch("rmatch.matchers.matcher_huggingface.pipeline"):
+            with patch("transformers.pipeline"):
                 from rmatch.matchers.matcher_huggingface import MatcherHuggingFace
 
                 with pytest.raises(ValueError) as exc_info:

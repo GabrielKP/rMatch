@@ -1,7 +1,5 @@
 import os
 
-import tiktoken
-from openai import OpenAI
 from tqdm import tqdm
 
 from rmatch import get_logger
@@ -53,6 +51,8 @@ class MatcherOpenAI(Matcher, matcher_name="openai"):
                 raise ValueError(
                     "OPENAI_API_KEY not found in .env or environment variables."
                 )
+        from openai import OpenAI
+
         self.client = OpenAI(api_key=api_key)
         self.window_size = window_size
         self.usage_metrics = {"in_tokens": 0, "out_tokens": 0, "cost": 0.0}
@@ -78,6 +78,8 @@ class MatcherOpenAI(Matcher, matcher_name="openai"):
         return (in_tokens * prices[0] + out_tokens * prices[1]) / 1_000_000
 
     def _estimate_tokens(self, query: str) -> int:
+        import tiktoken
+
         try:
             enc = tiktoken.encoding_for_model(self.model_name)
         except KeyError:
