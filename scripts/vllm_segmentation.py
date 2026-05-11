@@ -2,12 +2,14 @@ from typing import cast
 
 from rmatch import get_logger
 
+import re
 import os
 import json
 import argparse
 import pandas as pd
 from pathlib import Path
 from typing import Literal
+from difflib import ndiff
 
 log = get_logger(__name__)
 
@@ -91,6 +93,34 @@ class SegmenterVLLM:
                 add_generation_prompt=True,
             ),
         )
+    
+    def validate_segments(self, transcript, segments):
+        cursor = 0
+        for i, seg in enumerate(segments):
+            idx = transcript.find(seg, cursor)
+            if idx == -1:
+                return False, (
+                    f"segment {i} not found verbatim\n"
+                    f"SEGMENT:\n{repr(seg)}"
+                )
+            cursor = idx + len(seg)
+
+        # violations = []
+        # for i, seg in enumerate(segments):
+        #     wc = len(seg.split())
+
+        #     if wc > 20:
+        #         violations.append(
+        #             f"segment {i} has {wc} words"
+        #         )
+
+        # if violations:
+        #     return False, (
+        #         "word_limit_violation\n"
+        #         + "\n".join(violations)
+        #     )
+
+        return True, None
 
     def segment(
         self,
@@ -100,9 +130,11 @@ class SegmenterVLLM:
         
         prompt = f"""I have a transcript of someone describing movies they watched. Follow these steps:
 
-1. Split the text into sentences
-2. For sentences longer than 20 words, split them at natural breaks (punctuation, topic shifts, noun-verb units)
+1. Split the text into sentences or chunks of sentences that are 20 words or fewer, this is a HARD constraint
+2. For sentences longer than 20 words, split them at natural breaks (punctuation, topic shifts, noun-verb units) to meet the 20 word constraint
+3. Before outputting, count the words in all the segments and verify that you meet the requirements for 20 words length
 3. Verify the segmented text is word-for-word identical to the original
+4. When faced with the choice, always prefer smaller segments; it is imperative that the 20 words limit is respected
 
 Output ONLY a JSON array where each element is a segment. No preamble, no explanation, no markdown code blocks. Format:
 ["segment 1 text here", "segment 2 text here", "segment 3 text here"]
@@ -145,6 +177,16 @@ Here is the transcript to segment:
             if not isinstance(segments, list):
                 raise ValueError("Model output was not a JSON array")
             
+            valid, reason = self.validate_segments(
+                transcript,
+                segments,
+            )
+
+            if not valid:
+                raise ValueError(
+                    f"Validation failed:\n{reason}"
+                )
+
             return segments
         except (json.JSONDecodeError, ValueError) as e:
             print(f"Failed to parse model output as JSON: {e}")
@@ -154,15 +196,18 @@ Here is the transcript to segment:
     def segment_batch(
             self,
             transcripts: list[str],
+            filenames: list[str]
     ) -> list[list[str]]:
         log.info(f"Prepping {len(transcripts)} transcripts for batch processing...")
         prompts = []
         for t in transcripts:
             prompt = f"""I have a transcript of someone describing movies they watched. Follow these steps:
 
-1. Split the text into sentences
-2. For sentences longer than 20 words, split them at natural breaks (punctuation, topic shifts, noun-verb units)
+1. Split the text into sentences or chunks of sentences that are 20 words or fewer, this is a HARD constraint
+2. For sentences longer than 20 words, split them at natural breaks (punctuation, topic shifts, noun-verb units) to meet the 20 word constraint
+3. Before outputting, count the words in all the segments and verify that you meet the requirements for 20 words length
 3. Verify the segmented text is word-for-word identical to the original
+4. When faced with the choice, always prefer smaller segments; it is imperative that the 20 words limit is respected
 
 Output ONLY a JSON array where each element is a segment. No preamble, no explanation, no markdown code blocks. Format:
 ["segment 1 text here", "segment 2 text here", "segment 3 text here"]
@@ -202,7 +247,12 @@ Here is the transcript to segment:
                     log.warning(f"Transcript {i}: Output was not a JSON array, using empty list")
                     all_segs.append([])
                 else:
-                    all_segs.append(segments)
+                    valid, reason = self.validate_segments(transcripts[i], segments)
+                    if valid:
+                        all_segs.append(segments)
+                    else:
+                        log.warning(f"{filenames[i].name}: Validation failed\n{reason}")
+                        all_segs.append([])
                 
             except (json.JSONDecodeError, ValueError) as e:
                 log.error(f"Transcript {i}: Failed to parse - {e}")
@@ -259,7 +309,8 @@ def process_directory(
             with open(file_path, 'r', encoding="utf-8") as f:
                 transcripts.append(f.read())
         
-        all_segments = segmenter.segment_batch(transcripts)
+        filenames = [f for f in transcript_files]
+        all_segments = segmenter.segment_batch(transcripts, filenames)
 
         for file_path, segments in zip(transcript_files, all_segments):
             output_file = output_path / f"{file_path.stem}.csv"
