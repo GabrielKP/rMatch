@@ -12,7 +12,9 @@ from typing import Literal
 from difflib import ndiff
 
 log = get_logger(__name__)
-
+RED = "\033[91m"
+YELLOW = "\033[93m"
+RESET = "\033[0m"
 
 class SegmenterVLLM:
     def __init__(
@@ -27,7 +29,7 @@ class SegmenterVLLM:
         gpu_memory_utilization: float = 0.90,
     ):
         if model_name is None:
-            self.model_name = "google/gemma-4-E4B-it"
+            self.model_name = "google/gemma-4-31B-it"
         else:
             self.model_name = model_name
         
@@ -95,31 +97,22 @@ class SegmenterVLLM:
         )
     
     def validate_segments(self, transcript, segments):
+        transcript = re.sub(r"\s+", " ", transcript)
         cursor = 0
         for i, seg in enumerate(segments):
+            seg = re.sub(r"\s+", " ", seg)
             idx = transcript.find(seg, cursor)
             if idx == -1:
+                snippet_start = max(0, cursor - 50)
+                snippet_end = min(len(transcript), cursor + 50)
+                context = transcript[snippet_start:snippet_end]
+                
                 return False, (
                     f"segment {i} not found verbatim\n"
                     f"SEGMENT:\n{repr(seg)}"
+                    f"CONTEXT AROUND CURSOR:\n{repr(context)}"
                 )
             cursor = idx + len(seg)
-
-        # violations = []
-        # for i, seg in enumerate(segments):
-        #     wc = len(seg.split())
-
-        #     if wc > 20:
-        #         violations.append(
-        #             f"segment {i} has {wc} words"
-        #         )
-
-        # if violations:
-        #     return False, (
-        #         "word_limit_violation\n"
-        #         + "\n".join(violations)
-        #     )
-
         return True, None
 
     def segment(
@@ -203,11 +196,20 @@ Here is the transcript to segment:
         for t in transcripts:
             prompt = f"""I have a transcript of someone describing movies they watched. Follow these steps:
 
-1. Split the text into sentences or chunks of sentences that are 20 words or fewer, this is a HARD constraint
-2. For sentences longer than 20 words, split them at natural breaks (punctuation, topic shifts, noun-verb units) to meet the 20 word constraint
-3. Before outputting, count the words in all the segments and verify that you meet the requirements for 20 words length
-3. Verify the segmented text is word-for-word identical to the original
-4. When faced with the choice, always prefer smaller segments; it is imperative that the 20 words limit is respected
+1. Split the text into linguistic clauses. Do not change or remove any words from the text
+2. When segmenting, focus on punctuation, topic shifts, and new noun-verb units (natural breaks)
+    a. DO NOT add any punctuation or fix any grammatical mistakes in the transcript, it should be exactly preserved
+3. Be sure to leave phrases such as "oh my god" intact and in their own events
+4. Segment into clauses where every new finite verb with its own (even implied) subject starts a new clause; coordinators that launch a fresh verb = split; keep fillers intact; preserve exact wording
+5. Include lead in words (like "Well,") with the clause that immediately follows it
+6. Make sure that filler or transition words ("and", "but", "oh") are not their own clauses
+8. Verify the segmented text is word-for-word identical to the original
+    a. Even if you think that a word was duplicated (for example the same word is repeated twice), keep both instances in
+    b. The provided clause segmentation should be 100% identical to the original transcription and the text words
+
+CRITICAL NOTE: Independent clauses that represent a single thought should be kept together.
+For instance, “He said that he was sad” is a single thought. Do NOT break it up into two clauses (i.e., “He said” and “that he was sad”).
+As another example, “I think the time jumped” is a single thought. Do NOT break it up into two clauses (i.e., “I think” and “the time jumped”).
 
 Output ONLY a JSON array where each element is a segment. No preamble, no explanation, no markdown code blocks. Format:
 ["segment 1 text here", "segment 2 text here", "segment 3 text here"]
@@ -251,7 +253,8 @@ Here is the transcript to segment:
                     if valid:
                         all_segs.append(segments)
                     else:
-                        log.warning(f"{filenames[i].name}: Validation failed\n{reason}")
+                        log.warning(f"{RED}[VALIDATION FAILED]{RESET} {filenames[i].name}\n"
+                                    f"{YELLOW}{reason}{RESET}")
                         all_segs.append([])
                 
             except (json.JSONDecodeError, ValueError) as e:
