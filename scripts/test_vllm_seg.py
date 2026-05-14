@@ -5,7 +5,7 @@ from pathlib import Path
 import pandas as pd
 
 from rmatch import get_logger
-from scripts.segmenter_vllm import SegmenterVLLM
+from rmatch.segmenters import SegmenterVLLM
 
 log = get_logger(__name__)
 

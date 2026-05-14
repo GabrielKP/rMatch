@@ -124,7 +124,7 @@ Here is the transcript to segment:
     def _validate_segments(
         self, transcript: str, segments: list[str]
     ) -> tuple[bool, str | None]:
-        SLACK = 5
+        SLACK = 2
         transcript = re.sub(r"\s+", " ", transcript)
         cursor = 0
         for i, seg in enumerate(segments):
