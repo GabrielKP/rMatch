@@ -230,21 +230,18 @@ Here is the transcript to segment:
                     all_segs.append([])
                 else:
                     valid, reason = self._validate_segments(transcripts[i], segments)
-                    if valid:
-                        all_segs.append(segments)
-                    else:
+                    if not valid:
                         if labels is not None:
                             log.warning(
                                 f"{RED}[VALIDATION FAILED]{RESET} {labels[i]}\n"
                                 f"{YELLOW}{reason}{RESET}"
                             )
-                            all_segs.append([])
                         else:
                             log.warning(
                                 f"{RED}[VALIDATION FAILED]{RESET} Transcript #{i+1}\n"
                                 f"{YELLOW}{reason}{RESET}"
                             )
-                            all_segs.append([])
+                    all_segs.append(segments)
 
             except (json.JSONDecodeError, ValueError) as e:
                 if labels is not None:
