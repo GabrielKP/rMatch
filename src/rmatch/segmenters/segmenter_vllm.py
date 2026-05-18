@@ -143,6 +143,66 @@ Here is the transcript to segment:
             cursor = idx + len(seg)
         return True, None
 
+    def _validate_segments_advanced_recovery(
+        self, transcript: str, segments: list[str]
+    ) -> tuple[bool, dict[int, str]]:
+        SLACK = 2
+        transcript = re.sub(r"\s+", " ", transcript)
+        cursor = 0
+        failures = {}
+
+        i = 0
+        while i < len(segments):
+            seg = re.sub(r"\s+", " ", segments[i])
+            idx = transcript.find(seg, cursor, cursor + len(seg) + SLACK)
+            # fail case
+            if idx == -1:
+                snippet_start = max(0, cursor - 50)
+                snippet_end = min(len(transcript), cursor + 50)
+                context = transcript[snippet_start:snippet_end]
+
+                failures[i] = (
+                    f"segment {i} not found verbatim\n"
+                    f"SEGMENT:\n{repr(seg)}\n"
+                    f"CONTEXT AROUND CURSOR:\n{repr(context)}"
+                )
+
+                j = i + 1  # search for next seg
+                recovered = False
+                while j < len(segments):
+                    recovery_seg = re.sub(r"\s+", " ", segments[j])
+                    recovery_idx = transcript.find(recovery_seg, cursor)
+
+                    # recovered case
+                    if recovery_idx != -1:
+                        for k in range(i + 1, j):
+                            skipped_seg = re.sub(r"\s+", " ", segments[k])
+                            failures[k] = (
+                                f"segment {k} skipped during recovery (between {i} and {j})\n"
+                                f"SEGMENT:\n{repr(skipped_seg)}"
+                            )
+                        cursor = recovery_idx + len(recovery_seg)
+                        i = j + 1
+                        recovered = True
+                        break
+                    j += 1
+
+                if not recovered:
+                    for k in range(i + 1, len(segments)):
+                        unreacheable_seg = re.sub(r"\s+", " ", segments[k])
+                        failures[k] = (
+                            f"segment {k} unreachable after failure at {i}\n"
+                            f"SEGMENT:\n{repr(unreacheable_seg)}"
+                        )
+                    break
+
+            # success case, goto next segment + advance cursor
+            else:
+                cursor = idx + len(seg)
+                i += 1
+        valid = len(failures) == 0
+        return valid, failures
+
     def segment(
         self,
         transcript: str,
