@@ -29,6 +29,7 @@ class MatcherVLLM(Matcher, matcher_name="vllm"):
         super().__init__()
         self.matcher_name = "vllm"
         self.prompt = prompt
+        assert window_size >= 0, "window_size must be non-negative"
         self.window_size = window_size
         self.verbose_errors = verbose_errors
         self.max_new_tokens = max_new_tokens or 300
@@ -87,6 +88,17 @@ class MatcherVLLM(Matcher, matcher_name="vllm"):
             temperature=0.0,
         )
 
+        self.total_prompt_tokens = 0
+        self.total_generation_tokens = 0
+        self.total_cached_tokens = 0
+
+    def get_usage(self) -> dict | None:
+        return {
+            "total_prompt_tokens": self.total_prompt_tokens,
+            "total_generation_tokens": self.total_generation_tokens,
+            "total_cached_tokens": self.total_cached_tokens,
+        }
+
     def _apply_chat_template(self, messages: list[dict[str, str]]) -> str:
         return cast(
             str,
@@ -140,6 +152,9 @@ class MatcherVLLM(Matcher, matcher_name="vllm"):
             for idx, output in zip(pending, outputs):
                 gen_text = output.outputs[0].text
                 parsed = parsers[idx](gen_text)
+                self.total_prompt_tokens += len(output.prompt_token_ids or [])
+                self.total_generation_tokens += len(output.outputs[0].token_ids)
+                self.total_cached_tokens += output.num_cached_tokens or 0
 
                 if match_key is not None:
                     self._log_prompt_response(
