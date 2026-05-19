@@ -1,4 +1,5 @@
 import json
+import os
 import re
 from typing import cast
 
@@ -15,11 +16,12 @@ class SegmenterCuda:
         self,
         model_name: str | None = None,
         max_new_tokens: int | None = None,
-        max_model_len: int | None = None,
+        max_model_len: str | int | None = None,
         api_key: str | None = None,
         # gpu params, see https://docs.vllm.ai/en/v0.8.0/api/offline_inference/llm.html#vllm.LLM
         tensor_parallel_size: int | None = None,  # number of GPUs to shard across
         gpu_memory_utilization: float = 0.90,
+        max_retries: int = 10,
     ):
         if model_name is None:
             self.model_name = "google/gemma-4-31B-it"
@@ -28,9 +30,9 @@ class SegmenterCuda:
 
         log.info(f"Initializing vLLM model with CUDA: {self.model_name}")
         self.max_new_tokens = max_new_tokens or 2048
+        self.max_retries = max_retries or 10
         log.info(f"Max new tokens: {self.max_new_tokens}")
-
-        import os
+        log.info(f"Max retries: {self.max_retries}")
 
         try:
             from vllm import LLM, SamplingParams
@@ -79,7 +81,21 @@ class SegmenterCuda:
         )
 
     # ruff: disable[E501]
-    def _build_prompt(self, transcript: str) -> str:
+    def _build_prompt(self, transcript: str, attempt: int = 0) -> str:
+        match attempt:
+            case 0:
+                attempt_str = ""
+            case 1:
+                attempt_str = "\nTry hard to keep the verbatim text.\n"
+            case 2:
+                attempt_str = "\nBe extra careful to keep the verbatim text.\n"
+            case 3:
+                attempt_str = (
+                    "\nIn past attempts, you made mistakes, try to avoid them.\n"
+                )
+            case _:
+                attempt_str = f"KEEP THE VERBATIM TEXT. ATTEMPT {attempt}.\n"
+
         return f"""
 I have a transcript of someone describing movies they watched. Follow these steps:
 
@@ -105,7 +121,7 @@ Example input: "I watched a really interesting documentary about ocean life. It 
 
 Example output:
 ["I watched a really interesting documentary about ocean life.", "It was fascinating and educational", "and I learned so much about marine biology and ecosystems."]
-
+{attempt_str}
 Here is the transcript to segment:
 {transcript}
 """
@@ -210,46 +226,54 @@ Here is the transcript to segment:
         self,
         transcript: str,
     ) -> list[str]:
-        prompt = self._build_prompt(transcript)
-
-        formatted_prompt = self._apply_chat_template(
-            [{"role": "user", "content": prompt}]
-        )
-
-        log.info("Segmenting...")
-        response = self.llm.generate(
-            [formatted_prompt],
-            self.sampling_params,
-        )
-
-        response_text = response[0].outputs[0].text
-
-        try:
-            cleaned = response_text.strip()
-            if cleaned.startswith("```"):
-                cleaned = cleaned.split("```")[1]
-                if cleaned.startswith("json"):
-                    cleaned = cleaned[4:]
-                cleaned = cleaned.strip()
-
-            segments = json.loads(cleaned)
-
-            if not isinstance(segments, list):
-                raise ValueError("Model output was not a JSON array")
-
-            valid, reason = self._validate_segments(
-                transcript,
-                segments,
+        for attempt in range(self.max_retries):
+            prompt = self._build_prompt(transcript, attempt=attempt)
+            formatted_prompt = self._apply_chat_template(
+                [{"role": "user", "content": prompt}]
             )
 
-            if not valid:
-                raise ValueError(f"Validation failed:\n{reason}")
+            if attempt > 0:
+                log.info(f"Attempt {attempt + 1}: Segmenting...")
+            else:
+                log.info("Segmenting...")
 
-            return segments
-        except (json.JSONDecodeError, ValueError) as e:
-            log.error(f"Failed to parse model output as JSON: {e}")
-            log.error(f"Raw output: {response_text}")
-            raise
+            response = self.llm.generate(
+                [formatted_prompt],
+                self.sampling_params,
+            )
+
+            response_text = response[0].outputs[0].text
+
+            try:
+                cleaned = response_text.strip()
+                if cleaned.startswith("```"):
+                    cleaned = cleaned.split("```")[1]
+                    if cleaned.startswith("json"):
+                        cleaned = cleaned[4:]
+                    cleaned = cleaned.strip()
+
+                segments = json.loads(cleaned)
+
+                if not isinstance(segments, list):
+                    raise ValueError("Model output was not a JSON array")
+
+                valid, reason = self._validate_segments(
+                    transcript,
+                    segments,
+                )
+
+                if not valid:
+                    log.error(f"Attempt {attempt + 1}: Validation failed:\n{reason}")
+                    continue
+
+                return segments
+            except (json.JSONDecodeError, ValueError) as e:
+                log.error(f"Failed to parse model output as JSON: {e}")
+                log.error(f"Raw output: {response_text}")
+                continue
+
+        log.error(f"All {self.max_retries} attempts failed")
+        raise RuntimeError("All segmenting attempts failed")
 
     def segment_batch(
         self, transcripts: list[str], labels: list[str] | None = None
