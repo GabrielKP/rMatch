@@ -28,7 +28,6 @@ Pearson *r* with human ratings.
   - [MatcherAnthropic / MatcherOpenai](#matcheranthropic--matcheropenai)
   - [MatcherMac](#matchermac)
   - [MatcherHuggingface](#matcherhuggingface)
-  - [`matcher.match(story_segments, recall_segments)`](#matchermatchstory_segments-recall_segments)
 - [API keys](#api-keys)
 - [Prompts](#prompts)
 - [Batch matching from files directly](#batch-matching-from-files-directly)
@@ -72,6 +71,21 @@ The Matcher object is the main tool to do the matching:
 | `MatcherOpenai`      | Cloud alternative; Needs an OpenAI API key (default: `gpt-4.1`)                 |
 | `MatcherMac`         | Run locally on Apple Silicon (`pip install rmatch[mac]`)                        |
 | `MatcherHuggingface` | Local fallback; works on any local archtiecture, but is not resource efficient  |
+
+Each matcher implements a function `matcher.match(story_segments, recall_segments)` that expects:
+
+- `story_segments` — ordered list of story segments.
+- `recall_segments` — ordered list of one participant's recall segment strings.
+
+The function returns one entry per recall segment in the format of `(recall_index, [story_indices])` tuples (0-based):
+
+```python
+[
+    (0, [2, 5]),   # recall segment 0 -> matches story segments 2 and 5
+    (1, []),       # recall segment 1 -> no match
+    (2, [0]),      # recall segment 2 -> matches story segment 0
+]
+```
 
 ### MatcherCuda
 
@@ -189,22 +203,6 @@ matches = matcher.match(
 | `max_new_tokens` | `300`             | Max tokens generated per segment               |
 | `verbose_errors` | `False`           | Log raw output on parse failures               |
 
-
-
-### `matcher.match(story_segments, recall_segments)`
-
-- `story_segments` — ordered list of story segments.
-- `recall_segments` — ordered list of one participant's recall segment strings.
-
-Returns one entry per recall segment in the format of `(recall_index, [story_indices])` tuples (0-based):
-
-```python
-[
-    (0, [2, 5]),   # recall segment 0 -> story segments 2 and 5
-    (1, []),       # recall segment 1 -> no match
-    (2, [0]),      # recall segment 2 -> story segment 0
-]
-```
 
 
 ## API keys
