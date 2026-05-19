@@ -707,9 +707,11 @@ def evaluate(
             "pearsonr_macro": float(pearsonr_macro),
         }
 
-        if matcher.get_usage() is not None:
-            console.print(f"Total API usage: {matcher.get_usage()}")
-            results_dict["usage"] = matcher.get_usage()
+        usage = matcher.get_usage()
+        if usage is not None:
+            console.print("\n --- Usage metrics ---")
+            console.print_json(json.dumps(usage, indent=2))
+            results_dict["usage"] = usage
 
         results_path = output_dir / "results.json"
         with open(results_path, "w") as f:
@@ -763,6 +765,8 @@ if __name__ == "__main__":
         choices=[
             "anthropic",
             "openai",
+            "vllm",
+            "mlx",
             "huggingface",
         ],
         default="anthropic",
@@ -823,7 +827,18 @@ if __name__ == "__main__":
         "--max-new-tokens",
         type=int,
         default=None,
-        help="[huggingface] max_new_tokens for the matcher.",
+        help="[huggingface, vllm] max_new_tokens for the matcher.",
+    )
+    parser.add_argument(
+        "--max-model-len",
+        type=int,
+        default=None,
+        help=(
+            "[vllm] Maximum sequence length of the model (prompt + generation). "
+            "Default: 90000. "
+            "Set to 'auto' to auto-detect the max from model config."
+            "Set this lower to reduce memory usage. "
+        ),
     )
     parser.add_argument(
         "--verbose-errors",
@@ -867,6 +882,7 @@ if __name__ == "__main__":
         quantization=args.quantization,
         batch_size=args.batch_size,
         max_new_tokens=args.max_new_tokens,
+        max_model_len=args.max_model_len,
         prompt=args.prompt,
         no_flash_attn=args.no_flash_attn,
     )

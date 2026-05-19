@@ -1,17 +1,17 @@
 [project]
 name = "rMatch"
-version = "0.3.2"
+version = "0.4.0"
 description = "Match recall segments with story segments."
 authors = [{ name = "Gabriel Kressin Palacios", email = "gkressi1@jhu.edu" }]
 requires-python = ">=3.12,<3.14"
 readme = "README.md"
 license = "MIT"
 dependencies = [
-    "torch>=2.9,<2.10",
-    "torchvision>=0.24,<0.25",
+    "torch>=2.7",
+    "torchvision>=0.22",
     "ruff>=0.14.0,<0.15",
     "pandas>=2.3.3,<3",
-    "numpy>=2.3.3,<3",
+    "numpy>=2.1,<3",
     "pre-commit>=4.3.0,<5",
     "openpyxl>=3.1.5,<4",
     "matplotlib>=3.10.7,<4",
@@ -35,6 +35,8 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+apple = ["mlx-vlm>=0.4.4"]
+cuda = ["vllm>=0.19.1"]
 flash = ["flash-attn"]
 test = [
     "pytest>=8.0",

@@ -292,7 +292,7 @@ def main() -> None:
     parser.add_argument(
         "-M",
         "--matcher",
-        choices=["anthropic", "openai", "huggingface"],
+        choices=["anthropic", "openai", "mlx", "vllm", "huggingface"],
         default="anthropic",
         help="Matcher to use. Default: anthropic.",
     )
@@ -343,7 +343,18 @@ def main() -> None:
         "--max-new-tokens",
         type=int,
         default=None,
-        help="[huggingface] max_new_tokens for the matcher. Default: 64.",
+        help="[huggingface, vllm] max_new_tokens for the matcher. Default: 64.",
+    )
+    parser.add_argument(
+        "--max-model-len",
+        type=int,
+        default=None,
+        help=(
+            "[vllm] Maximum sequence length of the model (prompt + generation). "
+            "Default: 90000. "
+            "Set to 'auto' to auto-detect the max from model config."
+            "Set this lower to reduce memory usage. "
+        ),
     )
     parser.add_argument(
         "--verbose-errors",
@@ -371,12 +382,6 @@ def main() -> None:
         default=False,
         help="Overwrite existing output file.",
     )
-    parser.add_argument(
-        "--no-flash-attn",
-        action="store_true",
-        default=None,
-        help="[huggingface] Disable flash-attn for the model.",
-    )
 
     args = parser.parse_args()
 
@@ -391,10 +396,10 @@ def main() -> None:
         quantization=args.quantization,
         batch_size=args.batch_size,
         max_new_tokens=args.max_new_tokens,
+        max_model_len=args.max_model_len,
         verbose_errors=args.verbose_errors,
         prompt=args.prompt,
         overwrite=args.overwrite,
-        no_flash_attn=args.no_flash_attn,
     )
 
 

@@ -18,13 +18,21 @@ Use **Claude** via API for best accuracy. Use **`google/gemma-4-31B-it`** to run
 
 Pearson *r* with human ratings.
 
-## Quick start
+## Installation
 
+In your project:
 ```sh
+# To use with API
 pip install rmatch
+
+# To use with cuda:
+pip install rmatch[cuda]
+
+# On apple silicon:
+pip install rmatch[apple]
 ```
 
-### Claude (API)
+## Usage
 
 ```python
 from rmatch import Matcher
@@ -37,41 +45,17 @@ matches = matcher.match(
 # [(0, [0])]  — recall segment 0 matched story segment 0
 ```
 
-Set `ANTHROPIC_API_KEY` in your environment or a `.env` file to avoid passing `api_key` directly.
+* `matcher_name`: One of
+    * `anthropic`/`openai`: run in the cloud.
+    * `vLLM`: run on CUDA gpus (see more below).
+    * `mlx`: run on apple silicon.
+    * `huggingface`: run locally (fallback option).
+* `api_key`: API provider key, or huggingface token for model download. You can set the key in the environment or in a `.env` (see below).
 
-### Local (gemma-4-31B-it)
-
-Requires ~? GB VRAM (or ~? GB with 4-bit quantization).
-
-```python
-from rmatch import Matcher
-
-matcher = Matcher(matcher_name="huggingface", model_name="google/gemma-4-31B-it", quantization="4bit")
-matches = matcher.match(
-    story_segments=["The cat sat on the mat.", "It purred softly."],
-    recall_segments=["A cat was on a mat."],
-)
-# [(0, [0])]  — recall segment 0 matched story segment 0
-```
-
-### File-level convenience
-
-Use `run_matching` to load files, run matching for every subject, and save results in one call:
-
-```python
-from rmatch.match import run_matching
-
-results = run_matching(
-    story_file="story.txt",
-    recall_file="recalls/",
-    matcher_name="anthropic",
-    api_key="your_api_key",
-)
-```
 
 ## Output format
 
-A JSON file with:
+A dictionary or JSON file with:
 
 ```json
 {
@@ -88,46 +72,19 @@ A JSON file with:
 
 Each entry in `matches` maps a subject ID to a list of `[recall_segment_id, [matched_story_segment_ids...]]` pairs.
 
----
 
-## API / Documentation
+# Documentation
 
-### Input formats
+1. [Full Python API](#full-python-api)
+    - [Matcher](#matcher-main-entry-point)
+    - [run_matching](#run_matching-file-level-convenience)
+2. [API keys](#api-keys)
+3. [Prompts](#prompts)
 
-**Story file** — a `.txt` or `.json` file containing the story segments to match against.
 
-- **`.txt`**: one segment per line (blank lines are ignored).
-- **`.json`**: must contain a `"segments"` array of strings. Optionally includes `"segmentation_method"`.
+## Full Python API
 
-```json
-{
-  "segmentation_method": "sentences",
-  "segments": [
-    "The cat sat on the mat.",
-    "It purred softly."
-  ]
-}
-```
-
-**Recall file** — a `.txt` file, a `.json` file, or a **directory** of either.
-
-- **`.txt` file**: one recall segment per line. The filename stem is used as the subject ID.
-- **`.json` file**: must contain a `"recalls"` object mapping subject IDs to segment arrays.
-- **Directory**: all `.txt` or all `.json` files inside are loaded (mixing formats is not allowed). Each `.txt` file becomes one subject; `.json` files are merged.
-
-```json
-{
-  "segmentation_method": "clauses",
-  "recalls": {
-    "sub-001": ["A cat was on a mat.", "It was purring."],
-    "sub-002": ["There was a cat on something."]
-  }
-}
-```
-
-### Python API
-
-#### `Matcher` (main entry point)
+### `Matcher` (main entry point)
 
 ```python
 from rmatch import Matcher
@@ -166,7 +123,7 @@ Returns `list[tuple[int, list[int]]]` — one entry per recall segment:
 ]
 ```
 
-#### `run_matching` (file-level convenience)
+### `run_matching`
 
 ```python
 from rmatch.match import run_matching
@@ -185,55 +142,6 @@ results = run_matching(
 
 Loads story and recall files, runs matching for every subject, and saves a JSON results file. Returns the output dictionary.
 
-### CLI reference
-
-```
-rmatch STORY_FILE RECALL_FILE [options]
-```
-
-```sh
-# single recall file
-rmatch story.txt sub-001-recall.txt --matcher anthropic
-
-# directory of recall files (one per subject)
-rmatch story.txt recalls/ --matcher anthropic --model haiku-4-5
-
-# estimate API cost without sending requests
-rmatch story.txt recalls/ --matcher openai --model gpt-5.4 --dry-run
-
-# run rMatch locally, -q flag quantizes the model
-rmatch story.txt recalls/ --matcher huggingface --model google/gemma-4-31B-it -q 4bit
-```
-
-* Each `sub-001-recall.txt` contains data for one subject.
-* Each line is considered a separate segment (e.g. each line could be a sentence, or event.)
-
-#### General options
-
-- **`STORY_FILE`** *(positional, required)* — Path to the story `.txt` or `.json` file.
-- **`RECALL_FILE`** *(positional, required)* — Path to a recall `.txt`/`.json` file or a directory of them.
-- **`-M`, `--matcher`** *(str)* — Which matcher backend to use. One of: `anthropic`, `openai`, `huggingface`. Default: `anthropic`.
-- **`-m`, `--model-name`** *(str)* — Override the matcher's default model (see defaults below).
-- **`-f`, `--overwrite`** — Overwrite the output file if it already exists.
-
-#### LLM matcher options (anthropic, openai, huggingface)
-
-- **`--window-size`** *(int)* — Number of surrounding recall segments (before and after) to include as context for each target segment. Set to `0` to disable context. Default: `5`.
-- **`--prompt`** *(str)* — Prompt type. Default: `primary`. See [Prompts](#prompts).
-- **`--dry-run`** — *anthropic & openai only.* Estimate token usage and cost without making API calls.
-
-#### Self-hosted / HuggingFace options
-
-- **`-q`, `--quantization`** *(str)* — Load the model in reduced precision: `4bit` (NF4) or `8bit`. Requires `bitsandbytes`.
-- **`-bs`, `--batch-size`** *(int)* — Number of prompts to process in parallel. Default: `4`.
-- **`--max-new-tokens`** *(int)* — Maximum tokens the model may generate per prompt. Default: `64`.
-- **`--verbose-errors`** — Print the raw model output when parsing fails. Useful for debugging prompt issues.
-
-### Default models
-
-- **anthropic** — `claude-opus-4-6`
-- **openai** — `gpt-4.1`
-- **huggingface** — `google/gemma-4-31B-it`
 
 ### API keys
 
@@ -260,6 +168,7 @@ All LLM matchers share the same set of prompt templates. The default is `primary
 | `primary_no_cot`          | yes        | yes             | no               | Ablation: removes chain-of-thought reasoning.                                |
 | `primary_no_story_no_cot` | no         | yes             | no               | Ablation: minimal prompt with only segments and recall window.               |
 | `secondary`               | yes        | yes             | yes              | Alternative prompt wording with XML-structured output.                       |
+
 
 
 ## Benchmarking
