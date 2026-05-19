@@ -2,13 +2,13 @@ import os
 from typing import cast
 
 from rmatch import get_logger
-from rmatch.matchers.matcher import Matcher
+from rmatch.matchers.matcher_base import MatcherBase
 from rmatch.prompt import get_prompt_and_parser
 
 log = get_logger(__name__)
 
 
-class MatcherCuda(Matcher, matcher_name="cuda"):
+class MatcherCuda(MatcherBase, matcher_name="cuda"):
     def __init__(
         self,
         model_name: str | None = None,
@@ -23,8 +23,6 @@ class MatcherCuda(Matcher, matcher_name="cuda"):
         # gpu params, seehttps://docs.vllm.ai/en/v0.8.0/api/offline_inference/llm.html#vllm.LLM
         tensor_parallel_size: int | None = None,  # number of GPUs to shard across
         gpu_memory_utilization: float = 0.90,
-        # required for init
-        matcher_name: str | None = None,
     ):
         super().__init__()
         self.matcher_name = "cuda"

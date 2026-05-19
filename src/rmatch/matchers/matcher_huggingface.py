@@ -4,13 +4,13 @@ from typing import Literal
 from tqdm import tqdm
 
 from rmatch import get_logger
-from rmatch.matchers.matcher import Matcher
+from rmatch.matchers.matcher_base import MatcherBase
 from rmatch.prompt import get_prompt_and_parser
 
 log = get_logger(__name__)
 
 
-class MatcherHuggingFace(Matcher, matcher_name="huggingface"):
+class MatcherHuggingFace(MatcherBase, matcher_name="huggingface"):
     def __init__(
         self,
         model_name: str | None = None,
@@ -22,8 +22,6 @@ class MatcherHuggingFace(Matcher, matcher_name="huggingface"):
         api_key: str | None = None,
         prompt: str | None = None,
         max_retries: int | None = None,
-        # required for initialization
-        matcher_name: str | None = None,
     ):
         super().__init__()
         self.matcher_name = "huggingface"

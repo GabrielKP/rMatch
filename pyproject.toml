@@ -45,7 +45,7 @@ test = [
 ]
 
 [project.scripts]
-rmatch = "rmatch.match:main"
+rmatch = "rmatch.matching:main"
 
 [build-system]
 requires = ["hatchling"]

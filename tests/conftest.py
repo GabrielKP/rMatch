@@ -201,10 +201,10 @@ def huggingface_matcher(mock_hf_pipe):
     return m
 
 
-# ── vLLM helpers & fixtures ───────────────────────────────────────────────────
+# ── CUDA (vLLM) helpers & fixtures ────────────────────────────────────────────
 
 
-def make_vllm_output(text: str):
+def make_cuda_output(text: str):
     """Create a mock vLLM RequestOutput with a single completion."""
     output = MagicMock()
     output.outputs[0].text = text
@@ -212,7 +212,7 @@ def make_vllm_output(text: str):
 
 
 @pytest.fixture
-def mock_vllm_llm():
+def mock_cuda_llm():
     llm = MagicMock()
     llm.get_tokenizer.return_value.pad_token_id = None
     llm.get_tokenizer.return_value.eos_token_id = 2
@@ -220,9 +220,9 @@ def mock_vllm_llm():
 
 
 @pytest.fixture
-def vllm_matcher(mock_vllm_llm):
+def cuda_matcher(mock_cuda_llm):
     mock_vllm = MagicMock()
-    mock_vllm.LLM.return_value = mock_vllm_llm
+    mock_vllm.LLM.return_value = mock_cuda_llm
     with patch.dict("sys.modules", {"vllm": mock_vllm}):
         from rmatch.matchers.matcher_cuda import MatcherCuda
 
@@ -230,10 +230,10 @@ def vllm_matcher(mock_vllm_llm):
     return m
 
 
-# ── MLX helpers & fixtures ────────────────────────────────────────────────────
+# ── Mac (MLX) helpers & fixtures ──────────────────────────────────────────────
 
 
-def make_mlx_response(
+def make_mac_response(
     text: str,
     prompt_tokens: int = 50,
     generation_tokens: int = 10,
@@ -251,14 +251,14 @@ def make_mlx_response(
 
 
 @pytest.fixture
-def mock_mlx_generate():
+def mock_mac_generate():
     return MagicMock()
 
 
 @pytest.fixture
-def mlx_matcher(mock_mlx_generate):
+def mac_matcher(mock_mac_generate):
     mock_mlx = MagicMock()
-    mock_mlx.generate = mock_mlx_generate
+    mock_mlx.generate = mock_mac_generate
     mock_mlx.load.return_value = (MagicMock(), MagicMock())
     with patch.dict(
         "sys.modules",

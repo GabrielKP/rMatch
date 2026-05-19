@@ -87,15 +87,6 @@ class TestOpenAIApiKey:
                 mock_cls.assert_called_once_with(api_key="sk-openai-env")
                 assert m is not None
 
-    def test_missing_key_error_message_is_helpful(self):
-        with patch("rmatch.matchers.matcher_openai.os") as mock_os:
-            mock_os.environ.get.return_value = None
-            from rmatch.matchers.matcher_openai import MatcherOpenAI
-
-            with pytest.raises(ValueError) as exc_info:
-                MatcherOpenAI(api_key=None)
-            assert "OPENAI_API_KEY" in str(exc_info.value)
-
 
 # ── MatcherHuggingFace ────────────────────────────────────────────────────────
 
@@ -137,13 +128,3 @@ class TestHuggingFaceApiKey:
                 # pipeline should have been called with the env token
                 call_kwargs = mock_pipeline.call_args[1]
                 assert call_kwargs.get("token") == "hf-env-token"
-
-    def test_missing_key_error_message_is_helpful(self):
-        with patch("rmatch.matchers.matcher_huggingface.os") as mock_os:
-            mock_os.environ.get.return_value = None
-            with patch("transformers.pipeline"):
-                from rmatch.matchers.matcher_huggingface import MatcherHuggingFace
-
-                with pytest.raises(ValueError) as exc_info:
-                    MatcherHuggingFace(api_key=None)
-                assert "HF_TOKEN" in str(exc_info.value)

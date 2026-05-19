@@ -12,7 +12,7 @@ import numpy as np
 from tqdm import tqdm
 
 from rmatch import console, matchlist_type
-from rmatch.matchers.matcher import Matcher
+from rmatch.matchers import get_matcher
 from rmatch.utils import (
     atomic_write_json,
     binary_f1,
@@ -367,7 +367,7 @@ def evaluate(
         n_repeats = 1
 
     matcher_kwargs = {k: v for k, v in kwargs.items() if v is not None}
-    matcher = Matcher(matcher_name=matcher_name, **matcher_kwargs)  # type: ignore[call-arg]
+    matcher = get_matcher(matcher_name, **matcher_kwargs)
     model_name = getattr(matcher, "model_name", None)
 
     output_dir = (
@@ -765,8 +765,8 @@ if __name__ == "__main__":
         choices=[
             "anthropic",
             "openai",
-            "vllm",
-            "mlx",
+            "mac",
+            "cuda",
             "huggingface",
         ],
         default="anthropic",
@@ -827,14 +827,14 @@ if __name__ == "__main__":
         "--max-new-tokens",
         type=int,
         default=None,
-        help="[huggingface, vllm] max_new_tokens for the matcher.",
+        help="[huggingface, cuda] max_new_tokens for the matcher.",
     )
     parser.add_argument(
         "--max-model-len",
         type=int,
         default=None,
         help=(
-            "[vllm] Maximum sequence length of the model (prompt + generation). "
+            "[cuda] Maximum sequence length of the model (prompt + generation). "
             "Default: 90000. "
             "Set to 'auto' to auto-detect the max from model config."
             "Set this lower to reduce memory usage. "

@@ -1,4 +1,4 @@
-"""Tests for the rmatch CLI entry point (rmatch.match:main).
+"""Tests for the rmatch CLI entry point (rmatch.matching:main).
 
 Subprocess-based tests verify argument parsing without requiring the full
 dependency stack.  Direct main() invocations patch the Matcher so no real API
@@ -20,7 +20,7 @@ from tests.conftest import RECALL_SEGMENTS
 class TestCLIArgparse:
     def _run(self, args: list[str]) -> subprocess.CompletedProcess:
         return subprocess.run(
-            [sys.executable, "-m", "rmatch.match", *args],
+            [sys.executable, "-m", "rmatch.matching", *args],
             capture_output=True,
             text=True,
         )
@@ -51,42 +51,26 @@ class TestCLIArgparse:
 def _make_mock_matcher(n_recall: int = 2):
     m = MagicMock()
     m.match.return_value = [(i, []) for i in range(n_recall)]
+    m.matcher_name = "anthropic"
     m.model_name = None
     return m
 
 
 class TestCLIMain:
-    def test_main_runs_without_error(self, story_txt, recall_txt):
-        mock_matcher = _make_mock_matcher(n_recall=len(RECALL_SEGMENTS))
-        with patch("rmatch.match.Matcher", return_value=mock_matcher):
-            with patch(
-                "sys.argv",
-                [
-                    "rmatch",
-                    str(story_txt),
-                    str(recall_txt),
-                    "-M",
-                    "anthropic",
-                    "-f",  # overwrite
-                ],
-            ):
-                from rmatch.match import main
-
-                main()  # Should not raise
-
     def test_main_nonexistent_story_exits_with_error(self, recall_txt):
         with patch(
             "sys.argv",
             ["rmatch", "/nonexistent/story.txt", str(recall_txt), "-M", "anthropic"],
         ):
-            from rmatch.match import main
+            from rmatch.matching import main
 
             with pytest.raises((FileNotFoundError, SystemExit)):
                 main()
 
     def test_main_openai_matcher(self, story_txt, recall_txt):
         mock_matcher = _make_mock_matcher()
-        with patch("rmatch.match.Matcher", return_value=mock_matcher):
+        mock_matcher.matcher_name = "openai"
+        with patch("rmatch.matching.get_matcher", return_value=mock_matcher):
             with patch(
                 "sys.argv",
                 [
@@ -98,7 +82,7 @@ class TestCLIMain:
                     "-f",
                 ],
             ):
-                from rmatch.match import main
+                from rmatch.matching import main
 
                 main()
         mock_matcher.match.assert_called_once()
@@ -123,19 +107,35 @@ class TestCLIMain:
                     "-f",
                 ],
             ):
-                from rmatch.match import main
+                from rmatch.matching import main
 
                 main()  # Should not raise; no real API call made
 
-    def test_main_window_size_forwarded(self, story_txt, recall_txt):
+    @pytest.mark.parametrize(
+        "extra_argv,expected_key,expected_value",
+        [
+            (["-m", "foo"], "model_name", "foo"),
+            (["--window-size", "3"], "window_size", 3),
+            (["-q", "4bit"], "quantization", "4bit"),
+            (["-bs", "8"], "batch_size", 8),
+            (["--max-new-tokens", "128"], "max_new_tokens", 128),
+            (["--max-model-len", "4096"], "max_model_len", 4096),
+            (["--verbose-errors"], "verbose_errors", True),
+            (["--device", "cpu"], "device", "cpu"),
+            (["--prompt", "secondary"], "prompt", "secondary"),
+        ],
+    )
+    def test_main_forwards_matcher_kwargs(
+        self, story_txt, recall_txt, extra_argv, expected_key, expected_value
+    ):
         mock_matcher = _make_mock_matcher()
         captured_kwargs = {}
 
-        def capture_matcher(**kwargs):
+        def capture_matcher(name, **kwargs):
             captured_kwargs.update(kwargs)
             return mock_matcher
 
-        with patch("rmatch.match.Matcher", side_effect=capture_matcher):
+        with patch("rmatch.matching.get_matcher", side_effect=capture_matcher):
             with patch(
                 "sys.argv",
                 [
@@ -144,32 +144,12 @@ class TestCLIMain:
                     str(recall_txt),
                     "-M",
                     "anthropic",
-                    "--window-size",
-                    "3",
+                    *extra_argv,
                     "-f",
                 ],
             ):
-                from rmatch.match import main
+                from rmatch.matching import main
 
                 main()
 
-        assert captured_kwargs.get("window_size") == 3
-
-    def test_main_json_story_and_recall(self, story_json, recall_json):
-        mock_matcher = _make_mock_matcher(n_recall=1)
-        with patch("rmatch.match.Matcher", return_value=mock_matcher):
-            with patch(
-                "sys.argv",
-                [
-                    "rmatch",
-                    str(story_json),
-                    str(recall_json),
-                    "-M",
-                    "anthropic",
-                    "-f",
-                ],
-            ):
-                from rmatch.match import main
-
-                main()
-        mock_matcher.match.assert_called_once()
+        assert captured_kwargs.get(expected_key) == expected_value

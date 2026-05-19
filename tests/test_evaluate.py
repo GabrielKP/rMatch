@@ -106,7 +106,7 @@ class TestEvaluateDryRun:
             "rmatch.evaluate.load_benchmark_full_eval",
             return_value=(story_recall_segments, human_ratings_dict),
         ):
-            with patch("rmatch.evaluate.Matcher", return_value=mock_eval_matcher):
+            with patch("rmatch.evaluate.get_matcher", return_value=mock_eval_matcher):
                 from rmatch.evaluate import evaluate
 
                 evaluate(
@@ -130,7 +130,7 @@ class TestEvaluateDryRun:
             "rmatch.evaluate.load_benchmark_full_eval",
             return_value=(story_recall_segments, human_ratings_dict),
         ):
-            with patch("rmatch.evaluate.Matcher", return_value=mock_eval_matcher):
+            with patch("rmatch.evaluate.get_matcher", return_value=mock_eval_matcher):
                 from rmatch.evaluate import evaluate
 
                 evaluate(
@@ -153,7 +153,7 @@ class TestEvaluateDryRun:
             "rmatch.evaluate.load_benchmark_full_eval",
             return_value=(story_recall_segments, human_ratings_dict),
         ):
-            with patch("rmatch.evaluate.Matcher", return_value=mock_eval_matcher):
+            with patch("rmatch.evaluate.get_matcher", return_value=mock_eval_matcher):
                 from rmatch.evaluate import evaluate
 
                 evaluate(
@@ -176,7 +176,7 @@ class TestEvaluateDryRun:
             "rmatch.evaluate.load_benchmark_full_eval",
             return_value=(story_recall_segments, human_ratings_dict),
         ):
-            with patch("rmatch.evaluate.Matcher", return_value=mock_eval_matcher):
+            with patch("rmatch.evaluate.get_matcher", return_value=mock_eval_matcher):
                 from rmatch.evaluate import evaluate
 
                 evaluate(
@@ -199,7 +199,7 @@ class TestEvaluateDryRun:
 
     def test_invalid_testset_raises_value_error(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
-        with patch("rmatch.evaluate.Matcher", return_value=MagicMock()):
+        with patch("rmatch.evaluate.get_matcher", return_value=MagicMock()):
             from rmatch.evaluate import evaluate
 
             with pytest.raises(ValueError, match="Invalid testset"):
@@ -227,7 +227,7 @@ class TestEvaluateDryRun:
             "rmatch.evaluate.load_benchmark_full_eval",
             return_value=(story_recall_segments, human_ratings_dict),
         ):
-            with patch("rmatch.evaluate.Matcher", return_value=mock_eval_matcher):
+            with patch("rmatch.evaluate.get_matcher", return_value=mock_eval_matcher):
                 from rmatch.evaluate import evaluate
 
                 # Should raise ValueError because no non-skipped recalls remain

@@ -6,13 +6,13 @@ from typing import Callable
 from tqdm import tqdm
 
 from rmatch import get_logger, matchlist_type
-from rmatch.matchers.matcher import Matcher
+from rmatch.matchers.matcher_base import MatcherBase
 from rmatch.prompt import get_prompt_and_parser
 
 log = get_logger(__name__)
 
 
-class MatcherMac(Matcher, matcher_name="mac"):
+class MatcherMac(MatcherBase, matcher_name="mac"):
     def __init__(
         self,
         model_name: str | None = None,
@@ -22,7 +22,6 @@ class MatcherMac(Matcher, matcher_name="mac"):
         api_key: str | None = None,
         prompt: str | None = None,
         max_retries: int | None = None,
-        matcher_name: str | None = None,
     ):
         # uses mlx to run on apple silicon
         super().__init__()
@@ -87,6 +86,7 @@ class MatcherMac(Matcher, matcher_name="mac"):
         if len(recall_segments) == 0:
             return []
 
+        n_story_segments = len(story_segments)
         matches: list[tuple[int, list[int]]] = []
 
         for idx, _ in enumerate(
@@ -138,7 +138,9 @@ class MatcherMac(Matcher, matcher_name="mac"):
                         response=gen_text,
                         parsed_response=parsed_response_,
                     )
-                if parsed_response_ is not None:
+                if parsed_response_ is not None and all(
+                    1 <= i <= n_story_segments for i in parsed_response_
+                ):
                     parsed_response = parsed_response_
                     break
                 log.warning(

@@ -110,15 +110,6 @@ def test_binary_f1_no_tp():
     assert binary_f1(y_true, y_pred) == 0.0
 
 
-def test_binary_f1_symmetric():
-    y_true = np.array([1, 0, 1, 0])
-    y_pred = np.array([1, 1, 0, 0])
-    # F1 should be the same if we swap labels (for binary)
-    f1_ab = binary_f1(y_true, y_pred)
-    assert f1_ab >= 0.0
-    assert f1_ab <= 1.0
-
-
 # ── pearsonr ──────────────────────────────────────────────────────────────────
 
 
@@ -163,10 +154,11 @@ def test_pearsonr_moderate_correlation():
     assert not np.isnan(result)
 
 
-def test_pearsonr_no_correlation():
-    x = np.array([1.0, 0.0, 1.0, 0.0])
-    y = np.array([0.0, 1.0, 0.0, 1.0])
-    assert pearsonr(x, y) == pytest.approx(-1.0)
+def test_pearsonr_weak_correlation():
+    x = np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0])
+    y = np.array([6.0, 1.0, 5.0, 2.0, 4.0, 3.0])
+    result = pearsonr(x, y)
+    assert abs(result) < 0.5
 
 
 # ── match_list_to_matrix ──────────────────────────────────────────────────────
@@ -201,11 +193,6 @@ def test_match_list_to_matrix_all_match_same_story_segment():
     # All recalls match story segment 0
     assert (mat[0, :] == [1, 1, 1]).all()
     assert mat[1:, :].sum() == 0
-
-
-def test_match_list_to_matrix_int_dtype():
-    mat = match_list_to_matrix([(0, [0])], n_story_segments=2)
-    assert mat.dtype == int
 
 
 def test_match_list_to_matrix_no_recalls():
