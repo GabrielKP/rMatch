@@ -12,7 +12,7 @@ from rmatch.prompt import get_prompt_and_parser
 log = get_logger(__name__)
 
 
-class MatcherMLX(Matcher, matcher_name="mlx"):
+class MatcherMac(Matcher, matcher_name="mac"):
     def __init__(
         self,
         model_name: str | None = None,
@@ -24,8 +24,9 @@ class MatcherMLX(Matcher, matcher_name="mlx"):
         max_retries: int | None = None,
         matcher_name: str | None = None,
     ):
+        # uses mlx to run on apple silicon
         super().__init__()
-        self.matcher_name = "mlx"
+        self.matcher_name = "mac"
         self.prompt = prompt
 
         assert window_size >= 0, "window_size must be non-negative"
@@ -50,8 +51,8 @@ class MatcherMLX(Matcher, matcher_name="mlx"):
             from mlx_vlm.prompt_utils import apply_chat_template
         except ImportError:
             raise ImportError(
-                "mlx-vlm is required for MatcherMLX. "
-                "Install it with: pip install mlx-vlm"
+                "MatcherMac requires mlx-vlm. "
+                "Install rmatch with it: pip install rmatch[mac]"
             )
 
         self._apply_chat_template: Callable = apply_chat_template

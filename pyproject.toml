@@ -35,7 +35,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-apple = ["mlx-vlm>=0.4.4"]
+mac = ["mlx-vlm>=0.4.4"]
 cuda = ["vllm>=0.19.1"]
 flash = ["flash-attn"]
 test = [

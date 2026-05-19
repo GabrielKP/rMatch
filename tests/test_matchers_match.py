@@ -470,10 +470,10 @@ class TestMatcherHuggingFaceMatch:
         assert sorted(x - 1 for x in parsed1) == story_indices_1
 
 
-# ── MatcherVLLM ───────────────────────────────────────────────────────────────
+# ── MatcherCuda ───────────────────────────────────────────────────────────────
 
 
-class TestMatcherVLLMMatch:
+class TestMatcherCudaMatch:
     def _set_generate_response(self, mock_vllm_llm, texts: list[str]):
         """Configure llm.generate to return one output per prompt."""
         mock_vllm_llm.generate.return_value = [make_vllm_output(t) for t in texts]
@@ -600,10 +600,10 @@ class TestMatcherVLLMMatch:
         assert sorted(x - 1 for x in parsed1) == story_indices_1
 
 
-# ── MatcherMLX ────────────────────────────────────────────────────────────────
+# ── MatcherMac ────────────────────────────────────────────────────────────────
 
 
-class TestMatcherMLXMatch:
+class TestMatcherMacMatch:
     def test_returns_correct_type(self, mlx_matcher, mock_mlx_generate):
         mock_mlx_generate.side_effect = [
             make_mlx_response("<1>"),
@@ -779,9 +779,9 @@ class TestMaxRetriesInit:
         mock_vllm.LLM.return_value.get_tokenizer.return_value.pad_token_id = None
         mock_vllm.LLM.return_value.get_tokenizer.return_value.eos_token_id = 2
         with patch.dict("sys.modules", {"vllm": mock_vllm}):
-            from rmatch.matchers.matcher_vllm import MatcherVLLM
+            from rmatch.matchers.matcher_cuda import MatcherCuda
 
-            m = MatcherVLLM(model_name="test-model", max_retries=5)
+            m = MatcherCuda(model_name="test-model", max_retries=5)
         assert m.max_retries == 5
 
     def test_mlx_max_retries_stored_from_init(self):
@@ -795,9 +795,9 @@ class TestMaxRetriesInit:
                 "mlx_vlm.prompt_utils": MagicMock(),
             },
         ):
-            from rmatch.matchers.matcher_mlx import MatcherMLX
+            from rmatch.matchers.matcher_mac import MatcherMac
 
-            m = MatcherMLX(model_name="test-model", max_retries=7)
+            m = MatcherMac(model_name="test-model", max_retries=7)
         assert m.max_retries == 7
 
     def test_default_max_retries_when_not_specified(self, mock_anthropic_client):
@@ -847,10 +847,10 @@ class TestMatcherFactory:
         mock_vllm.LLM.return_value.get_tokenizer.return_value.pad_token_id = None
         mock_vllm.LLM.return_value.get_tokenizer.return_value.eos_token_id = 2
         with patch.dict("sys.modules", {"vllm": mock_vllm}):
-            from rmatch.matchers import Matcher, MatcherVLLM
+            from rmatch.matchers import Matcher, MatcherCuda
 
-            m = Matcher(matcher_name="vllm", model_name="test-model")
-        assert isinstance(m, MatcherVLLM)
+            m = Matcher(matcher_name="cuda", model_name="test-model")
+        assert isinstance(m, MatcherCuda)
 
     def test_factory_returns_mlx_instance(self):
         mock_mlx = MagicMock()
@@ -863,10 +863,10 @@ class TestMatcherFactory:
                 "mlx_vlm.prompt_utils": MagicMock(),
             },
         ):
-            from rmatch.matchers import Matcher, MatcherMLX
+            from rmatch.matchers import Matcher, MatcherMac
 
-            m = Matcher(matcher_name="mlx", model_name="test-model")
-        assert isinstance(m, MatcherMLX)
+            m = Matcher(matcher_name="mac", model_name="test-model")
+        assert isinstance(m, MatcherMac)
 
     def test_factory_unknown_name_raises_value_error(self):
         from rmatch.matchers import Matcher

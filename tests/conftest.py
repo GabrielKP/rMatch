@@ -224,9 +224,9 @@ def vllm_matcher(mock_vllm_llm):
     mock_vllm = MagicMock()
     mock_vllm.LLM.return_value = mock_vllm_llm
     with patch.dict("sys.modules", {"vllm": mock_vllm}):
-        from rmatch.matchers.matcher_vllm import MatcherVLLM
+        from rmatch.matchers.matcher_cuda import MatcherCuda
 
-        m = MatcherVLLM(model_name="test-model", max_retries=3)
+        m = MatcherCuda(model_name="test-model", max_retries=3)
     return m
 
 
@@ -268,7 +268,7 @@ def mlx_matcher(mock_mlx_generate):
             "mlx_vlm.prompt_utils": MagicMock(),
         },
     ):
-        from rmatch.matchers.matcher_mlx import MatcherMLX
+        from rmatch.matchers.matcher_mac import MatcherMac
 
-        m = MatcherMLX(model_name="test-model", max_retries=3)
+        m = MatcherMac(model_name="test-model", max_retries=3)
     return m

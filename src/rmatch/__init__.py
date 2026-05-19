@@ -60,4 +60,4 @@ def print_config(config: dict, **kwargs: dict):
 
 
 from rmatch.matchers import Matcher  # noqa: E402,F401
-from rmatch.segmenters import SegmenterVLLM
+from rmatch.segmenters import SegmenterCuda  # noqa: E402,F401

@@ -1,5 +1,5 @@
-from rmatch.segmenters.segmenter_vllm import SegmenterVLLM
+from rmatch.segmenters.segmenter_cuda import SegmenterCuda
 
 __all__ = [
-    "SegmenterVLLM",
+    "SegmenterCuda",
 ]

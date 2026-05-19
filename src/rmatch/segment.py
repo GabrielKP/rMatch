@@ -5,7 +5,7 @@ from pathlib import Path
 import pandas as pd
 
 from rmatch import get_logger
-from rmatch.segmenters import SegmenterVLLM
+from rmatch.segmenters import SegmenterCuda
 
 log = get_logger(__name__)
 
@@ -47,7 +47,7 @@ def segment(
 
     log.info(f"Found {len(transcript_files)} transcript files")
 
-    segmenter = SegmenterVLLM(
+    segmenter = SegmenterCuda(
         model_name=model_name,
         tensor_parallel_size=tensor_parallel_size,
         gpu_memory_utilization=gpu_memory_utilization,

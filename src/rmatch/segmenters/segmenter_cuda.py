@@ -1,6 +1,5 @@
 import json
 import re
-from pathlib import Path
 from typing import cast
 
 from rmatch import get_logger
@@ -11,7 +10,7 @@ YELLOW = "\033[93m"
 RESET = "\033[0m"
 
 
-class SegmenterVLLM:
+class SegmenterCuda:
     def __init__(
         self,
         model_name: str | None = None,
@@ -27,7 +26,7 @@ class SegmenterVLLM:
         else:
             self.model_name = model_name
 
-        log.info(f"Initializing vLLM model: {self.model_name}")
+        log.info(f"Initializing vLLM model with CUDA: {self.model_name}")
         self.max_new_tokens = max_new_tokens or 2048
         log.info(f"Max new tokens: {self.max_new_tokens}")
 
@@ -37,8 +36,8 @@ class SegmenterVLLM:
             from vllm import LLM, SamplingParams
         except ImportError:
             raise ImportError(
-                "vllm is required for vllm segmentation. "
-                "Install with: pip install rMatch[cuda]"
+                "SegmenterCuda requires vllm. "
+                "Install rMatch with it: pip install rMatch[cuda]"
             )
 
         if tensor_parallel_size is None:
@@ -79,6 +78,7 @@ class SegmenterVLLM:
             temperature=0.0,  # greedy; set higher for sampling
         )
 
+    # ruff: disable[E501]
     def _build_prompt(self, transcript: str) -> str:
         return f"""
 I have a transcript of someone describing movies they watched. Follow these steps:
@@ -109,6 +109,8 @@ Example output:
 Here is the transcript to segment:
 {transcript}
 """
+
+    # ruff: enable[E501]
 
     def _apply_chat_template(self, messages: list[dict[str, str]]) -> str:
         """Convert messages list to single prompt string using model's template."""
@@ -178,7 +180,8 @@ Here is the transcript to segment:
                         for k in range(i + 1, j):
                             skipped_seg = re.sub(r"\s+", " ", segments[k])
                             failures[k] = (
-                                f"segment {k} skipped during recovery (between {i} and {j})\n"
+                                f"segment {k} skipped during recovery"
+                                f" (between {i} and {j})\n"
                                 f"SEGMENT:\n{repr(skipped_seg)}"
                             )
                         cursor = recovery_idx + len(recovery_seg)
@@ -207,7 +210,6 @@ Here is the transcript to segment:
         self,
         transcript: str,
     ) -> list[str]:
-
         prompt = self._build_prompt(transcript)
 
         formatted_prompt = self._apply_chat_template(
@@ -286,7 +288,7 @@ Here is the transcript to segment:
                     if labels is not None:
                         log.warning(f"{labels[i]}: Output was not a JSON array")
                     else:
-                        log.warning(f"Transcript {i+1}: Output was not a JSON array")
+                        log.warning(f"Transcript {i + 1}: Output was not a JSON array")
                     all_segs.append([])
                 else:
                     valid, reason = self._validate_segments(transcripts[i], segments)
@@ -298,7 +300,7 @@ Here is the transcript to segment:
                             )
                         else:
                             log.warning(
-                                f"{RED}[VALIDATION FAILED]{RESET} Transcript #{i+1}\n"
+                                f"{RED}[VALIDATION FAILED]{RESET} Transcript #{i + 1}\n"
                                 f"{YELLOW}{reason}{RESET}"
                             )
                     all_segs.append(segments)
@@ -307,7 +309,7 @@ Here is the transcript to segment:
                 if labels is not None:
                     log.error(f"{labels[i]}: Failed to parse - {e}")
                 else:
-                    log.error(f"Transcript #{i+1}: Failed to parse - {e}")
+                    log.error(f"Transcript #{i + 1}: Failed to parse - {e}")
                 all_segs.append([])  # Empty list on failure
 
         return all_segs

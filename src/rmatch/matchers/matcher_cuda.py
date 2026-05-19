@@ -8,7 +8,7 @@ from rmatch.prompt import get_prompt_and_parser
 log = get_logger(__name__)
 
 
-class MatcherVLLM(Matcher, matcher_name="vllm"):
+class MatcherCuda(Matcher, matcher_name="cuda"):
     def __init__(
         self,
         model_name: str | None = None,
@@ -27,7 +27,7 @@ class MatcherVLLM(Matcher, matcher_name="vllm"):
         matcher_name: str | None = None,
     ):
         super().__init__()
-        self.matcher_name = "vllm"
+        self.matcher_name = "cuda"
         self.prompt = prompt
         assert window_size >= 0, "window_size must be non-negative"
         self.window_size = window_size
@@ -36,7 +36,7 @@ class MatcherVLLM(Matcher, matcher_name="vllm"):
         self.max_retries = max_retries or 10
         self.model_name = model_name or "google/gemma-4-31B-it"
 
-        log.info(f"Initializing vLLM model: {self.model_name}")
+        log.info(f"Initializing vLLM model with CUDA: {self.model_name}")
         log.info(f"Recall context window size: {self.window_size}")
         log.info(f"Max new tokens: {self.max_new_tokens}")
         log.info(f"Max retries: {self.max_retries}")
@@ -46,8 +46,8 @@ class MatcherVLLM(Matcher, matcher_name="vllm"):
             from vllm import LLM, SamplingParams
         except ImportError:
             raise ImportError(
-                "vllm is required for MatcherVLLM. "
-                "Install with: pip install rMatch[cuda]"
+                "vllm is required for MatcherCuda. "
+                "Install rMatch with it: pip install rMatch[cuda]"
             )
 
         if tensor_parallel_size is None:
