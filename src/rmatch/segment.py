@@ -20,7 +20,7 @@ def segs_to_df(segments: list[str]) -> pd.DataFrame:
     return pd.DataFrame(data)
 
 
-def process_directory(
+def segment(
     input_dir: str,
     output_dir: str,
     model_name: str | None = None,
@@ -126,7 +126,7 @@ if __name__ == "__main__":
     else:
         output_dir = args.output_dir
 
-    process_directory(
+    segment(
         input_dir=args.input_dir,
         output_dir=output_dir,
         model_name=args.model,
