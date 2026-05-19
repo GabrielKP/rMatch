@@ -29,7 +29,7 @@ class SegmenterCuda:
             self.model_name = model_name
 
         log.info(f"Initializing vLLM model with CUDA: {self.model_name}")
-        self.max_new_tokens = max_new_tokens or 2048
+        self.max_new_tokens = max_new_tokens or 4096
         self.max_retries = max_retries or 10
         log.info(f"Max new tokens: {self.max_new_tokens}")
         log.info(f"Max retries: {self.max_retries}")
@@ -278,62 +278,98 @@ Here is the transcript to segment:
     def segment_batch(
         self, transcripts: list[str], labels: list[str] | None = None
     ) -> list[list[str]]:
-        log.info(f"Prepping {len(transcripts)} transcripts for batch processing...")
+        log.info(f"Prepping {len(transcripts)} transcripts")
         if labels is not None and len(labels) != len(transcripts):
-            log.warning("Sufficient labels not provided, defaulting to indices")
             labels = None
-        prompts = []
-        for t in transcripts:
-            prompt = self._build_prompt(t)
 
-            formatted_prompt = self._apply_chat_template(
-                [{"role": "user", "content": prompt}]
-            )
-            prompts.append(formatted_prompt)
+        results: list[list[str]] = [list() for _ in range(len(transcripts))]
+        indices_pending = list(range(len(transcripts)))
 
-        log.info(f"Segmenting {len(transcripts)} transcripts (parallel)...")
-        outputs = self.llm.generate(prompts, self.sampling_params)
+        for attempt in range(self.max_retries):
+            prompts = list()
+            for idx_pending in indices_pending:
+                prompt = self._build_prompt(transcripts[idx_pending], attempt=attempt)
 
-        all_segs = []
-        for i, output in enumerate(outputs):
-            response_text = output.outputs[0].text
+                formatted_prompt = self._apply_chat_template(
+                    [{"role": "user", "content": prompt}]
+                )
+                prompts.append(formatted_prompt)
 
-            try:
-                cleaned = response_text.strip()
-                if cleaned.startswith("```"):
-                    cleaned = cleaned.split("```")[1]
-                    if cleaned.startswith("json"):
-                        cleaned = cleaned[4:]
-                    cleaned = cleaned.strip()
+            log.info(f"Segmenting {len(indices_pending)} transcripts")
+            outputs = self.llm.generate(prompts, self.sampling_params)
 
-                segments = json.loads(cleaned)
+            still_pending: list[int] = list()
+            for idx_pending, output in zip(indices_pending, outputs):
+                # parse response
+                response_text = output.outputs[0].text
 
-                if not isinstance(segments, list):
-                    if labels is not None:
-                        log.warning(f"{labels[i]}: Output was not a JSON array")
-                    else:
-                        log.warning(f"Transcript {i + 1}: Output was not a JSON array")
-                    all_segs.append([])
-                else:
-                    valid, reason = self._validate_segments(transcripts[i], segments)
-                    if not valid:
+                try:
+                    cleaned = response_text.strip()
+                    if cleaned.startswith("```"):
+                        cleaned = cleaned.split("```")[1]
+                        if cleaned.startswith("json"):
+                            cleaned = cleaned[4:]
+                        cleaned = cleaned.strip()
+
+                    segments = json.loads(cleaned)
+
+                    if not isinstance(segments, list):
+                        # bad output
                         if labels is not None:
                             log.warning(
-                                f"{RED}[VALIDATION FAILED]{RESET} {labels[i]}\n"
+                                f"{labels[idx_pending]}: Output was not a JSON array"
+                            )
+                        else:
+                            log.warning(
+                                f"Transcript {idx_pending}: Output was not a JSON array"
+                            )
+                        still_pending.append(idx_pending)
+                        continue
+
+                    # valid output, try to validate for verbatim preservation
+                    valid, reason = self._validate_segments(
+                        transcripts[idx_pending], segments
+                    )
+                    if not valid:
+                        # validation failed
+                        if labels is not None:
+                            log.warning(
+                                f"{RED}[VALIDATION FAILED]{RESET}"
+                                f" {labels[idx_pending]}\n"
                                 f"{YELLOW}{reason}{RESET}"
                             )
                         else:
                             log.warning(
-                                f"{RED}[VALIDATION FAILED]{RESET} Transcript #{i + 1}\n"
+                                f"{RED}[VALIDATION FAILED]{RESET}"
+                                f" Transcript {idx_pending}\n"
                                 f"{YELLOW}{reason}{RESET}"
                             )
-                    all_segs.append(segments)
+                        still_pending.append(idx_pending)
+                        continue
 
-            except (json.JSONDecodeError, ValueError) as e:
-                if labels is not None:
-                    log.error(f"{labels[i]}: Failed to parse - {e}")
-                else:
-                    log.error(f"Transcript #{i + 1}: Failed to parse - {e}")
-                all_segs.append([])  # Empty list on failure
+                    # validation succeeded
+                    results[idx_pending] = segments
 
-        return all_segs
+                except (json.JSONDecodeError, ValueError) as e:
+                    if labels is not None:
+                        log.error(f"{labels[idx_pending]}: Failed to parse - {e}")
+                    else:
+                        log.error(f"Transcript #{idx_pending}: Failed to parse - {e}")
+                    still_pending.append(idx_pending)
+                    continue
+
+            if len(still_pending) > 0:
+                log.info(
+                    f"Attempt {attempt + 1}/{self.max_retries}: "
+                    f"{len(still_pending)}/{len(indices_pending)}"
+                    " transcripts need retry"
+                )
+            indices_pending = still_pending
+
+        for idx_pending in indices_pending:
+            log.warning(
+                f"All {self.max_retries} attempts failed for transcript {idx_pending}"
+            )
+            results[idx_pending] = list()
+
+        return results
