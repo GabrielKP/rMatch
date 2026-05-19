@@ -9,7 +9,7 @@
 <a href="https://pre-commit.com/"><img alt="pre-commit" src="https://img.shields.io/badge/tool-Pre%20Commit-yellow?logo=Pre-Commit"></a>
 </p>
 
-rMatch links each segment of a participant's spoken recall to the corresponding segment(s) in the original story, using a large language model. Use **Claude** via API for best accuracy, or **`google/gemma-4-31B-it`** to run fully locally:
+rMatch matches each segment of a participant's recall to the corresponding segment(s) in the original story, using a large language model. Use **Claude** via API for best accuracy, or **`google/gemma-4-31B-it`** to run fully locally:
 
 | Model                 | short text (N=21) | long text (N=19) | movie transcripts (N=138) |
 | --------------------- | :---------------: | :--------------: | :-----------------------: |
