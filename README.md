@@ -75,6 +75,9 @@ The Matcher object is the main tool to do the matching:
 
 ### MatcherCuda
 
+The main matcher to run locally - if you have nvidia gpus available. 94GB of VRAM (across multiple gpus) was enough to run `gemma-4-31B-it` without quantization.
+See here for [quantized versions](https://huggingface.co/collections/unsloth/gemma-4).
+
 ```python
 from rmatch import MatcherCuda
 
@@ -87,22 +90,24 @@ matches = matcher.match(
 # [(0, [0])]  — recall segment 0 matched story segment 0
 ```
 
-| Argument                 | Default           | Notes                                                                                                             |
-| ------------------------ | ----------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `model_name`             | matcher-specific  | Override the default model                                                                                        |
-| `prompt`                 | `"primary"`       | See [Prompts](#prompts)                                                                                           |
-| `max_retries`            | `10`              | Retries when the model output cannot be parsed                                                                    |
-| `api_key`                | from `.env` / env | See [API keys](#api-keys)                                                                                         |
-| `window_size`            | `5`               | Recall context window                                                                                             |
-| `max_new_tokens`         | `1024`            | Max tokens generated per segment                                                                                  |
-| `max_model_len`          | `90000`           | Max sequence length (prompt + generation); lower to save GPU memory                                               |
-| `tensor_parallel_size`   | auto              | Number of GPUs to use. Auto will use all of them.                                                                 |
-| `gpu_memory_utilization` | `0.90`            | Fraction of GPU memory to use, see [vLLM](https://docs.vllm.ai/en/v0.8.0/api/offline_inference/llm.html#vllm.LLM) |
-| `verbose_errors`         | `False`           | Log raw output on parse failures                                                                                  |
+| Argument                 | Default            | Notes                                                                                                             |
+| ------------------------ | ------------------ | ----------------------------------------------------------------------------------------------------------------- |
+| `model_name`             | `"gemma-4-31B-it"` | Override the default model                                                                                        |
+| `prompt`                 | `"primary"`        | See [Prompts](#prompts)                                                                                           |
+| `max_retries`            | `10`               | Retries when the model output cannot be parsed                                                                    |
+| `api_key`                | from `.env` / env  | See [API keys](#api-keys)                                                                                         |
+| `window_size`            | `5`                | Recall context window                                                                                             |
+| `max_new_tokens`         | `1024`             | Max tokens generated per segment                                                                                  |
+| `max_model_len`          | `90000`            | Max sequence length (prompt + generation); lower to save GPU memory                                               |
+| `tensor_parallel_size`   | auto               | Number of GPUs to use. Auto will use all of them.                                                                 |
+| `gpu_memory_utilization` | `0.90`             | Fraction of GPU memory to use, see [vLLM](https://docs.vllm.ai/en/v0.8.0/api/offline_inference/llm.html#vllm.LLM) |
+| `verbose_errors`         | `False`            | Log raw output on parse failures                                                                                  |
 
 
 
 ### MatcherAnthropic / MatcherOpenai
+
+Use a cloud provider to do the matching. It's pretty inexpensive, and `--dry_run` will give you an approximate estimate of the cost. Usually a single recall doesn't cost more than 0.5$, even on frontier models.
 
 ```python
 from rmatch import MatcherAnthropic
@@ -118,17 +123,19 @@ matches = matcher.match(
 
 You can also put your API key in a `.env` file instead of passing it directly (see [API keys](#api-keys)).
 
-| Argument      | Default           | Notes                                          |
-| ------------- | ----------------- | ---------------------------------------------- |
-| `model_name`  | matcher-specific  | Override the default model                     |
-| `prompt`      | `"primary"`       | See [Prompts](#prompts)                        |
-| `max_retries` | `10`              | Retries when the model output cannot be parsed |
-| `api_key`     | from `.env` / env | See [API keys](#api-keys)                      |
-| `window_size` | `5`               | Recall context window                          |
-| `dry_run`     | `False`           | Estimate API cost without calling the API      |
+| Argument      | Default                           | Notes                                          |
+| ------------- | --------------------------------- | ---------------------------------------------- |
+| `model_name`  | `"claude-opus-4-6"` / `"gpt-4.1"` | Override the default model                     |
+| `prompt`      | `"primary"`                       | See [Prompts](#prompts)                        |
+| `max_retries` | `10`                              | Retries when the model output cannot be parsed |
+| `api_key`     | from `.env` / env                 | See [API keys](#api-keys)                      |
+| `window_size` | `5`                               | Recall context window                          |
+| `dry_run`     | `False`                           | Estimate API cost without calling the API      |
 
 
 ### MatcherMac
+
+You can try running the matching on your mac with apple silicon! You'll probably need a lot of unified memory, or use a quantized model. The standard `unsloth/gemma-4-E4B-it-MLX-8bit` model should run on a mac with 24GB of unified memory.
 
 ```python
 from rmatch import MatcherMac
@@ -142,19 +149,21 @@ matches = matcher.match(
 # [(0, [0])]  — recall segment 0 matched story segment 0
 ```
 
-| Argument         | Default           | Notes                                          |
-| ---------------- | ----------------- | ---------------------------------------------- |
-| `model_name`     | matcher-specific  | Override the default model                     |
-| `prompt`         | `"primary"`       | See [Prompts](#prompts)                        |
-| `max_retries`    | `10`              | Retries when the model output cannot be parsed |
-| `api_key`        | from `.env` / env | See [API keys](#api-keys)                      |
-| `window_size`    | `5`               | Recall context window                          |
-| `max_new_tokens` | `300`             | Max tokens generated per segment               |
-| `verbose_errors` | `False`           | Log raw output on parse failures               |
+| Argument         | Default                             | Notes                                          |
+| ---------------- | ----------------------------------- | ---------------------------------------------- |
+| `model_name`     | `"unsloth/gemma-4-E4B-it-MLX-8bit"` | Override the default model                     |
+| `prompt`         | `"primary"`                         | See [Prompts](#prompts)                        |
+| `max_retries`    | `10`                                | Retries when the model output cannot be parsed |
+| `api_key`        | from `.env` / env                   | See [API keys](#api-keys)                      |
+| `window_size`    | `5`                                 | Recall context window                          |
+| `max_new_tokens` | `300`                               | Max tokens generated per segment               |
+| `verbose_errors` | `False`                             | Log raw output on parse failures               |
 
 
 
 ### MatcherHuggingface
+
+The fallback matcher that should work on any platform. Can run the same models as the Cuda/Mac matcher, and will achieve the same matching performance, but will require considerably more computing resources and be a lot slower.
 
 ```python
 from rmatch import MatcherHuggingface
