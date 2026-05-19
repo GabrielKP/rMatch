@@ -5,8 +5,8 @@ from rmatch import get_logger, matchlist_type
 log = get_logger(__name__)
 
 
-class Matcher:
-    _registry: dict[str, type["Matcher"]] = {}
+class MatcherBase:
+    _registry: dict[str, type["MatcherBase"]] = {}
     max_retries: int
 
     def __init__(self, **kwargs) -> None:
@@ -32,23 +32,7 @@ class Matcher:
     def __init_subclass__(cls, matcher_name: str | None = None, **kwargs):
         super().__init_subclass__(**kwargs)
         if matcher_name is not None:
-            Matcher._registry[matcher_name] = cls
-
-    def __new__(cls, *args, **kwargs):
-        # check for Matcher, such that upon direct instantiation of
-        # subclasses we don't do anything.
-        if cls is Matcher:
-            name = kwargs.get("matcher_name")
-            if name is None:
-                raise TypeError(
-                    "matcher_name is required when instantiating Matcher directly"
-                )
-            subcls = Matcher._registry.get(name)
-            if subcls is None:
-                available = ", ".join(sorted(Matcher._registry))
-                raise ValueError(f"Unknown matcher: {name!r}. Available: {available}")
-            return object.__new__(subcls)
-        return super().__new__(cls)
+            MatcherBase._registry[matcher_name] = cls
 
     @property
     def matcher_name(self) -> str:

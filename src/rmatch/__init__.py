@@ -59,4 +59,24 @@ def print_config(config: dict, **kwargs: dict):
     console.print_json(json.dumps(config_copy, indent=4))
 
 
-from rmatch.matchers import Matcher  # noqa: E402,F401
+from rmatch.matchers import (  # noqa: E402,F401
+    MatcherAnthropic,
+    MatcherCuda,
+    MatcherHuggingFace,
+    MatcherMac,
+    MatcherOpenAI,
+    get_matcher,
+)
+from rmatch.matching import match  # noqa: E402,F401
+from rmatch.segmenters import SegmenterCuda  # noqa: E402,F401
+
+__all__ = [
+    "MatcherAnthropic",
+    "MatcherCuda",
+    "MatcherHuggingFace",
+    "MatcherMac",
+    "MatcherOpenAI",
+    "get_matcher",
+    "match",
+    "SegmenterCuda",
+]

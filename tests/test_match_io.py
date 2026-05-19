@@ -1,12 +1,12 @@
-"""Tests for file-loading helpers and run_matching() in rmatch.match."""
+"""Tests for file-loading helpers and match() in rmatch.matching."""
 
 import json
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 
-from rmatch.match import load_recall_segments, load_story_segments, run_matching
+from rmatch.matching import load_recall_segments, load_story_segments, match
 from tests.conftest import RECALL_SEGMENTS, STORY_SEGMENTS
 
 # ── load_story_segments ───────────────────────────────────────────────────────
@@ -83,6 +83,26 @@ class TestLoadStorySegments:
         p.write_text(json.dumps({"segments": ["valid", None, 42, "also valid"]}))
         segments, _ = load_story_segments(p)
         assert segments == ["valid", "also valid"]
+
+    def test_json_segmentation_method_non_string_defaults(self, tmp_path):
+        p = tmp_path / "story.json"
+        p.write_text(
+            json.dumps({"segments": STORY_SEGMENTS, "segmentation_method": 42})
+        )
+        _, method = load_story_segments(p)
+        assert method == "json"
+
+    def test_json_malformed_raises_json_decode_error(self, tmp_path):
+        p = tmp_path / "story.json"
+        p.write_text("{")
+        with pytest.raises(json.JSONDecodeError):
+            load_story_segments(p)
+
+    def test_json_top_level_list_raises_value_error(self, tmp_path):
+        p = tmp_path / "story.json"
+        p.write_text(json.dumps([1, 2, 3]))
+        with pytest.raises(ValueError, match="segments"):
+            load_story_segments(p)
 
 
 # ── load_recall_segments ──────────────────────────────────────────────────────
@@ -195,29 +215,70 @@ class TestLoadRecallSegments:
         # No segmentation_method in file → defaults to "json"
         assert method == "json"
 
+    def test_directory_txt_one_empty_file_raises(self, tmp_path):
+        d = tmp_path / "recalls"
+        d.mkdir()
+        (d / "sub01.txt").write_text(
+            "Alice and the Queen drank tea.\n", encoding="utf-8"
+        )
+        (d / "sub02.txt").write_text("", encoding="utf-8")
+        with pytest.raises(ValueError, match="no segments"):
+            load_recall_segments(d)
 
-# ── run_matching ──────────────────────────────────────────────────────────────
+    def test_directory_no_txt_or_json_raises(self, tmp_path):
+        d = tmp_path / "recalls"
+        d.mkdir()
+        (d / "notes.csv").write_text("a,b\n", encoding="utf-8")
+        with pytest.raises(ValueError, match="no .json or .txt"):
+            load_recall_segments(d)
+
+    def test_directory_json_method_mismatch_logs_warning(self, tmp_path, caplog):
+        import logging
+
+        d = tmp_path / "recalls"
+        d.mkdir()
+        (d / "a.json").write_text(
+            json.dumps(
+                {"recalls": {"sub01": ["seg1"]}, "segmentation_method": "method_a"}
+            )
+        )
+        (d / "b.json").write_text(
+            json.dumps(
+                {"recalls": {"sub02": ["seg2"]}, "segmentation_method": "method_b"}
+            )
+        )
+        with caplog.at_level(logging.WARNING):
+            load_recall_segments(d)
+        warnings = [
+            r.message
+            for r in caplog.records
+            if "recall method mismatch" in r.message.lower()
+        ]
+        assert len(warnings) == 1
 
 
-def _make_mock_matcher(match_return_value=None):
+# ── match ─────────────────────────────────────────────────────────────────────
+
+
+def _make_mock_matcher(match_return_value=None, matcher_name: str = "anthropic"):
     """Return a mock Matcher instance with sensible defaults."""
     mock = MagicMock()
     if match_return_value is None:
         match_return_value = [(0, [0]), (1, [1])]
     mock.match.return_value = match_return_value
+    mock.matcher_name = matcher_name
     mock.model_name = None
     return mock
 
 
-class TestRunMatching:
+class TestMatch:
     def test_output_dict_has_required_keys(self, story_txt, recall_txt):
-        with patch("rmatch.match.Matcher", return_value=_make_mock_matcher()):
-            result = run_matching(
-                story_file=story_txt,
-                recall_file=recall_txt,
-                matcher_name="anthropic",
-                overwrite=True,
-            )
+        result = match(
+            matcher=_make_mock_matcher(),
+            story_file=story_txt,
+            recall_file=recall_txt,
+            overwrite=True,
+        )
         assert "matcher_name" in result
         assert "story_name" in result
         assert "story_segmentation" in result
@@ -225,26 +286,24 @@ class TestRunMatching:
         assert "matches" in result
 
     def test_output_dict_correct_values(self, story_txt, recall_txt):
-        with patch("rmatch.match.Matcher", return_value=_make_mock_matcher()):
-            result = run_matching(
-                story_file=story_txt,
-                recall_file=recall_txt,
-                matcher_name="openai",
-                overwrite=True,
-            )
+        result = match(
+            matcher=_make_mock_matcher(matcher_name="openai"),
+            story_file=story_txt,
+            recall_file=recall_txt,
+            overwrite=True,
+        )
         assert result["matcher_name"] == "openai"
         assert result["story_name"] == "story"  # stem of story.txt
         assert result["story_segmentation"] == "lines"
         assert result["recall_segmentation"] == "lines"
 
     def test_output_file_created(self, story_txt, recall_txt, tmp_path):
-        with patch("rmatch.match.Matcher", return_value=_make_mock_matcher()):
-            run_matching(
-                story_file=story_txt,
-                recall_file=recall_txt,
-                matcher_name="anthropic",
-                overwrite=True,
-            )
+        match(
+            matcher=_make_mock_matcher(),
+            story_file=story_txt,
+            recall_file=recall_txt,
+            overwrite=True,
+        )
         json_files = list(tmp_path.glob("*.json"))
         # At least one output JSON file created
         assert len(json_files) >= 1
@@ -255,129 +314,154 @@ class TestRunMatching:
         # Create the expected output file first
         out_file = tmp_path / "anthropic-lines-lines.json"
         out_file.write_text("{}")
-        with patch("rmatch.match.Matcher", return_value=_make_mock_matcher()):
-            with pytest.raises(FileExistsError):
-                run_matching(
-                    story_file=story_txt,
-                    recall_file=recall_txt,
-                    matcher_name="anthropic",
-                    overwrite=False,
-                )
+        with pytest.raises(FileExistsError):
+            match(
+                matcher=_make_mock_matcher(),
+                story_file=story_txt,
+                recall_file=recall_txt,
+                overwrite=False,
+            )
 
     def test_overwrite_true_succeeds_when_file_exists(
         self, story_txt, recall_txt, tmp_path
     ):
         out_file = tmp_path / "anthropic-lines-lines.json"
         out_file.write_text("{}")
-        with patch("rmatch.match.Matcher", return_value=_make_mock_matcher()):
-            result = run_matching(
-                story_file=story_txt,
-                recall_file=recall_txt,
-                matcher_name="anthropic",
-                overwrite=True,
-            )
+        result = match(
+            matcher=_make_mock_matcher(),
+            story_file=story_txt,
+            recall_file=recall_txt,
+            overwrite=True,
+        )
         assert "matches" in result
 
     def test_story_name_override(self, story_txt, recall_txt):
-        with patch("rmatch.match.Matcher", return_value=_make_mock_matcher()):
-            result = run_matching(
-                story_file=story_txt,
-                recall_file=recall_txt,
-                matcher_name="anthropic",
-                story_name="custom_name",
-                overwrite=True,
-            )
+        result = match(
+            matcher=_make_mock_matcher(),
+            story_file=story_txt,
+            recall_file=recall_txt,
+            story_name="custom_name",
+            overwrite=True,
+        )
         assert result["story_name"] == "custom_name"
 
     def test_segmentation_overrides(self, story_txt, recall_txt):
-        with patch("rmatch.match.Matcher", return_value=_make_mock_matcher()):
-            result = run_matching(
-                story_file=story_txt,
-                recall_file=recall_txt,
-                matcher_name="anthropic",
-                story_segmentation="scenes",
-                recall_segmentation="sentences",
-                overwrite=True,
-            )
+        result = match(
+            matcher=_make_mock_matcher(),
+            story_file=story_txt,
+            recall_file=recall_txt,
+            story_segmentation="scenes",
+            recall_segmentation="sentences",
+            overwrite=True,
+        )
         assert result["story_segmentation"] == "scenes"
         assert result["recall_segmentation"] == "sentences"
 
     def test_matches_dict_contains_subject(self, story_txt, recall_txt):
-        with patch("rmatch.match.Matcher", return_value=_make_mock_matcher()):
-            result = run_matching(
-                story_file=story_txt,
-                recall_file=recall_txt,
-                matcher_name="anthropic",
-                overwrite=True,
-            )
+        result = match(
+            matcher=_make_mock_matcher(),
+            story_file=story_txt,
+            recall_file=recall_txt,
+            overwrite=True,
+        )
         # "recall.txt" → subject ID is "recall"
         assert "recall" in result["matches"]
 
     def test_checkpoint_cleaned_up_after_success(self, story_txt, recall_txt, tmp_path):
-        with patch("rmatch.match.Matcher", return_value=_make_mock_matcher()):
-            run_matching(
-                story_file=story_txt,
-                recall_file=recall_txt,
-                matcher_name="anthropic",
-                overwrite=True,
-            )
+        match(
+            matcher=_make_mock_matcher(),
+            story_file=story_txt,
+            recall_file=recall_txt,
+            overwrite=True,
+        )
         checkpoint_files = list(tmp_path.glob("*.checkpoint.json"))
         assert len(checkpoint_files) == 0
 
     def test_story_file_not_found_raises(self, recall_txt):
         with pytest.raises(FileNotFoundError):
-            run_matching(
+            match(
+                matcher=_make_mock_matcher(),
                 story_file=Path("/nonexistent/story.txt"),
                 recall_file=recall_txt,
-                matcher_name="anthropic",
             )
 
     def test_recall_file_not_found_raises(self, story_txt):
         with pytest.raises(FileNotFoundError):
-            run_matching(
+            match(
+                matcher=_make_mock_matcher(),
                 story_file=story_txt,
                 recall_file=Path("/nonexistent/recall.txt"),
-                matcher_name="anthropic",
             )
 
     def test_model_name_included_when_matcher_has_it(self, story_txt, recall_txt):
-        mock_matcher = _make_mock_matcher()
+        mock_matcher = _make_mock_matcher(matcher_name="openai")
         mock_matcher.model_name = "gpt-4.1"
-        with patch("rmatch.match.Matcher", return_value=mock_matcher):
-            result = run_matching(
-                story_file=story_txt,
-                recall_file=recall_txt,
-                matcher_name="openai",
-                overwrite=True,
-            )
+        result = match(
+            matcher=mock_matcher,
+            story_file=story_txt,
+            recall_file=recall_txt,
+            overwrite=True,
+        )
         assert result.get("model_name") == "gpt-4.1"
 
-    def test_run_matching_with_json_story_and_recall(
-        self, story_json, recall_json, tmp_path
-    ):
-        with patch("rmatch.match.Matcher", return_value=_make_mock_matcher()):
-            result = run_matching(
-                story_file=story_json,
-                recall_file=recall_json,
-                matcher_name="anthropic",
-                overwrite=True,
-            )
+    def test_match_with_json_story_and_recall(self, story_json, recall_json, tmp_path):
+        result = match(
+            matcher=_make_mock_matcher(),
+            story_file=story_json,
+            recall_file=recall_json,
+            overwrite=True,
+        )
         assert result["story_segmentation"] == "scenes"
         assert result["recall_segmentation"] == "sub_sentences"
 
-    def test_run_matching_with_recall_directory(
-        self, story_txt, recall_dir_txt, tmp_path
-    ):
+    def test_match_with_recall_directory(self, story_txt, recall_dir_txt, tmp_path):
         # Directory has 2 subjects → matches dict should have 2 entries
         mock_matcher = _make_mock_matcher()
         mock_matcher.match.return_value = [(0, [0])]
-        with patch("rmatch.match.Matcher", return_value=mock_matcher):
-            result = run_matching(
-                story_file=story_txt,
-                recall_file=recall_dir_txt,
-                matcher_name="anthropic",
-                overwrite=True,
-            )
+        result = match(
+            matcher=mock_matcher,
+            story_file=story_txt,
+            recall_file=recall_dir_txt,
+            overwrite=True,
+        )
         assert len(result["matches"]) == 2
         assert "sub01" in result["matches"]
         assert "sub02" in result["matches"]
+
+    def test_keyboard_interrupt_writes_checkpoint_and_reraises(
+        self, story_txt, recall_dir_txt, tmp_path, monkeypatch
+    ):
+        monkeypatch.chdir(tmp_path)
+        mock_matcher = _make_mock_matcher()
+        mock_matcher.match.side_effect = KeyboardInterrupt()
+
+        with pytest.raises(KeyboardInterrupt):
+            match(
+                matcher=mock_matcher,
+                story_file=story_txt,
+                recall_file=recall_dir_txt,
+                overwrite=True,
+            )
+
+        checkpoint_files = list(recall_dir_txt.glob("*.checkpoint.json"))
+        assert len(checkpoint_files) == 1
+        data = json.loads(checkpoint_files[0].read_text())
+        assert data["checkpoint"] is True
+        assert data["progress"]["reason"] == "KeyboardInterrupt"
+
+    def test_generic_exception_does_not_write_checkpoint(
+        self, story_txt, recall_dir_txt, tmp_path, monkeypatch
+    ):
+        monkeypatch.chdir(tmp_path)
+        mock_matcher = _make_mock_matcher()
+        mock_matcher.match.side_effect = RuntimeError("boom")
+
+        with pytest.raises(RuntimeError, match="boom"):
+            match(
+                matcher=mock_matcher,
+                story_file=story_txt,
+                recall_file=recall_dir_txt,
+                overwrite=True,
+            )
+
+        assert len(list(recall_dir_txt.glob("*.checkpoint.json"))) == 0

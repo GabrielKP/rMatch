@@ -1,11 +1,9 @@
 import os
 
-import tiktoken
-from openai import OpenAI
 from tqdm import tqdm
 
 from rmatch import get_logger
-from rmatch.matchers.matcher import Matcher
+from rmatch.matchers.matcher_base import MatcherBase
 from rmatch.prompt import get_prompt_and_parser
 
 log = get_logger(__name__)
@@ -18,7 +16,7 @@ OPENAI_PRICES: dict[str, tuple[float, float]] = {
 }
 
 
-class MatcherOpenAI(Matcher, matcher_name="openai"):
+class MatcherOpenAI(MatcherBase, matcher_name="openai"):
     def __init__(
         self,
         model_name: str | None = None,
@@ -27,8 +25,6 @@ class MatcherOpenAI(Matcher, matcher_name="openai"):
         api_key: str | None = None,
         prompt: str | None = None,
         max_retries: int | None = None,
-        # required for initialization
-        matcher_name: str | None = None,
     ):
         super().__init__()
         self.matcher_name = "openai"
@@ -53,6 +49,8 @@ class MatcherOpenAI(Matcher, matcher_name="openai"):
                 raise ValueError(
                     "OPENAI_API_KEY not found in .env or environment variables."
                 )
+        from openai import OpenAI
+
         self.client = OpenAI(api_key=api_key)
         self.window_size = window_size
         self.usage_metrics = {"in_tokens": 0, "out_tokens": 0, "cost": 0.0}
@@ -78,6 +76,8 @@ class MatcherOpenAI(Matcher, matcher_name="openai"):
         return (in_tokens * prices[0] + out_tokens * prices[1]) / 1_000_000
 
     def _estimate_tokens(self, query: str) -> int:
+        import tiktoken
+
         try:
             enc = tiktoken.encoding_for_model(self.model_name)
         except KeyError:
@@ -90,6 +90,7 @@ class MatcherOpenAI(Matcher, matcher_name="openai"):
         recall_segments: list[str],
         match_key: str | None = None,
     ) -> list[tuple[int, list[int]]]:
+        n_story_segments = len(story_segments)
         matches: list[tuple[int, list[int]]] = list()
 
         for idx, recall_seg in enumerate(
@@ -145,7 +146,9 @@ class MatcherOpenAI(Matcher, matcher_name="openai"):
                             response=raw_text,
                             parsed_response=parsed_response_,
                         )
-                    if parsed_response_ is not None:
+                    if parsed_response_ is not None and all(
+                        1 <= i <= n_story_segments for i in parsed_response_
+                    ):
                         parsed_response = parsed_response_
                         break
                 log.warning(

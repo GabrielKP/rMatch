@@ -1,11 +1,9 @@
 import os
-import re
 
-import anthropic
 from tqdm import tqdm
 
 from rmatch import get_logger, matchlist_type
-from rmatch.matchers.matcher import Matcher
+from rmatch.matchers.matcher_base import MatcherBase
 from rmatch.prompt import get_prompt_and_parser
 
 log = get_logger(__name__)
@@ -18,7 +16,7 @@ ANTHROPIC_PRICES: dict[str, tuple[float, float]] = {
 }
 
 
-class MatcherAnthropic(Matcher, matcher_name="anthropic"):
+class MatcherAnthropic(MatcherBase, matcher_name="anthropic"):
     def __init__(
         self,
         model_name: str | None = None,
@@ -27,8 +25,6 @@ class MatcherAnthropic(Matcher, matcher_name="anthropic"):
         api_key: str | None = None,
         prompt: str | None = None,
         max_retries: int | None = None,
-        # required for initialization
-        matcher_name: str | None = None,
     ):
         super().__init__()
         self.matcher_name = "anthropic"
@@ -53,6 +49,8 @@ class MatcherAnthropic(Matcher, matcher_name="anthropic"):
                 raise ValueError(
                     "ANTHROPIC_API_KEY not found in .env or environment variables."
                 )
+        import anthropic
+
         self.client = anthropic.Anthropic(api_key=api_key)
 
         self.window_size = window_size
@@ -114,6 +112,7 @@ class MatcherAnthropic(Matcher, matcher_name="anthropic"):
         if len(recall_segments) == 0:
             return []
 
+        n_story_segments = len(story_segments)
         matches: list[tuple[int, list[int]]] = list()
 
         for idx, recall_seg in enumerate(
@@ -170,7 +169,9 @@ class MatcherAnthropic(Matcher, matcher_name="anthropic"):
                             response=raw_text,
                             parsed_response=parsed_response_,
                         )
-                    if parsed_response_ is not None:
+                    if parsed_response_ is not None and all(
+                        1 <= i <= n_story_segments for i in parsed_response_
+                    ):
                         parsed_response = parsed_response_
                         break
                 log.warning(

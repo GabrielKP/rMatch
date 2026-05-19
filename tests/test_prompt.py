@@ -20,20 +20,6 @@ RECALL_SEGMENTS = [
 ]
 
 
-# ── get_prompt_and_parser return type ─────────────────────────────────────────
-
-
-def test_get_prompt_and_parser_returns_str_and_callable():
-    prompt, parser = get_prompt_and_parser(STORY_SEGMENTS, RECALL_SEGMENTS, 0, 5)
-    assert isinstance(prompt, str)
-    assert callable(parser)
-
-
-def test_get_prompt_and_parser_prompt_is_nonempty():
-    prompt, _ = get_prompt_and_parser(STORY_SEGMENTS, RECALL_SEGMENTS, 0, 5)
-    assert len(prompt) > 0
-
-
 # ── Parser correctness ────────────────────────────────────────────────────────
 
 
@@ -84,6 +70,25 @@ def test_parser_finds_match_in_longer_text():
     _, parser = get_prompt_and_parser(STORY_SEGMENTS, RECALL_SEGMENTS, 0, 5)
     result = parser("After careful consideration, I think <1, 2> match.")
     assert result == {1, 2}
+
+
+@pytest.mark.parametrize(
+    "raw,expected",
+    [
+        ("<0>", {0}),
+        ("<NONE> <2>", set()),
+        ("<1> and <2>", {1}),
+        ("<>", None),
+        ("<   >", set()),
+        ("<1 2 3>", set()),
+        ("<1, abc, 2>", None),
+        ("<1, 1, 2>", {1, 2}),
+        ("<01, 02>", {1, 2}),
+    ],
+)
+def test_parser_edge_cases(raw, expected):
+    _, parser = get_prompt_and_parser(STORY_SEGMENTS, RECALL_SEGMENTS, 0, 5)
+    assert parser(raw) == expected
 
 
 # ── Prompt content ────────────────────────────────────────────────────────────

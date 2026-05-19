@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 
 from rmatch import console
-from rmatch.matchers import Matcher
+from rmatch.matchers import MatcherBase, get_matcher
 from rmatch.utils import (
     atomic_write_json,
     get_logger,
@@ -173,10 +173,10 @@ def recall_output_dir(recall_path: Path) -> Path:
     raise FileNotFoundError(f"Recall path not found: {recall_path}")
 
 
-def run_matching(
+def match(
+    matcher: MatcherBase,
     story_file: Path,
     recall_file: Path,
-    matcher_name: str,
     story_name: str | None = None,
     story_segmentation: str | None = None,
     recall_segmentation: str | None = None,
@@ -199,7 +199,7 @@ def run_matching(
     recall_segmentation = recall_segmentation or candidate_recall_segmentation
 
     output_dict: dict = {
-        "matcher_name": matcher_name,
+        "matcher_name": matcher.matcher_name,
         "story_name": story_name,
         "story_segmentation": story_segmentation,
         "recall_segmentation": recall_segmentation,
@@ -213,11 +213,6 @@ def run_matching(
     if out_path.exists() and not overwrite:
         raise FileExistsError(f"Output path already exists: {out_path}")
     console.print(f"Output path: {out_path}")
-
-    # initialize matcher — drop None values so only user-specified args are forwarded;
-    # each matcher's own __init__ defaults handle the rest.
-    matcher_kwargs = {k: v for k, v in kwargs.items() if v is not None}
-    matcher = Matcher(matcher_name=matcher_name, **matcher_kwargs)
 
     model_name = getattr(matcher, "model_name", None)
     if model_name is not None:
@@ -292,7 +287,7 @@ def main() -> None:
     parser.add_argument(
         "-M",
         "--matcher",
-        choices=["anthropic", "openai", "huggingface"],
+        choices=["anthropic", "openai", "mac", "cuda", "huggingface"],
         default="anthropic",
         help="Matcher to use. Default: anthropic.",
     )
@@ -343,7 +338,18 @@ def main() -> None:
         "--max-new-tokens",
         type=int,
         default=None,
-        help="[huggingface] max_new_tokens for the matcher. Default: 64.",
+        help="[huggingface, cuda] max_new_tokens for the matcher. Default: 64.",
+    )
+    parser.add_argument(
+        "--max-model-len",
+        type=int,
+        default=None,
+        help=(
+            "[cuda] Maximum sequence length of the model (prompt + generation). "
+            "Default: 90000. "
+            "Set to 'auto' to auto-detect the max from model config."
+            "Set this lower to reduce memory usage. "
+        ),
     )
     parser.add_argument(
         "--verbose-errors",
@@ -371,30 +377,23 @@ def main() -> None:
         default=False,
         help="Overwrite existing output file.",
     )
-    parser.add_argument(
-        "--no-flash-attn",
-        action="store_true",
-        default=None,
-        help="[huggingface] Disable flash-attn for the model.",
-    )
 
     args = parser.parse_args()
 
-    run_matching(
+    # initialize matcher
+    matcher_kwargs = {
+        k: v
+        for k, v in vars(args).items()
+        if v is not None
+        and k not in ["matcher", "story_file", "recall_file", "overwrite"]
+    }
+    matcher = get_matcher(args.matcher, **matcher_kwargs)
+
+    match(
+        matcher=matcher,
         story_file=args.story_file,
         recall_file=args.recall_file,
-        matcher_name=args.matcher,
-        model_name=args.model_name,
-        window_size=args.window_size,
-        dry_run=args.dry_run,
-        device=args.device,
-        quantization=args.quantization,
-        batch_size=args.batch_size,
-        max_new_tokens=args.max_new_tokens,
-        verbose_errors=args.verbose_errors,
-        prompt=args.prompt,
         overwrite=args.overwrite,
-        no_flash_attn=args.no_flash_attn,
     )
 
 
