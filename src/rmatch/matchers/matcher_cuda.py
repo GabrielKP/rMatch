@@ -20,7 +20,7 @@ class MatcherCuda(MatcherBase, matcher_name="cuda"):
         api_key: str | None = None,
         prompt: str | None = None,
         max_retries: int | None = None,
-        # gpu params, seehttps://docs.vllm.ai/en/v0.8.0/api/offline_inference/llm.html#vllm.LLM
+        # gpu params, see https://docs.vllm.ai/en/v0.8.0/api/offline_inference/llm.html#vllm.LLM
         tensor_parallel_size: int | None = None,  # number of GPUs to shard across
         gpu_memory_utilization: float = 0.90,
     ):
@@ -30,7 +30,7 @@ class MatcherCuda(MatcherBase, matcher_name="cuda"):
         assert window_size >= 0, "window_size must be non-negative"
         self.window_size = window_size
         self.verbose_errors = verbose_errors
-        self.max_new_tokens = max_new_tokens or 300
+        self.max_new_tokens = max_new_tokens or 1024
         self.max_retries = max_retries or 10
         self.model_name = model_name or "google/gemma-4-31B-it"
 
