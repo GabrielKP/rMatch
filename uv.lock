@@ -3376,7 +3376,7 @@ wheels = [
 
 [[package]]
 name = "rmatch"
-version = "0.4.3"
+version = "0.5.0a1"
 source = { editable = "." }
 dependencies = [
     { name = "accelerate" },

@@ -21,7 +21,7 @@ class SegmenterCuda:
         # gpu params, see https://docs.vllm.ai/en/v0.8.0/api/offline_inference/llm.html#vllm.LLM
         tensor_parallel_size: int | None = None,  # number of GPUs to shard across
         gpu_memory_utilization: float = 0.90,
-        max_retries: int = 10,
+        max_retries: int = 3,
     ):
         if model_name is None:
             self.model_name = "google/gemma-4-31B-it"
