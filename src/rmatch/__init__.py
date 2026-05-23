@@ -59,6 +59,7 @@ def print_config(config: dict, **kwargs: dict):
     console.print_json(json.dumps(config_copy, indent=4))
 
 
+from rmatch.causal_rater import CausalRaterCuda  # noqa: E402,F401
 from rmatch.matchers import (  # noqa: E402,F401
     MatcherAnthropic,
     MatcherCuda,
@@ -71,6 +72,7 @@ from rmatch.matching import match  # noqa: E402,F401
 from rmatch.segmenters import SegmenterCuda  # noqa: E402,F401
 
 __all__ = [
+    "CausalRaterCuda",
     "MatcherAnthropic",
     "MatcherCuda",
     "MatcherHuggingFace",
