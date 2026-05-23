@@ -211,6 +211,13 @@ Reasoning: [one sentence applying the counterfactual test]
             raw_prompts.append([{"role": "user", "content": prompt_text}])
             prompt_indices.append((idx_cause, idx_effect))
 
+        if story_key is not None:
+            log.info(
+                f"Processing {story_key}:\n"
+                f" segments: {len(story_segments)}\n"
+                f" combinations: {len(prompt_indices)}\n"
+            )
+
         # Apply chat template once upfront
         formatted_prompts = [self._apply_chat_template(p) for p in raw_prompts]
 

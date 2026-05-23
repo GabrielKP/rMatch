@@ -1,6 +1,6 @@
 [project]
 name = "rMatch"
-version = "0.5.0a1"
+version = "0.5.0a2"
 description = "Match recall segments with story segments."
 authors = [{ name = "Gabriel Kressin Palacios", email = "gkressi1@jhu.edu" }]
 requires-python = ">=3.12,<3.14"
