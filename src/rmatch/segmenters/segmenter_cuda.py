@@ -105,11 +105,11 @@ class SegmenterCuda:
 
         if self.granularity == "event":
             return f"""
-I have a transcript of someone describing movies they watched.
-I need you to split the text into events. Do not change or remove any words from the text
+I have a story.
+I need you to split the text into short events. Do not change or remove any words from the text
 Use the following key points to complete the task:
 1. An event is an ongoing coherent situation.
-2. When segmenting, focus on natural event boundaries.
+2. When segmenting, focus on natural event boundaries that create clean, short chunks.
 3. Verify the segmented text is word-for-word identical to the original.
     a. Even if you think that a word was duplicated (for example the same word is repeated twice), keep both instances in
     b. The provided clause segmentation should be 100% identical to the original transcription and the text words
