@@ -22,6 +22,7 @@ class SegmenterCuda:
         tensor_parallel_size: int | None = None,  # number of GPUs to shard across
         gpu_memory_utilization: float = 0.90,
         max_retries: int = 10,
+        granularity: str = "idea",
     ):
         if model_name is None:
             self.model_name = "google/gemma-4-31B-it"
@@ -33,6 +34,12 @@ class SegmenterCuda:
         self.max_retries = max_retries or 10
         log.info(f"Max new tokens: {self.max_new_tokens}")
         log.info(f"Max retries: {self.max_retries}")
+
+        if granularity == "idea" or granularity == "event":
+            self.granularity = granularity
+        else:
+            raise ValueError("Granularity must be 'idea' or 'event'")
+        log.info(f"Setting granularity: {self.granularity}")
 
         try:
             from vllm import LLM, SamplingParams
@@ -96,6 +103,28 @@ class SegmenterCuda:
             case _:
                 attempt_str = f"KEEP THE VERBATIM TEXT. ATTEMPT {attempt}.\n"
 
+        if self.granularity == "event":
+            return f"""
+I have a transcript of someone describing movies they watched.
+I need you to split the text into events. Do not change or remove any words from the text
+Use the following key points to complete the task:
+1. An event is an ongoing coherent situation.
+2. When segmenting, focus on natural event boundaries.
+3. Verify the segmented text is word-for-word identical to the original.
+    a. Even if you think that a word was duplicated (for example the same word is repeated twice), keep both instances in
+    b. The provided clause segmentation should be 100% identical to the original transcription and the text words
+
+Output ONLY a JSON array where each element is an event. No preamble, no explanation, no markdown code blocks. Format:
+["Event 1 text here", "Event 2 text here", "Event 3 text here"]
+
+Example input: "I watched a really interesting documentary about ocean life. It was fascinating and educational and I learned so much about marine biology and ecosystems. After watching that, I went to the grocery story to buy some lemons. They were at a good price too! When I came home, I made a tart with them."
+
+Example output:
+["I watched a really interesting documentary about ocean life. It was fascinating and educational and I learned so much about marine biology and ecosystems.", "After watching that, I went to the grocery story to buy some lemons. They were at a good price too!", "When I came home, I made a tart with them."]
+{attempt_str}
+Here is the transcript to segment:
+{transcript}
+"""
         return f"""
 I have a transcript of someone describing movies they watched. Follow these steps:
 
@@ -208,10 +237,10 @@ Here is the transcript to segment:
 
                 if not recovered:
                     for k in range(i + 1, len(segments)):
-                        unreacheable_seg = re.sub(r"\s+", " ", segments[k])
+                        unreachable_seg = re.sub(r"\s+", " ", segments[k])
                         failures[k] = (
                             f"segment {k} unreachable after failure at {i}\n"
-                            f"SEGMENT:\n{repr(unreacheable_seg)}"
+                            f"SEGMENT:\n{repr(unreachable_seg)}"
                         )
                     break
 
