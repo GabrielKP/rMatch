@@ -193,13 +193,13 @@ Here is the transcript to segment:
         self, transcript: str, segments: list[str]
     ) -> tuple[bool, dict[int, str]]:
         SLACK = 2
-        transcript = re.sub(r"\s+", " ", transcript)
+        transcript = re.sub(r"\s+", " ", transcript).strip()
         cursor = 0
         failures = {}
 
         i = 0
         while i < len(segments):
-            seg = re.sub(r"\s+", " ", segments[i])
+            seg = re.sub(r"\s+", " ", segments[i]).strip()
             idx = transcript.find(seg, cursor, cursor + len(seg) + SLACK)
             # fail case
             if idx == -1:
@@ -216,13 +216,13 @@ Here is the transcript to segment:
                 j = i + 1  # search for next seg
                 recovered = False
                 while j < len(segments):
-                    recovery_seg = re.sub(r"\s+", " ", segments[j])
+                    recovery_seg = re.sub(r"\s+", " ", segments[j]).strip()
                     recovery_idx = transcript.find(recovery_seg, cursor)
 
                     # recovered case
                     if recovery_idx != -1:
                         for k in range(i + 1, j):
-                            skipped_seg = re.sub(r"\s+", " ", segments[k])
+                            skipped_seg = re.sub(r"\s+", " ", segments[k]).strip()
                             failures[k] = (
                                 f"segment {k} skipped during recovery (between {i} and {j})\n"
                                 f"SEGMENT:\n{repr(skipped_seg)}"
@@ -235,7 +235,7 @@ Here is the transcript to segment:
 
                 if not recovered:
                     for k in range(i + 1, len(segments)):
-                        unreachable_seg = re.sub(r"\s+", " ", segments[k])
+                        unreachable_seg = re.sub(r"\s+", " ", segments[k]).strip()
                         failures[k] = (
                             f"segment {k} unreachable after failure at {i}\n"
                             f"SEGMENT:\n{repr(unreachable_seg)}"
@@ -246,6 +246,13 @@ Here is the transcript to segment:
             else:
                 cursor = idx + len(seg)
                 i += 1
+
+        remaining = transcript[cursor:].strip()
+        if remaining and len(remaining) > SLACK:
+            failures[len(segments)] = (
+                "original transcript not fully covered\n"
+                f"REMAINDER:\n{repr(remaining[:200])}"
+            )
         valid = len(failures) == 0
         return valid, failures
 
@@ -325,6 +332,17 @@ Here is the transcript to segment:
                                 "segment": seg,
                                 "failed": is_failed,
                                 "error_msg": error,
+                            }
+                        )
+                    # add remainder errors to results df
+                    remainder_error = failures.get(len(segments), None)
+                    if remainder_error is not None:
+                        segment_data.append(
+                            {
+                                "idx": len(segments) + 1,
+                                "segment": None,
+                                "failed": True,
+                                "error_msg": remainder_error,
                             }
                         )
                     results[idx_pending] = pd.DataFrame(segment_data)
