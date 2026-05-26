@@ -191,7 +191,7 @@ Here is the transcript to segment:
 
     def _validate_segments_advanced_recovery(
         self, transcript: str, segments: list[str]
-    ) -> tuple[bool, dict[int, str]]:
+    ) -> tuple[bool, dict[int, tuple[str, str]]]:
         SLACK = 2
         transcript = re.sub(r"\s+", " ", transcript).strip()
         cursor = 0
@@ -208,9 +208,12 @@ Here is the transcript to segment:
                 context = transcript[snippet_start:snippet_end]
 
                 failures[i] = (
-                    f"segment {i} not found verbatim\n"
-                    f"SEGMENT:\n{repr(seg)}\n"
-                    f"CONTEXT AROUND CURSOR:\n{repr(context)}"
+                    (
+                        f"segment {i} not found verbatim\n"
+                        f"SEGMENT:\n{repr(seg)}\n"
+                        f"CONTEXT AROUND CURSOR:\n{repr(context)}"
+                    ),
+                    "invalid",
                 )
 
                 j = i + 1  # search for next seg
@@ -224,8 +227,11 @@ Here is the transcript to segment:
                         for k in range(i + 1, j):
                             skipped_seg = re.sub(r"\s+", " ", segments[k]).strip()
                             failures[k] = (
-                                f"segment {k} skipped during recovery (between {i} and {j})\n"
-                                f"SEGMENT:\n{repr(skipped_seg)}"
+                                (
+                                    f"segment {k} skipped during recovery (between {i} and {j})\n"
+                                    f"SEGMENT:\n{repr(skipped_seg)}"
+                                ),
+                                "skipped",
                             )
                         cursor = recovery_idx + len(recovery_seg)
                         i = j + 1
@@ -237,8 +243,11 @@ Here is the transcript to segment:
                     for k in range(i + 1, len(segments)):
                         unreachable_seg = re.sub(r"\s+", " ", segments[k]).strip()
                         failures[k] = (
-                            f"segment {k} unreachable after failure at {i}\n"
-                            f"SEGMENT:\n{repr(unreachable_seg)}"
+                            (
+                                f"segment {k} unreachable after failure at {i}\n"
+                                f"SEGMENT:\n{repr(unreachable_seg)}"
+                            ),
+                            "unreachable",
                         )
                     break
 
@@ -250,8 +259,11 @@ Here is the transcript to segment:
         remaining = transcript[cursor:].strip()
         if remaining and len(remaining) > SLACK:
             failures[len(segments)] = (
-                "original transcript not fully covered\n"
-                f"REMAINDER:\n{repr(remaining[:200])}"
+                (
+                    "original transcript not fully covered\n"
+                    f"REMAINDER:\n{repr(remaining[:200])}"
+                ),
+                "transcripts not fully covered",
             )
         valid = len(failures) == 0
         return valid, failures
@@ -331,7 +343,8 @@ Here is the transcript to segment:
                                 "idx": i + 1,
                                 "segment": seg,
                                 "failed": is_failed,
-                                "error_msg": error,
+                                "error_type": error[1] if error is not None else error,
+                                "error_msg": error[0] if error is not None else error,
                             }
                         )
                     # add remainder errors to results df
@@ -342,7 +355,8 @@ Here is the transcript to segment:
                                 "idx": len(segments) + 1,
                                 "segment": None,
                                 "failed": True,
-                                "error_msg": remainder_error,
+                                "error_type": remainder_error[1],
+                                "error_msg": remainder_error[0],
                             }
                         )
                     results[idx_pending] = pd.DataFrame(segment_data)
