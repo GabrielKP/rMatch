@@ -94,13 +94,15 @@ class SegmenterCuda:
             case 0:
                 attempt_str = ""
             case 1:
-                attempt_str = "\nTry hard to keep the verbatim text. Preserve punctuation and exact capitalization\n"
+                attempt_str = "\nTry hard to keep the verbatim text.\n"
             case 2:
-                attempt_str = "\nBe extra careful to keep the verbatim text. Preserve punctuation and exact capitalization\n"
+                attempt_str = "\nBe extra careful to keep the verbatim text.\n"
             case 3:
-                attempt_str = "\nIn past attempts, you made mistakes, try to avoid them. Preserve punctuation and exact capitalization\n"
+                attempt_str = (
+                    "\nIn past attempts, you made mistakes, try to avoid them.\n"
+                )
             case _:
-                attempt_str = f"KEEP THE VERBATIM TEXT. ATTEMPT {attempt}. Preserve punctuation and exact capitalization\n"
+                attempt_str = f"KEEP THE VERBATIM TEXT. ATTEMPT {attempt}.\n"
 
         if self.granularity == "event":
             return f"""
@@ -203,6 +205,18 @@ Here is the transcript to segment:
             idx = transcript.find(seg, cursor, cursor + len(seg) + SLACK)
             # fail case
             if idx == -1:
+                # check for simple letter case failure
+                idx_case_insensitive = transcript.lower().find(
+                    seg.lower(), cursor, cursor + len(seg) + SLACK
+                )
+                if idx_case_insensitive != -1:
+                    segments[i] = transcript[
+                        idx_case_insensitive : idx_case_insensitive + len(seg)
+                    ]
+                    cursor = idx_ci + len(seg)
+                    i += 1
+                    continue
+
                 snippet_start = max(0, cursor - 50)
                 snippet_end = min(len(transcript), cursor + 50)
                 context = transcript[snippet_start:snippet_end]
