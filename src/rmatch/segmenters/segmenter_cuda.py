@@ -133,8 +133,7 @@ I have a transcript of someone describing movies they watched. Follow these step
 2. When segmenting, focus on punctuation, topic shifts, and new noun-verb units (natural breaks)
     a. DO NOT add any punctuation or fix any grammatical mistakes in the transcript, it should be exactly preserved
     b. Maintain the exact verbatim text in the original transcript
-    c. DO NOT change capitalization, preserve everything even if incorrect originally
-    d. For example, if a name is capitalized in the transcript, keep it capitalized; if it is incorrectly lowercase, keep it that way as well
+    c. DO NOT change capitalization, preserve letter cases
 3. Be sure to leave phrases such as "oh my god" intact and in their own events
 4. Segment into clauses where every new finite verb with its own (even implied) subject starts a new clause; coordinators that launch a fresh verb = split; keep fillers intact; preserve exact wording
 5. Include lead in words (like "Well,") with the clause that immediately follows it
