@@ -213,7 +213,7 @@ Here is the transcript to segment:
                     segments[i] = transcript[
                         idx_case_insensitive : idx_case_insensitive + len(seg)
                     ]
-                    cursor = idx_ci + len(seg)
+                    cursor = idx_case_insensitive + len(seg)
                     i += 1
                     continue
 
