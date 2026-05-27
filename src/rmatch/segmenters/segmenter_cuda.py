@@ -94,15 +94,13 @@ class SegmenterCuda:
             case 0:
                 attempt_str = ""
             case 1:
-                attempt_str = "\nTry hard to keep the verbatim text.\n"
+                attempt_str = "\nTry hard to keep the verbatim text. Preserve punctuation and exact capitalization\n"
             case 2:
-                attempt_str = "\nBe extra careful to keep the verbatim text.\n"
+                attempt_str = "\nBe extra careful to keep the verbatim text. Preserve punctuation and exact capitalization\n"
             case 3:
-                attempt_str = (
-                    "\nIn past attempts, you made mistakes, try to avoid them.\n"
-                )
+                attempt_str = "\nIn past attempts, you made mistakes, try to avoid them. Preserve punctuation and exact capitalization\n"
             case _:
-                attempt_str = f"KEEP THE VERBATIM TEXT. ATTEMPT {attempt}.\n"
+                attempt_str = f"KEEP THE VERBATIM TEXT. ATTEMPT {attempt}. Preserve punctuation and exact capitalization\n"
 
         if self.granularity == "event":
             return f"""
