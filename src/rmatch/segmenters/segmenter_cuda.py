@@ -3,6 +3,8 @@ import os
 import re
 from typing import cast
 
+import pandas as pd
+
 from rmatch import get_logger
 
 log = get_logger(__name__)
@@ -87,7 +89,6 @@ class SegmenterCuda:
             temperature=0.0,  # greedy; set higher for sampling
         )
 
-    # ruff: disable[E501]
     def _build_prompt(self, transcript: str, attempt: int = 0) -> str:
         match attempt:
             case 0:
@@ -117,20 +118,22 @@ Use the following key points to complete the task:
 Output ONLY a JSON array where each element is an event. No preamble, no explanation, no markdown code blocks. Format:
 ["Event 1 text here", "Event 2 text here", "Event 3 text here"]
 
-Example input: "I watched a really interesting documentary about ocean life. It was fascinating and educational and I learned so much about marine biology and ecosystems. After watching that, I went to the grocery story to buy some lemons. They were at a good price too! When I came home, I made a tart with them."
+Example input: "I watched a really interesting documentary about ocean life. It was fascinating and educational and I learned so much about marine biology and ecosystems. After watching that, I went to the grocery store to buy some lemons. They were at a good price too! When I came home, I made a tart with them."
 
 Example output:
-["I watched a really interesting documentary about ocean life. It was fascinating and educational and I learned so much about marine biology and ecosystems.", "After watching that, I went to the grocery story to buy some lemons. They were at a good price too!", "When I came home, I made a tart with them."]
+["I watched a really interesting documentary about ocean life. It was fascinating and educational and I learned so much about marine biology and ecosystems.", "After watching that, I went to the grocery store to buy some lemons. They were at a good price too!", "When I came home, I made a tart with them."]
 {attempt_str}
 Here is the transcript to segment:
 {transcript}
-"""
+"""  # noqa: E501
         return f"""
 I have a transcript of someone describing movies they watched. Follow these steps:
 
 1. Split the text into linguistic clauses. Do not change or remove any words from the text
 2. When segmenting, focus on punctuation, topic shifts, and new noun-verb units (natural breaks)
     a. DO NOT add any punctuation or fix any grammatical mistakes in the transcript, it should be exactly preserved
+    b. Maintain the exact verbatim text in the original transcript
+    c. DO NOT change capitalization, preserve letter cases
 3. Be sure to leave phrases such as "oh my god" intact and in their own events
 4. Segment into clauses where every new finite verb with its own (even implied) subject starts a new clause; coordinators that launch a fresh verb = split; keep fillers intact; preserve exact wording
 5. Include lead in words (like "Well,") with the clause that immediately follows it
@@ -153,9 +156,7 @@ Example output:
 {attempt_str}
 Here is the transcript to segment:
 {transcript}
-"""
-
-    # ruff: enable[E501]
+"""  # noqa: E501
 
     def _apply_chat_template(self, messages: list[dict[str, str]]) -> str:
         """Convert messages list to single prompt string using model's template."""
@@ -192,42 +193,59 @@ Here is the transcript to segment:
 
     def _validate_segments_advanced_recovery(
         self, transcript: str, segments: list[str]
-    ) -> tuple[bool, dict[int, str]]:
+    ) -> tuple[bool, dict[int, tuple[str, str]]]:
         SLACK = 2
-        transcript = re.sub(r"\s+", " ", transcript)
+        transcript = re.sub(r"\s+", " ", transcript).strip()
         cursor = 0
         failures = {}
 
         i = 0
         while i < len(segments):
-            seg = re.sub(r"\s+", " ", segments[i])
+            seg = re.sub(r"\s+", " ", segments[i]).strip()
             idx = transcript.find(seg, cursor, cursor + len(seg) + SLACK)
             # fail case
             if idx == -1:
+                # check for simple letter case failure
+                idx_case_insensitive = transcript.lower().find(
+                    seg.lower(), cursor, cursor + len(seg) + SLACK
+                )
+                if idx_case_insensitive != -1:
+                    segments[i] = transcript[
+                        idx_case_insensitive : idx_case_insensitive + len(seg)
+                    ]
+                    cursor = idx_case_insensitive + len(seg)
+                    i += 1
+                    continue
+
                 snippet_start = max(0, cursor - 50)
                 snippet_end = min(len(transcript), cursor + 50)
                 context = transcript[snippet_start:snippet_end]
 
                 failures[i] = (
-                    f"segment {i} not found verbatim\n"
-                    f"SEGMENT:\n{repr(seg)}\n"
-                    f"CONTEXT AROUND CURSOR:\n{repr(context)}"
+                    (
+                        f"segment {i} not found verbatim\n"
+                        f"SEGMENT:\n{repr(seg)}\n"
+                        f"CONTEXT AROUND CURSOR:\n{repr(context)}"
+                    ),
+                    "invalid",
                 )
 
                 j = i + 1  # search for next seg
                 recovered = False
                 while j < len(segments):
-                    recovery_seg = re.sub(r"\s+", " ", segments[j])
+                    recovery_seg = re.sub(r"\s+", " ", segments[j]).strip()
                     recovery_idx = transcript.find(recovery_seg, cursor)
 
                     # recovered case
                     if recovery_idx != -1:
                         for k in range(i + 1, j):
-                            skipped_seg = re.sub(r"\s+", " ", segments[k])
+                            skipped_seg = re.sub(r"\s+", " ", segments[k]).strip()
                             failures[k] = (
-                                f"segment {k} skipped during recovery"
-                                f" (between {i} and {j})\n"
-                                f"SEGMENT:\n{repr(skipped_seg)}"
+                                (
+                                    f"segment {k} skipped during recovery (between {i} and {j})\n"
+                                    f"SEGMENT:\n{repr(skipped_seg)}"
+                                ),
+                                "skipped",
                             )
                         cursor = recovery_idx + len(recovery_seg)
                         i = j + 1
@@ -237,10 +255,13 @@ Here is the transcript to segment:
 
                 if not recovered:
                     for k in range(i + 1, len(segments)):
-                        unreachable_seg = re.sub(r"\s+", " ", segments[k])
+                        unreachable_seg = re.sub(r"\s+", " ", segments[k]).strip()
                         failures[k] = (
-                            f"segment {k} unreachable after failure at {i}\n"
-                            f"SEGMENT:\n{repr(unreachable_seg)}"
+                            (
+                                f"segment {k} unreachable after failure at {i}\n"
+                                f"SEGMENT:\n{repr(unreachable_seg)}"
+                            ),
+                            "unreachable",
                         )
                     break
 
@@ -248,73 +269,44 @@ Here is the transcript to segment:
             else:
                 cursor = idx + len(seg)
                 i += 1
+
+        remaining = transcript[cursor:].strip()
+        if remaining and len(remaining) > SLACK:
+            failures[len(segments)] = (
+                (
+                    "original transcript not fully covered\n"
+                    f"REMAINDER:\n{repr(remaining[:200])}"
+                ),
+                "transcripts not fully covered",
+            )
         valid = len(failures) == 0
         return valid, failures
 
     def segment(
         self,
         transcript: str,
-    ) -> list[str]:
-        for attempt in range(self.max_retries):
-            prompt = self._build_prompt(transcript, attempt=attempt)
-            formatted_prompt = self._apply_chat_template(
-                [{"role": "user", "content": prompt}]
-            )
-
-            if attempt > 0:
-                log.info(f"Attempt {attempt + 1}: Segmenting...")
-            else:
-                log.info("Segmenting...")
-
-            response = self.llm.generate(
-                [formatted_prompt],
-                self.sampling_params,
-            )
-
-            response_text = response[0].outputs[0].text
-
-            try:
-                cleaned = response_text.strip()
-                if cleaned.startswith("```"):
-                    cleaned = cleaned.split("```")[1]
-                    if cleaned.startswith("json"):
-                        cleaned = cleaned[4:]
-                    cleaned = cleaned.strip()
-
-                segments = json.loads(cleaned)
-
-                if not isinstance(segments, list):
-                    raise ValueError("Model output was not a JSON array")
-
-                valid, reason = self._validate_segments(
-                    transcript,
-                    segments,
-                )
-
-                if not valid:
-                    log.error(f"Attempt {attempt + 1}: Validation failed:\n{reason}")
-                    continue
-
-                return segments
-            except (json.JSONDecodeError, ValueError) as e:
-                log.error(f"Failed to parse model output as JSON: {e}")
-                log.error(f"Raw output: {response_text}")
-                continue
-
-        log.error(f"All {self.max_retries} attempts failed")
-        raise RuntimeError("All segmenting attempts failed")
+    ) -> pd.DataFrame | None:
+        return self.segment_batch([transcript])[0]
 
     def segment_batch(
         self, transcripts: list[str], labels: list[str] | None = None
-    ) -> list[list[str]]:
+    ) -> list[pd.DataFrame | None]:
         log.info(f"Prepping {len(transcripts)} transcripts")
         if labels is not None and len(labels) != len(transcripts):
+            log.warning("Sufficient labels not provided, defaulting to indices")
             labels = None
 
-        results: list[list[str]] = [list() for _ in range(len(transcripts))]
+        labels_processed = [
+            labels[i] if labels is not None else f"Transcript #{i+1}"
+            for i in range(len(transcripts))
+        ]
+
+        results: list[pd.DataFrame | None] = [None for _ in range(len(transcripts))]
         indices_pending = list(range(len(transcripts)))
 
         for attempt in range(self.max_retries):
+            if not indices_pending:
+                break
             prompts = list()
             for idx_pending in indices_pending:
                 prompt = self._build_prompt(transcripts[idx_pending], attempt=attempt)
@@ -343,47 +335,58 @@ Here is the transcript to segment:
                     segments = json.loads(cleaned)
 
                     if not isinstance(segments, list):
-                        # bad output
-                        if labels is not None:
-                            log.warning(
-                                f"{labels[idx_pending]}: Output was not a JSON array"
-                            )
-                        else:
-                            log.warning(
-                                f"Transcript {idx_pending}: Output was not a JSON array"
-                            )
+                        log.warning(
+                            f"{labels_processed[idx_pending]}: Output was not a JSON array"
+                        )
                         still_pending.append(idx_pending)
                         continue
 
-                    # valid output, try to validate for verbatim preservation
-                    valid, reason = self._validate_segments(
+                    # try to validate for verbatim preservation
+                    valid, failures = self._validate_segments_advanced_recovery(
                         transcripts[idx_pending], segments
                     )
+
+                    # build dataframe
+                    segment_data = []
+                    for i, seg in enumerate(segments):
+                        is_failed = i in failures
+                        error = failures.get(i, None)
+
+                        segment_data.append(
+                            {
+                                "idx": i + 1,
+                                "segment": seg,
+                                "failed": is_failed,
+                                "error_type": error[1] if error is not None else error,
+                                "error_msg": error[0] if error is not None else error,
+                            }
+                        )
+                    # add remainder errors to results df
+                    remainder_error = failures.get(len(segments), None)
+                    if remainder_error is not None:
+                        segment_data.append(
+                            {
+                                "idx": len(segments) + 1,
+                                "segment": None,
+                                "failed": True,
+                                "error_type": remainder_error[1],
+                                "error_msg": remainder_error[0],
+                            }
+                        )
+                    results[idx_pending] = pd.DataFrame(segment_data)
+
                     if not valid:
                         # validation failed
-                        if labels is not None:
-                            log.warning(
-                                f"{RED}[VALIDATION FAILED]{RESET}"
-                                f" {labels[idx_pending]}\n"
-                                f"{YELLOW}{reason}{RESET}"
-                            )
-                        else:
-                            log.warning(
-                                f"{RED}[VALIDATION FAILED]{RESET}"
-                                f" Transcript {idx_pending}\n"
-                                f"{YELLOW}{reason}{RESET}"
-                            )
+                        log.warning(
+                            f"{RED}[VALIDATION FAILED]{RESET} {labels_processed[idx_pending]}\n"
+                        )
+                        for _, error_msg in failures.items():
+                            log.warning(f"{YELLOW}{error_msg}{RESET}")
                         still_pending.append(idx_pending)
                         continue
 
-                    # validation succeeded
-                    results[idx_pending] = segments
-
                 except (json.JSONDecodeError, ValueError) as e:
-                    if labels is not None:
-                        log.error(f"{labels[idx_pending]}: Failed to parse - {e}")
-                    else:
-                        log.error(f"Transcript #{idx_pending}: Failed to parse - {e}")
+                    log.error(f"{labels_processed[idx_pending]}: Failed to parse - {e}")
                     still_pending.append(idx_pending)
                     continue
 
@@ -399,6 +402,4 @@ Here is the transcript to segment:
             log.warning(
                 f"All {self.max_retries} attempts failed for transcript {idx_pending}"
             )
-            results[idx_pending] = list()
-
         return results
