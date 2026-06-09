@@ -499,7 +499,6 @@ def evaluate(
         ) in tqdm(story_recall_segments, desc="(eval)"):
             recall_id = f"{story_name}_{sub_id}"
             rm_human, match_list_human = human_ratings_dict[story_name][sub_id]  # type: ignore
-            recall_matrices_human_dct[recall_id] = rm_human
 
             if (rm_human == 0).all():
                 if repeat_reliability:
@@ -512,6 +511,8 @@ def evaluate(
                 )
                 n_skipped += 1
                 continue
+
+            recall_matrices_human_dct[recall_id] = rm_human
 
             for repeat_i in range(n_repeats):
                 match_key = f"{story_name}_{sub_id}_{repeat_i}"
