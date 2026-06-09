@@ -37,7 +37,7 @@ RR_METRIC = "pairwise_pearsonr"
 # RR single-panel will use PLOT_WIDTH // 2 so it stays proportional.
 PLOT_WIDTH = 400  # px
 PLOT_HEIGHT = 400  # px
-MODEL_ORDER = ["Claude Opus", "Claude Haiku", "GPT-5.2", "Llama 3.3"]
+MODEL_ORDER = ["Claude Opus", "Claude Haiku", "GPT-5.2", "Gemma-4"]
 
 # ── data root ─────────────────────────────────────────────────────────────────
 DATA_ROOT = Path("data/eval")
@@ -64,9 +64,9 @@ RUNS = [
         model="GPT-5.2",
     ),
     dict(
-        run_dir="70B-alice10",
+        run_dir="20260609_132500-alice-cuda-m_google_gemma-4-31B-it",
         testset="alice10",
-        model="Llama 3.3",
+        model="Gemma-4",
     ),
     # ── memsearch10 ratings ───────────────────────────────────────────────────
     dict(
@@ -85,9 +85,9 @@ RUNS = [
         model="GPT-5.2",
     ),
     dict(
-        run_dir="70B-memsearch10",
+        run_dir="20260609_124518-memsearch-cuda-m_google_gemma-4-31B-it",
         testset="memsearch10",
-        model="Llama 3.3",
+        model="Gemma-4",
     ),
     # ── monthiversary6 ratings ────────────────────────────────────────────────
     dict(
@@ -106,9 +106,9 @@ RUNS = [
         model="GPT-5.2",
     ),
     dict(
-        run_dir="70B-monthiversary6",
+        run_dir="20260609_133937-monthiversary-cuda-m_google_gemma-4-31B-it",
         testset="monthiversary6",
-        model="Llama 3.3",
+        model="Gemma-4",
     ),
     # ── alice10 RR ────────────────────────────────────────────────────────────
     dict(
@@ -127,9 +127,9 @@ RUNS = [
         model="GPT-5.2",
     ),
     dict(
-        run_dir="llama-3.3-70B-Instruct-alice10-rr",
+        run_dir="20260609_140405-rr-alice-cuda-m_google_gemma-4-31B-it",
         testset="rr_alice10",
-        model="Llama 3.3",
+        model="Gemma-4",
     ),
     # ── memsearch10 RR ────────────────────────────────────────────────────────
     dict(
@@ -148,9 +148,9 @@ RUNS = [
         model="GPT-5.2",
     ),
     dict(
-        run_dir="20260330_110508-rr-memsearch10-huggingface-m_meta-llama_Llama-3.3-70B-Instruct-seed_42",
+        run_dir="20260609_143246-rr-memsearch-cuda-m_google_gemma-4-31B-it",
         testset="rr_memsearch10",
-        model="Llama 3.3",
+        model="Gemma-4",
     ),
     # ── monthiversary6 RR ─────────────────────────────────────────────────────
     dict(
@@ -169,7 +169,9 @@ RUNS = [
         model="GPT-5.2",
     ),
     dict(
-        run_dir="70B-rr-monthiversary6", testset="rr_monthiversary6", model="Llama 3.3"
+        run_dir="20260609_141949-rr-monthiversary-cuda-m_google_gemma-4-31B-it",
+        testset="rr_monthiversary6",
+        model="Gemma-4",
     ),
 ]
 
@@ -178,7 +180,7 @@ MODEL_COLORS: dict[str, str] = {
     "Claude Opus": "#CC5500",  # deep burnt orange (Anthropic)
     "Claude Haiku": "#FF9A3C",  # light amber (Anthropic)
     "GPT-5.2": "#10A37F",  # OpenAI green
-    "Llama 3.3": "#4A6FA5",  # meta blue
+    "Gemma-4": "#4A6FA5",  # meta blue
 }
 DEFAULT_COLOR = "#888888"
 MEAN_COLOR = "#1a1a1a"
@@ -196,7 +198,7 @@ MODEL_SHORT_LABELS = {
     "Claude Opus": "O",
     "Claude Haiku": "H",
     "GPT-5.2": "G",
-    "Llama 3.3": "L",
+    "Gemma-4": "L",
 }
 
 TESTSET_TITLES = {
@@ -252,9 +254,15 @@ def _pearsonr_safe(a: np.ndarray, b: np.ndarray) -> float:
 def load_subject_pearsonrs(run_dir: Path) -> list[float]:
     """Per-subject Pearson r vs human from a standard ratings run."""
     model_pkl = run_dir / "recall_matrices_model.pkl"
-    human_pkls = [
-        p for p in run_dir.glob("recall_matrices_*.pkl") if "model" not in p.name
-    ]
+
+    # Gemma uses recall_matrices_human.pkl; older runs use recall_matrices_<testset>.pkl
+    human_pkl_fixed = run_dir / "recall_matrices_human.pkl"
+    if human_pkl_fixed.exists():
+        human_pkls = [human_pkl_fixed]
+    else:
+        human_pkls = [
+            p for p in run_dir.glob("recall_matrices_*.pkl") if "model" not in p.name
+        ]
 
     if model_pkl.exists() and human_pkls:
         with open(model_pkl, "rb") as f:
@@ -277,7 +285,6 @@ def load_subject_pearsonrs(run_dir: Path) -> list[float]:
     with open(results_path) as fh:
         r = json.load(fh)
     return [r["pearsonr_macro"]]
-
 
 def load_rr_pearsonrs(run_dir: Path) -> dict[str, list[float]]:
     """
