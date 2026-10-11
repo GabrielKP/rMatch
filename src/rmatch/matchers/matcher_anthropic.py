@@ -16,7 +16,9 @@ ANTHROPIC_PRICES: dict[str, tuple[float, float]] = {
 }
 
 
-class MatcherAnthropic(MatcherBase, matcher_name="anthropic"):
+class MatcherAnthropic(MatcherBase):
+    matcher_name = "anthropic"
+
     def __init__(
         self,
         model_name: str | None = None,
@@ -27,7 +29,6 @@ class MatcherAnthropic(MatcherBase, matcher_name="anthropic"):
         max_retries: int | None = None,
     ):
         super().__init__()
-        self.matcher_name = "anthropic"
         self.prompt = prompt
 
         if model_name is None:

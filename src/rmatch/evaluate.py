@@ -12,7 +12,7 @@ import numpy as np
 from tqdm import tqdm
 
 from rmatch import console, matchlist_type
-from rmatch.matchers import get_matcher
+from rmatch.matchers import MATCHERS, get_matcher
 from rmatch.utils import (
     atomic_write_json,
     binary_f1,
@@ -763,13 +763,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-M",
         "--matcher",
-        choices=[
-            "anthropic",
-            "openai",
-            "mac",
-            "cuda",
-            "huggingface",
-        ],
+        choices=list(MATCHERS),
         default="anthropic",
         help="Name of the matcher to use. Default is 'anthropic'.",
     )

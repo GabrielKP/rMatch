@@ -12,7 +12,9 @@ from rmatch.prompt import get_prompt_and_parser
 log = get_logger(__name__)
 
 
-class MatcherMac(MatcherBase, matcher_name="mac"):
+class MatcherMac(MatcherBase):
+    matcher_name = "mac"
+
     def __init__(
         self,
         model_name: str | None = None,
@@ -25,7 +27,6 @@ class MatcherMac(MatcherBase, matcher_name="mac"):
     ):
         # uses mlx to run on apple silicon
         super().__init__()
-        self.matcher_name = "mac"
         self.prompt = prompt
 
         assert window_size >= 0, "window_size must be non-negative"

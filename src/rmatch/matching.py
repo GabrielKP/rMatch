@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 
 from rmatch import console
-from rmatch.matchers import MatcherBase, get_matcher
+from rmatch.matchers import MATCHERS, MatcherBase, get_matcher
 from rmatch.utils import (
     atomic_write_json,
     get_logger,
@@ -287,7 +287,7 @@ def main() -> None:
     parser.add_argument(
         "-M",
         "--matcher",
-        choices=["anthropic", "openai", "mac", "cuda", "huggingface"],
+        choices=list(MATCHERS),
         default="anthropic",
         help="Matcher to use. Default: anthropic.",
     )

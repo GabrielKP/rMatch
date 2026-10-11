@@ -16,7 +16,9 @@ OPENAI_PRICES: dict[str, tuple[float, float]] = {
 }
 
 
-class MatcherOpenAI(MatcherBase, matcher_name="openai"):
+class MatcherOpenAI(MatcherBase):
+    matcher_name = "openai"
+
     def __init__(
         self,
         model_name: str | None = None,
@@ -27,7 +29,6 @@ class MatcherOpenAI(MatcherBase, matcher_name="openai"):
         max_retries: int | None = None,
     ):
         super().__init__()
-        self.matcher_name = "openai"
         self.prompt = prompt
 
         if model_name is None:

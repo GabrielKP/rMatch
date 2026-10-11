@@ -10,7 +10,9 @@ from rmatch.prompt import get_prompt_and_parser
 log = get_logger(__name__)
 
 
-class MatcherHuggingFace(MatcherBase, matcher_name="huggingface"):
+class MatcherHuggingFace(MatcherBase):
+    matcher_name = "huggingface"
+
     def __init__(
         self,
         model_name: str | None = None,
@@ -24,7 +26,6 @@ class MatcherHuggingFace(MatcherBase, matcher_name="huggingface"):
         max_retries: int | None = None,
     ):
         super().__init__()
-        self.matcher_name = "huggingface"
         self.prompt = prompt
 
         assert window_size >= 0, "window_size must be non-negative"

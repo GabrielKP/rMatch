@@ -8,7 +8,9 @@ from rmatch.prompt import get_prompt_and_parser
 log = get_logger(__name__)
 
 
-class MatcherCuda(MatcherBase, matcher_name="cuda"):
+class MatcherCuda(MatcherBase):
+    matcher_name = "cuda"
+
     def __init__(
         self,
         model_name: str | None = None,
@@ -25,7 +27,6 @@ class MatcherCuda(MatcherBase, matcher_name="cuda"):
         gpu_memory_utilization: float = 0.90,
     ):
         super().__init__()
-        self.matcher_name = "cuda"
         self.prompt = prompt
         assert window_size >= 0, "window_size must be non-negative"
         self.window_size = window_size
@@ -41,7 +42,10 @@ class MatcherCuda(MatcherBase, matcher_name="cuda"):
         log.info(f"Verbose errors: {self.verbose_errors}")
 
         try:
-            from vllm import LLM, SamplingParams
+            from vllm import (  # pyright: ignore[reportMissingImports]
+                LLM,
+                SamplingParams,
+            )
         except ImportError:
             raise ImportError(
                 "vllm is required for MatcherCuda. "

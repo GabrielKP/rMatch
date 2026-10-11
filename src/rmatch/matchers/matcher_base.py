@@ -6,7 +6,7 @@ log = get_logger(__name__)
 
 
 class MatcherBase:
-    _registry: dict[str, type["MatcherBase"]] = {}
+    matcher_name: str
     max_retries: int
 
     def __init__(self, **kwargs) -> None:
@@ -28,19 +28,6 @@ class MatcherBase:
         self.prompt_response_log[match_key][idx_recall].append(
             (prompt, response, parsed_response)
         )
-
-    def __init_subclass__(cls, matcher_name: str | None = None, **kwargs):
-        super().__init_subclass__(**kwargs)
-        if matcher_name is not None:
-            MatcherBase._registry[matcher_name] = cls
-
-    @property
-    def matcher_name(self) -> str:
-        return self._matcher_name
-
-    @matcher_name.setter
-    def matcher_name(self, value: str):
-        self._matcher_name = value
 
     def get_usage(self) -> dict | None:
         return None
