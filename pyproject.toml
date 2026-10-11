@@ -35,8 +35,8 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-mac = ["mlx-vlm>=0.4.4"]
-cuda = ["vllm>=0.19.1"]
+mac = ["mlx-vlm>=0.7.6"]
+cuda = ["vllm>=0.31.0"]
 flash = ["flash-attn"]
 test = [
     "pytest>=8.0",
