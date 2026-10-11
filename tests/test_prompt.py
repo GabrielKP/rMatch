@@ -1,12 +1,10 @@
-"""Tests for rmatch.prompt: prompt building and parser logic."""
+"""Tests for prompt building and parser logic of the matchers."""
 
 import pytest
 
-from rmatch.prompt import (
-    build_recall_window,
-    format_story_segments,
-    get_prompt_and_parser,
-)
+from rmatch.matchers.matcher_base import DEFAULT_PARSER, MatcherBase
+from rmatch.utils import build_recall_window, format_story_segments
+from tests.conftest import make_anthropic_response
 
 STORY_SEGMENTS = [
     "Alice met the Queen of Hearts.",
@@ -20,54 +18,62 @@ RECALL_SEGMENTS = [
 ]
 
 
+def _build_prompt(target_idx: int, prompt: str | None = None) -> str:
+    matcher = MatcherBase()
+    matcher.window_size = 5
+    return matcher.build_model_prompt(
+        STORY_SEGMENTS, RECALL_SEGMENTS, target_idx, prompt=prompt
+    )
+
+
 # ── Parser correctness ────────────────────────────────────────────────────────
 
 
 def test_parser_single_index():
-    _, parser = get_prompt_and_parser(STORY_SEGMENTS, RECALL_SEGMENTS, 0, 5)
+    parser = DEFAULT_PARSER
     assert parser("<2>") == {2}
 
 
 def test_parser_multiple_indices():
-    _, parser = get_prompt_and_parser(STORY_SEGMENTS, RECALL_SEGMENTS, 0, 5)
+    parser = DEFAULT_PARSER
     assert parser("<1, 3>") == {1, 3}
 
 
 def test_parser_none_response_returns_empty_set():
-    _, parser = get_prompt_and_parser(STORY_SEGMENTS, RECALL_SEGMENTS, 0, 5)
+    parser = DEFAULT_PARSER
     result = parser("<NONE>")
     assert result == set()
 
 
 def test_parser_malformed_response_returns_none():
-    _, parser = get_prompt_and_parser(STORY_SEGMENTS, RECALL_SEGMENTS, 0, 5)
+    parser = DEFAULT_PARSER
     assert parser("I cannot determine the answer from the given text.") is None
 
 
 def test_parser_empty_string_returns_none():
-    _, parser = get_prompt_and_parser(STORY_SEGMENTS, RECALL_SEGMENTS, 0, 5)
+    parser = DEFAULT_PARSER
     assert parser("") is None
 
 
 def test_parser_strips_surrounding_whitespace():
-    _, parser = get_prompt_and_parser(STORY_SEGMENTS, RECALL_SEGMENTS, 0, 5)
+    parser = DEFAULT_PARSER
     result = parser("  <2>  ")
     assert result == {2}
 
 
 def test_parser_handles_extra_whitespace_inside_brackets():
-    _, parser = get_prompt_and_parser(STORY_SEGMENTS, RECALL_SEGMENTS, 0, 5)
+    parser = DEFAULT_PARSER
     result = parser("<1,  2,  3>")
     assert result == {1, 2, 3}
 
 
 def test_parser_returns_none_for_text_without_angle_brackets():
-    _, parser = get_prompt_and_parser(STORY_SEGMENTS, RECALL_SEGMENTS, 0, 5)
+    parser = DEFAULT_PARSER
     assert parser("The answer is segment 2.") is None
 
 
 def test_parser_finds_match_in_longer_text():
-    _, parser = get_prompt_and_parser(STORY_SEGMENTS, RECALL_SEGMENTS, 0, 5)
+    parser = DEFAULT_PARSER
     result = parser("After careful consideration, I think <1, 2> match.")
     assert result == {1, 2}
 
@@ -87,7 +93,7 @@ def test_parser_finds_match_in_longer_text():
     ],
 )
 def test_parser_edge_cases(raw, expected):
-    _, parser = get_prompt_and_parser(STORY_SEGMENTS, RECALL_SEGMENTS, 0, 5)
+    parser = DEFAULT_PARSER
     assert parser(raw) == expected
 
 
@@ -95,52 +101,64 @@ def test_parser_edge_cases(raw, expected):
 
 
 def test_prompt_contains_all_story_segments():
-    prompt, _ = get_prompt_and_parser(STORY_SEGMENTS, RECALL_SEGMENTS, 0, 5)
+    prompt = _build_prompt(0)
     for seg in STORY_SEGMENTS:
         assert seg in prompt
 
 
 def test_prompt_contains_target_recall_segment():
-    prompt, _ = get_prompt_and_parser(STORY_SEGMENTS, RECALL_SEGMENTS, 0, 5)
+    prompt = _build_prompt(0)
     assert RECALL_SEGMENTS[0] in prompt
 
 
 def test_prompt_contains_target_marker():
-    prompt, _ = get_prompt_and_parser(STORY_SEGMENTS, RECALL_SEGMENTS, 0, 5)
+    prompt = _build_prompt(0)
     # Primary prompt uses >>> <<< markers
     assert ">>>" in prompt
 
 
 def test_prompt_second_target_index():
-    prompt, _ = get_prompt_and_parser(STORY_SEGMENTS, RECALL_SEGMENTS, 1, 5)
+    prompt = _build_prompt(1)
     assert RECALL_SEGMENTS[1] in prompt
 
 
-# ── All prompt types ──────────────────────────────────────────────────────────
+# ── Custom prompt templates ───────────────────────────────────────────────────
 
 
-@pytest.mark.parametrize(
-    "prompt_type",
-    [
-        "primary",
-        "primary_no_story",
-        "primary_no_cot",
-        "primary_no_story_no_cot",
-        "secondary",
-    ],
-)
-def test_all_prompt_types_return_str_and_callable(prompt_type):
-    p, parser = get_prompt_and_parser(
-        STORY_SEGMENTS, RECALL_SEGMENTS, 0, 5, prompt=prompt_type
+def test_default_prompt_used_when_none():
+    assert _build_prompt(0).startswith("This is the original story:")
+
+
+def test_custom_prompt_fills_all_slots():
+    template = "S:{story_full}|E:{story_segments}|R:{recall_window}"
+    prompt = _build_prompt(1, prompt=template)
+    assert "{" not in prompt
+    assert prompt.startswith("S:" + " ".join(STORY_SEGMENTS))
+    assert "1. Alice met the Queen of Hearts." in prompt
+    assert f">>> {RECALL_SEGMENTS[1]} <<<" in prompt
+
+
+def test_custom_prompt_keeps_literal_braces():
+    template = 'Story: {story_segments}\nAnswer as JSON: {"matches": [1, 2]} {unknown}'
+    prompt = _build_prompt(0, prompt=template)
+    assert '{"matches": [1, 2]} {unknown}' in prompt
+    assert "{story_segments}" not in prompt
+
+
+def test_custom_parser_passed_to_match(anthropic_matcher, mock_anthropic_client):
+    mock_anthropic_client.messages.create.return_value = make_anthropic_response(
+        "ANSWER: 3"
     )
-    assert isinstance(p, str)
-    assert len(p) > 0
-    assert callable(parser)
 
+    def parser(raw: str) -> set[int] | None:
+        return {int(raw.split(":")[1])}
 
-def test_invalid_prompt_type_raises_value_error():
-    with pytest.raises(ValueError, match="Invalid prompt type"):
-        get_prompt_and_parser(STORY_SEGMENTS, RECALL_SEGMENTS, 0, 5, prompt="bogus")
+    result = anthropic_matcher.match(
+        STORY_SEGMENTS, ["recall"], prompt="{recall_window}", parser=parser
+    )
+    assert result == [(0, [2])]
+    sent = mock_anthropic_client.messages.create.call_args.kwargs["messages"][0]
+    assert sent["content"] == ">>> recall <<<"
 
 
 # ── build_recall_window ───────────────────────────────────────────────────────

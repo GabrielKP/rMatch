@@ -3,7 +3,7 @@ import datetime as dt
 import json
 from pathlib import Path
 
-from rmatch import console
+from rmatch import console, parser_type
 from rmatch.matchers import MATCHERS, MatcherBase, get_matcher
 from rmatch.utils import (
     atomic_write_json,
@@ -180,6 +180,8 @@ def match(
     story_name: str | None = None,
     story_segmentation: str | None = None,
     recall_segmentation: str | None = None,
+    prompt: str | None = None,
+    parser: parser_type | None = None,
     overwrite: bool = False,
     **kwargs,
 ) -> dict:
@@ -245,7 +247,10 @@ def match(
     try:
         for sub_id, recall_segments in subs_and_recall_segments_list:
             matches = matcher.match(
-                story_segments=story_segments, recall_segments=recall_segments
+                story_segments=story_segments,
+                recall_segments=recall_segments,
+                prompt=prompt,
+                parser=parser,
             )
             matches_dict[sub_id] = matches
             _save_match_checkpoint(matches_dict)
@@ -350,25 +355,6 @@ def main() -> None:
             "Set to 'auto' to auto-detect the max from model config."
             "Set this lower to reduce memory usage. "
         ),
-    )
-    parser.add_argument(
-        "--verbose-errors",
-        action="store_true",
-        default=None,
-        help="[huggingface] Print verbose errors.",
-    )
-    parser.add_argument(
-        "--prompt",
-        type=str,
-        choices=[
-            "primary",
-            "primary_no_story",
-            "primary_no_cot",
-            "primary_no_story_no_cot",
-            "secondary",
-        ],
-        default=None,
-        help="[anthropic, openai, huggingface] Prompt type. Default is 'primary'.",
     )
     parser.add_argument(
         "-f",

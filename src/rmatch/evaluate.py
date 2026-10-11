@@ -836,29 +836,10 @@ if __name__ == "__main__":
         ),
     )
     parser.add_argument(
-        "--verbose-errors",
-        action="store_true",
-        default=None,
-        help="[huggingface] Print verbose errors.",
-    )
-    parser.add_argument(
         "--no-flash-attn",
         action="store_true",
         default=None,
         help="[huggingface] Disable flash-attn for the model.",
-    )
-    parser.add_argument(
-        "--prompt",
-        type=str,
-        choices=[
-            "primary",
-            "primary_no_story",
-            "primary_no_cot",
-            "primary_no_story_no_cot",
-            "secondary",
-        ],
-        default=None,
-        help="[anthropic, openai, huggingface] Prompt type. Default is 'primary'.",
     )
     args = parser.parse_args()
     benchmark_root = args.benchmark_root or default_benchmark_root()
@@ -873,11 +854,9 @@ if __name__ == "__main__":
         device=args.device,
         window_size=args.window_size,
         dry_run=args.dry_run,
-        verbose_errors=args.verbose_errors,
         quantization=args.quantization,
         batch_size=args.batch_size,
         max_new_tokens=args.max_new_tokens,
         max_model_len=args.max_model_len,
-        prompt=args.prompt,
         no_flash_attn=args.no_flash_attn,
     )
