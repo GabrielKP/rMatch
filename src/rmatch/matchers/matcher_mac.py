@@ -5,32 +5,28 @@ from typing import Callable
 
 from tqdm import tqdm
 
-from rmatch import get_logger, matchlist_type
-from rmatch.matchers.matcher_base import MatcherBase
-from rmatch.prompt import get_prompt_and_parser
+from rmatch import get_logger, matchlist_type, parser_type
+from rmatch.matchers.matcher_base import DEFAULT_PARSER, MatcherBase
 
 log = get_logger(__name__)
 
 
-class MatcherMac(MatcherBase, matcher_name="mac"):
+class MatcherMac(MatcherBase):
+    matcher_name = "mac"
+
     def __init__(
         self,
         model_name: str | None = None,
         window_size: int = 5,
-        verbose_errors: bool = False,
         max_new_tokens: int | None = None,
         api_key: str | None = None,
-        prompt: str | None = None,
         max_retries: int | None = None,
     ):
         # uses mlx to run on apple silicon
         super().__init__()
-        self.matcher_name = "mac"
-        self.prompt = prompt
 
         assert window_size >= 0, "window_size must be non-negative"
         self.window_size = window_size
-        self.verbose_errors = verbose_errors
         self.max_new_tokens = max_new_tokens or 300
         self.max_retries = max_retries or 10
 
@@ -45,9 +41,11 @@ class MatcherMac(MatcherBase, matcher_name="mac"):
             api_key = os.environ.get("HF_TOKEN")
 
         try:
-            import mlx_vlm.utils as mlx_vlm_utils
-            from mlx_vlm import generate, load
-            from mlx_vlm.prompt_utils import apply_chat_template
+            import mlx_vlm.utils as mlx_vlm_utils  # pyright: ignore[reportMissingImports]
+            from mlx_vlm import generate, load  # pyright: ignore[reportMissingImports]
+            from mlx_vlm.prompt_utils import (  # pyright: ignore[reportMissingImports]
+                apply_chat_template,
+            )
         except ImportError:
             raise ImportError(
                 "MatcherMac requires mlx-vlm. "
@@ -82,11 +80,14 @@ class MatcherMac(MatcherBase, matcher_name="mac"):
         story_segments: list[str],
         recall_segments: list[str],
         match_key: str | None = None,
+        prompt: str | None = None,
+        parser: parser_type | None = None,
     ) -> matchlist_type:
         if len(recall_segments) == 0:
             return []
 
         n_story_segments = len(story_segments)
+        parser = parser or DEFAULT_PARSER
         matches: list[tuple[int, list[int]]] = []
 
         for idx, _ in enumerate(
@@ -97,19 +98,18 @@ class MatcherMac(MatcherBase, matcher_name="mac"):
                 leave=False,
             )
         ):
+            model_prompt = self.build_model_prompt(
+                story_segments=story_segments,
+                recall_segments=recall_segments,
+                target_idx=idx,
+                prompt=prompt,
+            )
             parsed_response: set[int] = set()
             for attempt in range(1, self.max_retries + 1):
-                prompt, parser = get_prompt_and_parser(
-                    story_segments,
-                    recall_segments,
-                    idx,
-                    self.window_size,
-                    prompt=self.prompt,
-                )
                 formatted = self._apply_chat_template(
                     self.processor,
                     self._config,
-                    prompt,
+                    model_prompt,
                     num_images=0,
                 )
                 with contextlib.redirect_stderr(io.StringIO()):
@@ -134,7 +134,7 @@ class MatcherMac(MatcherBase, matcher_name="mac"):
                     self._log_prompt_response(
                         match_key=match_key,
                         idx_recall=idx,
-                        prompt=prompt,
+                        prompt=model_prompt,
                         response=gen_text,
                         parsed_response=parsed_response_,
                     )

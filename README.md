@@ -77,6 +77,8 @@ Each matcher implements a function `matcher.match(story_segments, recall_segment
 - `story_segments` — ordered list of story segments.
 - `recall_segments` — ordered list of one participant's recall segment strings.
 
+Optionally, pass `prompt` and `parser` to customize the prompt (see [Prompts](#prompts)).
+
 The function returns one entry per recall segment in the format of `(recall_index, [story_indices])` tuples (0-based):
 
 ```python
@@ -107,7 +109,6 @@ matches = matcher.match(
 | Argument                 | Default            | Notes                                                                                                             |
 | ------------------------ | ------------------ | ----------------------------------------------------------------------------------------------------------------- |
 | `model_name`             | `"gemma-4-31B-it"` | Override the default model                                                                                        |
-| `prompt`                 | `"primary"`        | See [Prompts](#prompts)                                                                                           |
 | `max_retries`            | `10`               | Retries when the model output cannot be parsed                                                                    |
 | `api_key`                | from `.env` / env  | See [API keys](#api-keys)                                                                                         |
 | `window_size`            | `5`                | Recall context window                                                                                             |
@@ -115,8 +116,6 @@ matches = matcher.match(
 | `max_model_len`          | `90000`            | Max sequence length (prompt + generation); lower to save GPU memory                                               |
 | `tensor_parallel_size`   | auto               | Number of GPUs to use. Auto will use all of them.                                                                 |
 | `gpu_memory_utilization` | `0.90`             | Fraction of GPU memory to use, see [vLLM](https://docs.vllm.ai/en/v0.8.0/api/offline_inference/llm.html#vllm.LLM) |
-| `verbose_errors`         | `False`            | Log raw output on parse failures                                                                                  |
-
 
 
 ### MatcherAnthropic / MatcherOpenai
@@ -140,7 +139,6 @@ You can also put your API key in a `.env` file instead of passing it directly (s
 | Argument      | Default                           | Notes                                          |
 | ------------- | --------------------------------- | ---------------------------------------------- |
 | `model_name`  | `"claude-opus-4-6"` / `"gpt-4.1"` | Override the default model                     |
-| `prompt`      | `"primary"`                       | See [Prompts](#prompts)                        |
 | `max_retries` | `10`                              | Retries when the model output cannot be parsed |
 | `api_key`     | from `.env` / env                 | See [API keys](#api-keys)                      |
 | `window_size` | `5`                               | Recall context window                          |
@@ -166,13 +164,10 @@ matches = matcher.match(
 | Argument         | Default                             | Notes                                          |
 | ---------------- | ----------------------------------- | ---------------------------------------------- |
 | `model_name`     | `"unsloth/gemma-4-E4B-it-MLX-8bit"` | Override the default model                     |
-| `prompt`         | `"primary"`                         | See [Prompts](#prompts)                        |
 | `max_retries`    | `10`                                | Retries when the model output cannot be parsed |
 | `api_key`        | from `.env` / env                   | See [API keys](#api-keys)                      |
 | `window_size`    | `5`                                 | Recall context window                          |
 | `max_new_tokens` | `300`                               | Max tokens generated per segment               |
-| `verbose_errors` | `False`                             | Log raw output on parse failures               |
-
 
 
 ### MatcherHuggingface
@@ -194,15 +189,12 @@ matches = matcher.match(
 | Argument         | Default           | Notes                                          |
 | ---------------- | ----------------- | ---------------------------------------------- |
 | `model_name`     | matcher-specific  | Override the default model                     |
-| `prompt`         | `"primary"`       | See [Prompts](#prompts)                        |
 | `max_retries`    | `10`              | Retries when the model output cannot be parsed |
 | `api_key`        | from `.env` / env | See [API keys](#api-keys)                      |
 | `window_size`    | `5`               | Recall context window                          |
 | `quantization`   | none              | `"4bit"` or `"8bit"` to reduce memory          |
 | `batch_size`     | `64`              | Inference batch size                           |
 | `max_new_tokens` | `300`             | Max tokens generated per segment               |
-| `verbose_errors` | `False`           | Log raw output on parse failures               |
-
 
 
 ## API keys
@@ -224,15 +216,37 @@ HF_TOKEN="your_hf_token"           # huggingface, mac, cuda (model download)
 
 ## Prompts
 
-All matchers share the same prompt templates, but you can change it. Pass `prompt="primary_no_story"`. Default is `primary`.
+All matchers share the same default prompt (`DEFAULT_PROMPT` in `rmatch.matchers.matcher_base`). You can pass your own prompt template to `match()`. It can contain the following slots, which are filled for every recall segment:
 
-| Prompt                    | Full story | Segmented story | Chain of thought | Notes                                           |
-| ------------------------- | ---------- | --------------- | ---------------- | ----------------------------------------------- |
-| `primary`                 | yes        | yes             | yes              | Default; most complete prompt                   |
-| `primary_no_story`        | no         | yes             | yes              | For long stories that exceed the context window |
-| `primary_no_cot`          | yes        | yes             | no               | Ablation: no chain-of-thought                   |
-| `primary_no_story_no_cot` | no         | yes             | no               | Minimal prompt                                  |
-| `secondary`               | yes        | yes             | yes              | Alternative wording with XML output             |
+| Slot               | Filled with                                                           |
+| ------------------ | --------------------------------------------------------------------- |
+| `{story_full}`     | The full story as one string                                          |
+| `{story_segments}` | The numbered story segments (`1. ...`, `2. ...`)                      |
+| `{recall_window}`  | The target recall segment marked as `>>> ... <<<`, with its neighbors |
+
+Only these slots are replaced; any other braces in the template are left as-is.
+
+```python
+my_prompt = """Story pieces:
+{story_segments}
+
+Recall:
+{recall_window}
+
+Which numbered story pieces does the >>> <<< clause express?
+Answer with numbers in angle brackets, e.g. <1, 4>, or <NONE>."""
+
+matches = matcher.match(story_segments, recall_segments, prompt=my_prompt)
+```
+
+The default parser (`DEFAULT_PARSER`) extracts numbers in angle brackets such as `<3, 7, 12>`, or `<NONE>`. If your prompt asks for a different output format, also pass a `parser`: a function that takes the raw model output and returns a set of 1-based story segment numbers, or `None` if the output cannot be parsed (the matcher then retries).
+
+```python
+def my_parser(raw: str) -> set[int] | None:
+    ...
+
+matches = matcher.match(story_segments, recall_segments, prompt=my_prompt, parser=my_parser)
+```
 
 
 ## Batch matching from files directly
@@ -252,6 +266,8 @@ results = match(
     recall_file=Path("recalls/"),   # file or directory of subject files
 )
 ```
+
+Optionally, pass `prompt` and `parser` to customize the prompt (see [Prompts](#prompts)).
 
 This loads all subjects, runs matching, and writes a JSON results file next to your recall data with the following format:
 
@@ -310,4 +326,4 @@ If you prefer the command line over a Python script:
 rmatch story.txt recalls/ --matcher anthropic
 ```
 
-See `rmatch --help` for all options (model, prompt, window size, etc.).
+See `rmatch --help` for all options (model, window size, etc.).

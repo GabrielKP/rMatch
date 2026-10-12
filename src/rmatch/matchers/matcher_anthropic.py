@@ -1,10 +1,9 @@
 import os
 
-from tqdm import tqdm
+from tqdm import trange
 
-from rmatch import get_logger, matchlist_type
-from rmatch.matchers.matcher_base import MatcherBase
-from rmatch.prompt import get_prompt_and_parser
+from rmatch import get_logger, matchlist_type, parser_type
+from rmatch.matchers.matcher_base import DEFAULT_PARSER, MatcherBase
 
 log = get_logger(__name__)
 
@@ -16,19 +15,18 @@ ANTHROPIC_PRICES: dict[str, tuple[float, float]] = {
 }
 
 
-class MatcherAnthropic(MatcherBase, matcher_name="anthropic"):
+class MatcherAnthropic(MatcherBase):
+    matcher_name = "anthropic"
+
     def __init__(
         self,
         model_name: str | None = None,
         window_size: int = 5,
         dry_run: bool = False,
         api_key: str | None = None,
-        prompt: str | None = None,
         max_retries: int | None = None,
     ):
         super().__init__()
-        self.matcher_name = "anthropic"
-        self.prompt = prompt
 
         if model_name is None:
             self.model_name = "claude-opus-4-6"
@@ -88,6 +86,8 @@ class MatcherAnthropic(MatcherBase, matcher_name="anthropic"):
         story_segments: list[str],
         recall_segments: list[str],
         match_key: str | None = None,
+        prompt: str | None = None,
+        parser: parser_type | None = None,
     ) -> matchlist_type:
         """Anthropic-based matcher.
 
@@ -113,29 +113,26 @@ class MatcherAnthropic(MatcherBase, matcher_name="anthropic"):
             return []
 
         n_story_segments = len(story_segments)
+        parser = parser or DEFAULT_PARSER
         matches: list[tuple[int, list[int]]] = list()
 
-        for idx, recall_seg in enumerate(
-            tqdm(
-                recall_segments,
-                desc="(rating recall segments)",
-                position=1,
-                leave=False,
-                disable=self.dry_run,
-            )
+        for idx in trange(
+            len(recall_segments),
+            desc="(rating recall segments)",
+            position=1,
+            leave=False,
+            disable=self.dry_run,
         ):
+            model_prompt = self.build_model_prompt(
+                story_segments=story_segments,
+                recall_segments=recall_segments,
+                target_idx=idx,
+                prompt=prompt,
+            )
             parsed_response: set[int] = set()
             for attempt in range(1, self.max_retries + 1):
-                prompt, parser = get_prompt_and_parser(
-                    story_segments,
-                    recall_segments,
-                    idx,
-                    self.window_size,
-                    prompt=self.prompt,
-                )
-
                 if self.dry_run:
-                    estimated_in_tokens = self._estimate_tokens(prompt)
+                    estimated_in_tokens = self._estimate_tokens(model_prompt)
                     estimated_out_tokens = self._estimate_tokens("<8, 9, 10>")
                     self.estimated_usage_metrics["est_in_tokens"] += estimated_in_tokens
                     self.estimated_usage_metrics["est_out_tokens"] += (
@@ -149,7 +146,7 @@ class MatcherAnthropic(MatcherBase, matcher_name="anthropic"):
                     response = self.client.messages.create(
                         model=self.model_name,
                         max_tokens=1024,
-                        messages=[{"role": "user", "content": prompt}],
+                        messages=[{"role": "user", "content": model_prompt}],
                     )
 
                     in_tokens = response.usage.input_tokens
@@ -165,7 +162,7 @@ class MatcherAnthropic(MatcherBase, matcher_name="anthropic"):
                         self._log_prompt_response(
                             match_key=match_key,
                             idx_recall=idx,
-                            prompt=prompt,
+                            prompt=model_prompt,
                             response=raw_text,
                             parsed_response=parsed_response_,
                         )

@@ -2,6 +2,7 @@ import json
 import logging
 import signal
 from copy import deepcopy
+from typing import Callable
 
 from dotenv import load_dotenv
 from rich.console import Console
@@ -14,6 +15,7 @@ logging.basicConfig(format=FORMAT)
 console = Console()
 
 matchlist_type = list[tuple[int, list[int]]]
+parser_type = Callable[[str], set[int] | None]
 
 
 def _sigterm_handler(_signum, _frame):

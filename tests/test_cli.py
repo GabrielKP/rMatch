@@ -120,9 +120,7 @@ class TestCLIMain:
             (["-bs", "8"], "batch_size", 8),
             (["--max-new-tokens", "128"], "max_new_tokens", 128),
             (["--max-model-len", "4096"], "max_model_len", 4096),
-            (["--verbose-errors"], "verbose_errors", True),
             (["--device", "cpu"], "device", "cpu"),
-            (["--prompt", "secondary"], "prompt", "secondary"),
         ],
     )
     def test_main_forwards_matcher_kwargs(

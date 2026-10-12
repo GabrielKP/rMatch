@@ -3,33 +3,29 @@ from typing import Literal
 
 from tqdm import tqdm
 
-from rmatch import get_logger
-from rmatch.matchers.matcher_base import MatcherBase
-from rmatch.prompt import get_prompt_and_parser
+from rmatch import get_logger, parser_type
+from rmatch.matchers.matcher_base import DEFAULT_PARSER, MatcherBase
 
 log = get_logger(__name__)
 
 
-class MatcherHuggingFace(MatcherBase, matcher_name="huggingface"):
+class MatcherHuggingFace(MatcherBase):
+    matcher_name = "huggingface"
+
     def __init__(
         self,
         model_name: str | None = None,
         window_size: int = 5,
-        verbose_errors: bool = False,
         quantization: Literal["4bit", "8bit"] | None = None,
         batch_size: int | None = None,
         max_new_tokens: int | None = None,
         api_key: str | None = None,
-        prompt: str | None = None,
         max_retries: int | None = None,
     ):
         super().__init__()
-        self.matcher_name = "huggingface"
-        self.prompt = prompt
 
         assert window_size >= 0, "window_size must be non-negative"
         self.window_size = window_size
-        self.verbose_errors = verbose_errors
         self.batch_size = batch_size or 64
 
         if max_retries is None:
@@ -123,22 +119,24 @@ class MatcherHuggingFace(MatcherBase, matcher_name="huggingface"):
         story_segments: list[str],
         recall_segments: list[str],
         match_key: str | None = None,
+        prompt: str | None = None,
+        parser: parser_type | None = None,
     ) -> list[tuple[int, list[int]]]:
         n_story_segments = len(story_segments)
+        parser = parser or DEFAULT_PARSER
 
         if len(recall_segments) == 0:
             return []
 
         prompts: list[list[dict[str, str]]] = []
         for idx in range(len(recall_segments)):
-            prompt, parser = get_prompt_and_parser(
-                story_segments,
-                recall_segments,
-                idx,
-                self.window_size,
-                prompt=self.prompt,
+            model_prompt = self.build_model_prompt(
+                story_segments=story_segments,
+                recall_segments=recall_segments,
+                target_idx=idx,
+                prompt=prompt,
             )
-            prompts.append([{"role": "user", "content": prompt}])
+            prompts.append([{"role": "user", "content": model_prompt}])
 
         results: dict[int, set[int]] = {}
         pending = list(range(len(recall_segments)))
@@ -165,14 +163,14 @@ class MatcherHuggingFace(MatcherBase, matcher_name="huggingface"):
                 leave=False,
             ):
                 gen_text = str(response[0]["generated_text"])  # type: ignore[index]
-                prompt = prompts[idx][0]["content"]
-                parsed = parser(gen_text)  # type: ignore
+                model_prompt = prompts[idx][0]["content"]
+                parsed = parser(gen_text)
 
                 if match_key is not None:
                     self._log_prompt_response(
                         match_key=match_key,
                         idx_recall=idx,
-                        prompt=prompt,
+                        prompt=model_prompt,
                         response=gen_text,
                         parsed_response=parsed,
                     )

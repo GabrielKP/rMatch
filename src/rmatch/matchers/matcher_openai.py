@@ -2,9 +2,8 @@ import os
 
 from tqdm import tqdm
 
-from rmatch import get_logger
-from rmatch.matchers.matcher_base import MatcherBase
-from rmatch.prompt import get_prompt_and_parser
+from rmatch import get_logger, parser_type
+from rmatch.matchers.matcher_base import DEFAULT_PARSER, MatcherBase
 
 log = get_logger(__name__)
 
@@ -16,19 +15,18 @@ OPENAI_PRICES: dict[str, tuple[float, float]] = {
 }
 
 
-class MatcherOpenAI(MatcherBase, matcher_name="openai"):
+class MatcherOpenAI(MatcherBase):
+    matcher_name = "openai"
+
     def __init__(
         self,
         model_name: str | None = None,
         window_size: int = 5,
         dry_run: bool = False,
         api_key: str | None = None,
-        prompt: str | None = None,
         max_retries: int | None = None,
     ):
         super().__init__()
-        self.matcher_name = "openai"
-        self.prompt = prompt
 
         if model_name is None:
             self.model_name = "gpt-4.1"
@@ -89,8 +87,11 @@ class MatcherOpenAI(MatcherBase, matcher_name="openai"):
         story_segments: list[str],
         recall_segments: list[str],
         match_key: str | None = None,
+        prompt: str | None = None,
+        parser: parser_type | None = None,
     ) -> list[tuple[int, list[int]]]:
         n_story_segments = len(story_segments)
+        parser = parser or DEFAULT_PARSER
         matches: list[tuple[int, list[int]]] = list()
 
         for idx, recall_seg in enumerate(
@@ -102,18 +103,16 @@ class MatcherOpenAI(MatcherBase, matcher_name="openai"):
                 disable=self.dry_run,
             )
         ):
+            model_prompt = self.build_model_prompt(
+                story_segments=story_segments,
+                recall_segments=recall_segments,
+                target_idx=idx,
+                prompt=prompt,
+            )
             parsed_response: set[int] = set()
             for attempt in range(1, self.max_retries + 1):
-                prompt, parser = get_prompt_and_parser(
-                    story_segments,
-                    recall_segments,
-                    idx,
-                    self.window_size,
-                    prompt=self.prompt,
-                )
-
                 if self.dry_run:
-                    estimated_in_tokens = self._estimate_tokens(prompt)
+                    estimated_in_tokens = self._estimate_tokens(model_prompt)
                     estimated_out_tokens = self._estimate_tokens("<8, 9, 10>")
                     self.estimated_usage_metrics["est_in_tokens"] += estimated_in_tokens
                     self.estimated_usage_metrics["est_out_tokens"] += (
@@ -125,7 +124,7 @@ class MatcherOpenAI(MatcherBase, matcher_name="openai"):
                     break
                 else:
                     response = self.client.responses.create(
-                        model=self.model_name, input=prompt
+                        model=self.model_name, input=model_prompt
                     )
 
                     assert response.usage is not None
@@ -142,7 +141,7 @@ class MatcherOpenAI(MatcherBase, matcher_name="openai"):
                         self._log_prompt_response(
                             match_key=match_key,
                             idx_recall=idx,
-                            prompt=prompt,
+                            prompt=model_prompt,
                             response=raw_text,
                             parsed_response=parsed_response_,
                         )
