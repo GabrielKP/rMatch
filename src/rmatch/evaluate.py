@@ -515,11 +515,11 @@ def evaluate(
             recall_matrices_human_dct[recall_id] = rm_human
 
             for repeat_i in range(n_repeats):
-                match_key = f"{story_name}_{sub_id}_{repeat_i}"
-                match_list_model = matcher.match(
-                    story_segments=story_segments,
-                    recall_segments=recall_segments,
-                    match_key=match_key,
+                match_list_model, prompts_and_responses = (
+                    matcher.match_return_prompts_and_responses(
+                        story_segments=story_segments,
+                        recall_segments=recall_segments,
+                    )
                 )
 
                 rm_model = match_list_to_matrix(
@@ -540,11 +540,10 @@ def evaluate(
                 f1s[recall_id].append(metrics["f1"])
 
                 # save raw responses
-                prompt_responses = matcher.prompt_response_log[match_key]
                 for recall_segment_idx in range(len(recall_segments)):
                     human_response = match_list_human[recall_segment_idx][1]
                     for attempt, (prompt, response, parsed_response_set) in enumerate(
-                        prompt_responses[recall_segment_idx]
+                        prompts_and_responses[recall_segment_idx]
                     ):
                         save_raw_response(
                             raw_response_dir,

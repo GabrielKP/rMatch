@@ -81,14 +81,10 @@ def simple_benchmark_data():
 def mock_eval_matcher():
     """A minimal mock Matcher for evaluate() tests."""
     m = MagicMock()
-    m.match.return_value = [(i, []) for i in range(len(RECALL_SEGMENTS))]
-    # prompt_response_log must be indexable for save_raw_response
-    m.prompt_response_log = {
-        "story1_sub01_0": [
-            [("prompt_text", "response_text", None)]
-            for _ in range(len(RECALL_SEGMENTS))
-        ]
-    }
+    m.match_return_prompts_and_responses.return_value = (
+        [(i, []) for i in range(len(RECALL_SEGMENTS))],
+        [[("prompt_text", "response_text", None)] for _ in range(len(RECALL_SEGMENTS))],
+    )
     m.get_usage.return_value = None
     m.model_name = None
     return m
@@ -140,7 +136,7 @@ class TestEvaluateDryRun:
                     dry_run=True,
                 )
 
-        mock_eval_matcher.match.assert_called_once()
+        mock_eval_matcher.match_return_prompts_and_responses.assert_called_once()
 
     def test_non_dry_run_writes_results_json(
         self, tmp_path, simple_benchmark_data, mock_eval_matcher, monkeypatch
@@ -240,4 +236,4 @@ class TestEvaluateDryRun:
                     )
 
         # Matcher should NOT have been called for the skipped recall
-        mock_eval_matcher.match.assert_not_called()
+        mock_eval_matcher.match_return_prompts_and_responses.assert_not_called()

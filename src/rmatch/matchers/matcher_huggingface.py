@@ -3,7 +3,7 @@ from typing import Literal
 
 from tqdm import tqdm
 
-from rmatch import get_logger, parser_type
+from rmatch import get_logger, matchlist_type, parser_type, prompts_responses_type
 from rmatch.matchers.matcher_base import DEFAULT_PARSER, MatcherBase
 
 log = get_logger(__name__)
@@ -114,19 +114,18 @@ class MatcherHuggingFace(MatcherBase):
             tokenizer.pad_token_id = tokenizer.eos_token_id  # type: ignore
         tokenizer.padding_side = "left"  # type: ignore
 
-    def match(
+    def match_return_prompts_and_responses(
         self,
         story_segments: list[str],
         recall_segments: list[str],
-        match_key: str | None = None,
         prompt: str | None = None,
         parser: parser_type | None = None,
-    ) -> list[tuple[int, list[int]]]:
+    ) -> tuple[matchlist_type, prompts_responses_type]:
         n_story_segments = len(story_segments)
         parser = parser or DEFAULT_PARSER
 
         if len(recall_segments) == 0:
-            return []
+            return [], []
 
         prompts: list[list[dict[str, str]]] = []
         for idx in range(len(recall_segments)):
@@ -140,6 +139,7 @@ class MatcherHuggingFace(MatcherBase):
 
         results: dict[int, set[int]] = {}
         pending = list(range(len(recall_segments)))
+        prompts_responses_ls: prompts_responses_type = [[] for _ in recall_segments]
 
         for attempt in range(1, self.max_retries + 1):
             if not pending:
@@ -166,14 +166,7 @@ class MatcherHuggingFace(MatcherBase):
                 model_prompt = prompts[idx][0]["content"]
                 parsed = parser(gen_text)
 
-                if match_key is not None:
-                    self._log_prompt_response(
-                        match_key=match_key,
-                        idx_recall=idx,
-                        prompt=model_prompt,
-                        response=gen_text,
-                        parsed_response=parsed,
-                    )
+                prompts_responses_ls[idx].append((model_prompt, gen_text, parsed))
 
                 if parsed is not None and all(
                     1 <= i <= n_story_segments for i in parsed
@@ -202,4 +195,4 @@ class MatcherHuggingFace(MatcherBase):
             story_indices = sorted(i - 1 for i in results[idx])
             ratings.append((idx, story_indices))
 
-        return ratings
+        return ratings, prompts_responses_ls

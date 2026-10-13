@@ -5,7 +5,7 @@ from typing import Callable
 
 from tqdm import tqdm
 
-from rmatch import get_logger, matchlist_type, parser_type
+from rmatch import get_logger, matchlist_type, parser_type, prompts_responses_type
 from rmatch.matchers.matcher_base import DEFAULT_PARSER, MatcherBase
 
 log = get_logger(__name__)
@@ -75,20 +75,20 @@ class MatcherMac(MatcherBase):
             "peak_memory": self.peak_memory,
         }
 
-    def match(
+    def match_return_prompts_and_responses(
         self,
         story_segments: list[str],
         recall_segments: list[str],
-        match_key: str | None = None,
         prompt: str | None = None,
         parser: parser_type | None = None,
-    ) -> matchlist_type:
+    ) -> tuple[matchlist_type, prompts_responses_type]:
         if len(recall_segments) == 0:
-            return []
+            return [], []
 
         n_story_segments = len(story_segments)
         parser = parser or DEFAULT_PARSER
         matches: list[tuple[int, list[int]]] = []
+        prompts_responses_ls: prompts_responses_type = [[] for _ in recall_segments]
 
         for idx, _ in enumerate(
             tqdm(
@@ -130,14 +130,9 @@ class MatcherMac(MatcherBase):
 
                 # parse response
                 parsed_response_ = parser(gen_text)
-                if match_key is not None:
-                    self._log_prompt_response(
-                        match_key=match_key,
-                        idx_recall=idx,
-                        prompt=model_prompt,
-                        response=gen_text,
-                        parsed_response=parsed_response_,
-                    )
+                prompts_responses_ls[idx].append(
+                    (model_prompt, gen_text, parsed_response_)
+                )
                 if parsed_response_ is not None and all(
                     1 <= i <= n_story_segments for i in parsed_response_
                 ):
@@ -153,4 +148,4 @@ class MatcherMac(MatcherBase):
             story_indices = sorted(i - 1 for i in parsed_response)
             matches.append((idx, story_indices))
 
-        return matches
+        return matches, prompts_responses_ls
