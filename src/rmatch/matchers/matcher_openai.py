@@ -2,7 +2,7 @@ import os
 
 from tqdm import tqdm
 
-from rmatch import get_logger, parser_type
+from rmatch import get_logger, matchlist_type, parser_type, prompts_responses_type
 from rmatch.matchers.matcher_base import DEFAULT_PARSER, MatcherBase
 
 log = get_logger(__name__)
@@ -82,17 +82,17 @@ class MatcherOpenAI(MatcherBase):
             enc = tiktoken.get_encoding("cl100k_base")
         return len(enc.encode(query))
 
-    def match(
+    def match_return_prompts_and_responses(
         self,
         story_segments: list[str],
         recall_segments: list[str],
-        match_key: str | None = None,
         prompt: str | None = None,
         parser: parser_type | None = None,
-    ) -> list[tuple[int, list[int]]]:
+    ) -> tuple[matchlist_type, prompts_responses_type]:
         n_story_segments = len(story_segments)
         parser = parser or DEFAULT_PARSER
         matches: list[tuple[int, list[int]]] = list()
+        prompts_responses_ls: prompts_responses_type = [[] for _ in recall_segments]
 
         for idx, recall_seg in enumerate(
             tqdm(
@@ -137,14 +137,9 @@ class MatcherOpenAI(MatcherBase):
                     )
                     raw_text = response.output_text
                     parsed_response_ = parser(raw_text)
-                    if match_key is not None:
-                        self._log_prompt_response(
-                            match_key=match_key,
-                            idx_recall=idx,
-                            prompt=model_prompt,
-                            response=raw_text,
-                            parsed_response=parsed_response_,
-                        )
+                    prompts_responses_ls[idx].append(
+                        (model_prompt, raw_text, parsed_response_)
+                    )
                     if parsed_response_ is not None and all(
                         1 <= i <= n_story_segments for i in parsed_response_
                     ):
@@ -160,4 +155,4 @@ class MatcherOpenAI(MatcherBase):
             story_indices = sorted(i - 1 for i in parsed_response)
             matches.append((idx, story_indices))
 
-        return matches
+        return matches, prompts_responses_ls

@@ -1,7 +1,7 @@
 import os
 from typing import cast
 
-from rmatch import get_logger, parser_type
+from rmatch import get_logger, matchlist_type, parser_type, prompts_responses_type
 from rmatch.matchers.matcher_base import DEFAULT_PARSER, MatcherBase
 
 log = get_logger(__name__)
@@ -105,19 +105,18 @@ class MatcherCuda(MatcherBase):
             ),
         )
 
-    def match(
+    def match_return_prompts_and_responses(
         self,
         story_segments: list[str],
         recall_segments: list[str],
-        match_key: str | None = None,
         prompt: str | None = None,
         parser: parser_type | None = None,
-    ) -> list[tuple[int, list[int]]]:
+    ) -> tuple[matchlist_type, prompts_responses_type]:
         n_story_segments = len(story_segments)
         parser = parser or DEFAULT_PARSER
 
         if not recall_segments:
-            return []
+            return [], []
 
         raw_prompts: list[list[dict[str, str]]] = []
         for idx, _ in enumerate(recall_segments):
@@ -134,6 +133,7 @@ class MatcherCuda(MatcherBase):
 
         results: dict[int, set[int]] = {}
         pending = list(range(len(recall_segments)))
+        prompts_responses_ls: prompts_responses_type = [[] for _ in recall_segments]
 
         for attempt in range(1, self.max_retries + 1):
             if not pending:
@@ -152,14 +152,9 @@ class MatcherCuda(MatcherBase):
                 self.total_generation_tokens += len(output.outputs[0].token_ids)
                 self.total_cached_tokens += output.num_cached_tokens or 0
 
-                if match_key is not None:
-                    self._log_prompt_response(
-                        match_key=match_key,
-                        idx_recall=idx,
-                        prompt=raw_prompts[idx][0]["content"],
-                        response=gen_text,
-                        parsed_response=parsed,
-                    )
+                prompts_responses_ls[idx].append(
+                    (raw_prompts[idx][0]["content"], gen_text, parsed)
+                )
 
                 if parsed is not None and all(
                     1 <= i <= n_story_segments for i in parsed
@@ -179,7 +174,10 @@ class MatcherCuda(MatcherBase):
             log.warning(f"All {self.max_retries} attempts failed for segment {idx}")
             results[idx] = set()
 
-        return [
-            (idx, sorted(i - 1 for i in results[idx]))
-            for idx in range(len(recall_segments))
-        ]
+        return (
+            [
+                (idx, sorted(i - 1 for i in results[idx]))
+                for idx in range(len(recall_segments))
+            ],
+            prompts_responses_ls,
+        )

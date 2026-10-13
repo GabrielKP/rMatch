@@ -1,7 +1,6 @@
 import re
-from collections import defaultdict
 
-from rmatch import get_logger, matchlist_type, parser_type
+from rmatch import get_logger, matchlist_type, parser_type, prompts_responses_type
 from rmatch.utils import build_recall_window, format_story_segments
 
 log = get_logger(__name__)
@@ -61,26 +60,6 @@ class MatcherBase:
     matcher_name: str
     max_retries: int
     window_size: int
-
-    def __init__(self, **kwargs) -> None:
-        # match_key -> list over recall idx[ list over attempts [ (prompt, response) ] ]
-        self.prompt_response_log: dict[
-            str, list[list[tuple[str, str, set[int] | None]]]
-        ] = defaultdict(list)
-
-    def _log_prompt_response(
-        self,
-        match_key: str,
-        idx_recall: int,
-        prompt: str,
-        response: str,
-        parsed_response: set[int] | None,
-    ) -> None:
-        while len(self.prompt_response_log[match_key]) <= idx_recall:
-            self.prompt_response_log[match_key].append(list())
-        self.prompt_response_log[match_key][idx_recall].append(
-            (prompt, response, parsed_response)
-        )
 
     def get_usage(self) -> dict | None:
         return None
@@ -150,14 +129,10 @@ class MatcherBase:
         self,
         story_segments: list[str],
         recall_segments: list[str],
-        match_key: str | None = None,
         prompt: str | None = None,
         parser: parser_type | None = None,
     ) -> matchlist_type:
-        """Return each recall segment with its referenced story segments.
-
-        Implementations should call ``_log_prompt_response`` after each model
-        interaction (prompt and raw response text) for debugging and optional export.
+        """Return story-recall matches.
 
         Parameters
         ----------
@@ -165,9 +140,6 @@ class MatcherBase:
             list of story segments
         recall_segments: list[str]
             list of recall segments
-        match_key: str
-            a string to identify story & recall segments. Used to save prompts and
-            Responses to the prompt_response_log.
         prompt: str | None
             Prompt template, see ``build_model_prompt``. Defaults to DEFAULT_PROMPT.
         parser: parser_type | None
@@ -184,5 +156,47 @@ class MatcherBase:
                 (recall_segment_id_2, [story_segment_id_z, ...]),
                 ...
             ]
+        """
+        return self.match_return_prompts_and_responses(
+            story_segments=story_segments,
+            recall_segments=recall_segments,
+            prompt=prompt,
+            parser=parser,
+        )[0]
+
+    def match_return_prompts_and_responses(
+        self,
+        story_segments: list[str],
+        recall_segments: list[str],
+        prompt: str | None = None,
+        parser: parser_type | None = None,
+    ) -> tuple[matchlist_type, prompts_responses_type]:
+        """Return Matches AND the model prompts, raw and parsed responses
+
+        Parameters
+        ----------
+        story_segments: list[str]
+            list of story segments
+        recall_segments: list[str]
+            list of recall segments
+        prompt: str | None
+            Prompt template, see ``build_model_prompt``. Defaults to DEFAULT_PROMPT.
+        parser: parser_type | None
+            Function extracting the set of (1-based) story segment numbers from the
+            raw model output, or None if parsing fails (triggers a retry).
+            Defaults to DEFAULT_PARSER.
+
+        Returns
+        -------
+        match_list: list[tuple[int, list[int]]]
+            list of matches:
+            [
+                (recall_segment_id_1, [story_segment_id_x, story_segment_id_y, ..]),
+                (recall_segment_id_2, [story_segment_id_z, ...]),
+                ...
+            ]
+        prompts_and_responses : list[list[(str, str, set[int] | None)]]
+            prompts_and_responses[recall_idx][attempt]
+            -> (prompt, raw_response, parsed_response)
         """
         raise NotImplementedError("Subclasses must implement this method")
