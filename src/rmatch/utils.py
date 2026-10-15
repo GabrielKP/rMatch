@@ -113,3 +113,31 @@ def match_list_to_matrix(
         for idx_story_segment in story_segment_indices:
             recall_matrix[idx_story_segment, idx_recall_segment] = 1
     return recall_matrix
+
+
+def format_story_segments(story_segments: list[str]) -> str:
+    return "\n".join(f"{i + 1}. {seg.strip()}" for i, seg in enumerate(story_segments))
+
+
+def build_recall_window(
+    recall_segments: list[str],
+    target_idx: int,
+    window_size: int,
+    start_marker: str = "<target>",
+    end_marker: str = "</target>",
+) -> str:
+    if window_size == 0:
+        return f"{start_marker}{recall_segments[target_idx]}{end_marker}"
+
+    start = max(0, target_idx - window_size)
+    end = min(len(recall_segments), target_idx + window_size + 1)
+
+    lines = []
+    for i in range(start, end):
+        clause = recall_segments[i].strip()
+        if i == target_idx:
+            lines.append(f"{start_marker}{clause}{end_marker}")
+        else:
+            lines.append(f"{clause}")
+
+    return "\n".join(lines)

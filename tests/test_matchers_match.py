@@ -131,9 +131,7 @@ class TestMatcherAnthropicMatch:
         for expected_idx, (actual_idx, _) in enumerate(result):
             assert actual_idx == expected_idx
 
-    def test_prompt_response_log_content(
-        self, anthropic_matcher, mock_anthropic_client
-    ):
+    def test_prompts_responses_content(self, anthropic_matcher, mock_anthropic_client):
         # recall 0: attempt 1 malformed → attempt 2 succeeds with "<2>" → parsed {2}
         # recall 1: attempt 1 succeeds with "<1>" → parsed {1}
         mock_anthropic_client.messages.create.side_effect = [
@@ -141,10 +139,9 @@ class TestMatcherAnthropicMatch:
             make_anthropic_response("<2>"),
             make_anthropic_response("<1>"),
         ]
-        key = "story1_sub-01_1"
-        result = anthropic_matcher.match(STORY_SEGMENTS, RECALL_SEGMENTS, key)
-
-        log = anthropic_matcher.prompt_response_log[key]
+        result, log = anthropic_matcher.match_return_prompts_and_responses(
+            STORY_SEGMENTS, RECALL_SEGMENTS
+        )
 
         # recall 0: two attempts logged
         assert len(log[0]) == 2
@@ -267,7 +264,7 @@ class TestMatcherOpenAIMatch:
         for expected_idx, (actual_idx, _) in enumerate(result):
             assert actual_idx == expected_idx
 
-    def test_prompt_response_log_content(self, openai_matcher, mock_openai_client):
+    def test_prompts_responses_content(self, openai_matcher, mock_openai_client):
         # recall 0: attempt 1 malformed → attempt 2 succeeds with "<3>" → parsed {3}
         # recall 1: attempt 1 succeeds with "<1>" → parsed {1}
         mock_openai_client.responses.create.side_effect = [
@@ -275,10 +272,9 @@ class TestMatcherOpenAIMatch:
             make_openai_response("<3>"),
             make_openai_response("<1>"),
         ]
-        key = "story1_sub-01_1"
-        result = openai_matcher.match(STORY_SEGMENTS, RECALL_SEGMENTS, key)
-
-        log = openai_matcher.prompt_response_log[key]
+        result, log = openai_matcher.match_return_prompts_and_responses(
+            STORY_SEGMENTS, RECALL_SEGMENTS
+        )
 
         # recall 0: two attempts logged
         assert len(log[0]) == 2
@@ -393,7 +389,7 @@ class TestMatcherHuggingFaceMatch:
         story_indices = result[0][1]
         assert story_indices == sorted(story_indices)
 
-    def test_prompt_response_log_content(self, huggingface_matcher, mock_hf_pipe):
+    def test_prompts_responses_content(self, huggingface_matcher, mock_hf_pipe):
         # recall 0: attempt 1 malformed → retried alone in attempt 2 with "<2>"
         # recall 1: attempt 1 succeeds with "<1>" → parsed {1}
         mock_hf_pipe.side_effect = [
@@ -402,10 +398,9 @@ class TestMatcherHuggingFaceMatch:
             # Retry batch (only recall 0 pending)
             [[{"generated_text": "<2>"}]],
         ]
-        key = "story1_sub-01_1"
-        result = huggingface_matcher.match(STORY_SEGMENTS, RECALL_SEGMENTS, key)
-
-        log = huggingface_matcher.prompt_response_log[key]
+        result, log = huggingface_matcher.match_return_prompts_and_responses(
+            STORY_SEGMENTS, RECALL_SEGMENTS
+        )
 
         # recall 0: two attempts logged
         assert len(log[0]) == 2
@@ -515,17 +510,16 @@ class TestCudaMatch:
         for expected_idx, (actual_idx, _) in enumerate(result):
             assert actual_idx == expected_idx
 
-    def test_prompt_response_log_content(self, cuda_matcher, mock_cuda_llm):
+    def test_prompts_responses_content(self, cuda_matcher, mock_cuda_llm):
         # recall 0: attempt 1 malformed
         # ->retried alone with "<2>"; recall 1: succeeds "<1>"
         mock_cuda_llm.generate.side_effect = [
             [make_cuda_output("bad response"), make_cuda_output("<1>")],
             [make_cuda_output("<2>")],
         ]
-        key = "story1_sub-01_1"
-        result = cuda_matcher.match(STORY_SEGMENTS, RECALL_SEGMENTS, key)
-
-        log = cuda_matcher.prompt_response_log[key]
+        result, log = cuda_matcher.match_return_prompts_and_responses(
+            STORY_SEGMENTS, RECALL_SEGMENTS
+        )
 
         assert len(log[0]) == 2
         prompt0_a1, response0_a1, parsed0_a1 = log[0][0]
@@ -645,7 +639,7 @@ class TestMacMatch:
         for expected_idx, (actual_idx, _) in enumerate(result):
             assert actual_idx == expected_idx
 
-    def test_prompt_response_log_content(self, mac_matcher, mock_mac_generate):
+    def test_prompts_responses_content(self, mac_matcher, mock_mac_generate):
         # recall 0: attempt 1 malformed
         # -> attempt 2 succeeds "<2>"; recall 1: succeeds "<1>"
         mock_mac_generate.side_effect = [
@@ -653,10 +647,9 @@ class TestMacMatch:
             make_mac_response("<2>"),
             make_mac_response("<1>"),
         ]
-        key = "story1_sub-01_1"
-        result = mac_matcher.match(STORY_SEGMENTS, RECALL_SEGMENTS, key)
-
-        log = mac_matcher.prompt_response_log[key]
+        result, log = mac_matcher.match_return_prompts_and_responses(
+            STORY_SEGMENTS, RECALL_SEGMENTS
+        )
 
         assert len(log[0]) == 2
         prompt0_a1, response0_a1, parsed0_a1 = log[0][0]

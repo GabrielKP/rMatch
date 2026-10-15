@@ -1,6 +1,6 @@
 [project]
 name = "rMatch"
-version = "0.5.0"
+version = "0.6.0"
 description = "Match recall segments with story segments."
 authors = [{ name = "Gabriel Kressin Palacios", email = "gkressi1@jhu.edu" }]
 requires-python = ">=3.12,<3.14"
@@ -35,8 +35,8 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-mac = ["mlx-vlm>=0.4.4"]
-cuda = ["vllm>=0.19.1"]
+mac = ["mlx-vlm>=0.7.6"]
+cuda = ["vllm>=0.31.0"]
 flash = ["flash-attn"]
 test = [
     "pytest>=8.0",
