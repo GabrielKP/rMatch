@@ -1,11 +1,17 @@
 import json
 import os
 import re
-from typing import cast
+from typing import Callable, cast
 
 import pandas as pd
 
 from rmatch import get_logger
+from rmatch.utils import (
+    get_model_family,
+    get_model_sampling_params,
+    log_if_truncated,
+    params_for_attempt,
+)
 
 log = get_logger(__name__)
 RED = "\033[91m"
@@ -25,17 +31,24 @@ class SegmenterCuda:
         gpu_memory_utilization: float = 0.90,
         max_retries: int = 10,
         granularity: str = "idea",
+        enable_thinking: bool = True,
+        seed: int | None = 42,
     ):
         if model_name is None:
             self.model_name = "google/gemma-4-31B-it"
         else:
             self.model_name = model_name
+        self.model_family = get_model_family(self.model_name)
 
         log.info(f"Initializing vLLM model with CUDA: {self.model_name}")
-        self.max_new_tokens = max_new_tokens or 4096
+        self.max_new_tokens = max_new_tokens or 16384
         self.max_retries = max_retries or 10
         log.info(f"Max new tokens: {self.max_new_tokens}")
         log.info(f"Max retries: {self.max_retries}")
+        self.enable_thinking = enable_thinking
+        log.info(f"Thinking enabled: {self.enable_thinking}")
+        self.seed = seed
+        log.info(f"Seed: {self.seed}")
 
         if granularity == "idea" or granularity == "event":
             self.granularity = granularity
@@ -44,7 +57,17 @@ class SegmenterCuda:
         log.info(f"Setting granularity: {self.granularity}")
 
         try:
-            from vllm import LLM, SamplingParams
+            from vllm import (  # pyright: ignore[reportMissingImports]
+                LLM,
+                SamplingParams,
+            )
+
+            if self.model_family == "gemma-4":
+                from vllm.reasoning.gemma4_utils import (  # pyright: ignore[reportMissingImports]
+                    parse_thinking_output,
+                )
+
+                self.parse_thinking_output: Callable = parse_thinking_output
         except ImportError:
             raise ImportError(
                 "SegmenterCuda requires vllm. "
@@ -84,9 +107,14 @@ class SegmenterCuda:
         if self.tokenizer.pad_token_id is None:
             self.tokenizer.pad_token_id = self.tokenizer.eos_token_id  # type: ignore
 
+        model_sampling_params = get_model_sampling_params(
+            model_family=self.model_family
+        )
+
         self.sampling_params = SamplingParams(
             max_tokens=self.max_new_tokens,
-            temperature=0.0,  # greedy; set higher for sampling
+            **model_sampling_params,
+            seed=self.seed,
         )
 
     def _build_prompt(self, text: str, attempt: int = 0) -> str:
@@ -166,8 +194,15 @@ Here is the transcript to segment:
                 messages,  # type: ignore[arg-type]
                 tokenize=False,
                 add_generation_prompt=True,
+                enable_thinking=self.enable_thinking,
             ),
         )
+
+    def _preparse_model_output(self, text: str) -> str:
+        """Strip thinking for specific model_families"""
+        if self.model_family == "gemma-4":
+            return self.parse_thinking_output(text)["answer"]
+        return text
 
     def _validate_and_repair_segments(
         self, text: str, segments: list[str]
@@ -275,7 +310,7 @@ Here is the transcript to segment:
             labels = None
 
         labels_processed = [
-            labels[i] if labels is not None else f"Text #{i+1}"
+            labels[i] if labels is not None else f"Text #{i + 1}"
             for i in range(len(texts))
         ]
 
@@ -295,12 +330,19 @@ Here is the transcript to segment:
                 prompts.append(formatted_prompt)
 
             log.info(f"Segmenting {len(indices_pending)} text(s)")
-            outputs = self.llm.generate(prompts, self.sampling_params)
+            params = params_for_attempt(self.sampling_params, self.seed, attempt)
+            outputs = self.llm.generate(prompts, params)
 
             still_pending: list[int] = []
             for idx_pending, output in zip(indices_pending, outputs):
                 # parse response
-                response_text = output.outputs[0].text
+                log_if_truncated(
+                    output,
+                    f"{labels_processed[idx_pending]} (attempt {attempt + 1})",
+                    log,
+                )
+                # strip thinking tags if supported by function
+                response_text = self._preparse_model_output(output.outputs[0].text)
 
                 try:
                     cleaned = response_text.strip()

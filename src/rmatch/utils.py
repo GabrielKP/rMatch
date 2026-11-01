@@ -9,6 +9,60 @@ from rmatch import get_logger, matchlist_type
 
 log = get_logger(__name__)
 
+# Model families that have extra supporting functions
+MODEL_FAMILIES = ["gemma-4"]
+# Recommended Gemma sampling settings:
+DEFAULT_SAMPLING_PARAMS = {
+    "gemma-4": {
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 64,
+        "skip_special_tokens": False,
+    },
+}
+
+
+def get_model_family(model_name: str) -> str:
+    """Returns model family from name."""
+    name = model_name.split("/")[-1].lower()
+    for model_family in MODEL_FAMILIES:
+        if model_family in name:
+            return model_family
+    return name
+
+
+def get_model_sampling_params(model_family: str) -> dict:
+    if model_family in DEFAULT_SAMPLING_PARAMS:
+        return DEFAULT_SAMPLING_PARAMS[model_family]
+    return {}
+
+
+def params_for_attempt(sampling_params, seed: int | None, attempt_idx: int):
+    """Return vLLM SamplingParams seeded with seed + attempt_idx.
+
+    A per-request seed makes a prompt's output deterministic, so retries of the
+    same prompt need a different seed to resample.
+    """
+    if seed is None:
+        return sampling_params
+    params = sampling_params.clone()
+    params.seed = seed + attempt_idx
+    return params
+
+
+def log_if_truncated(output, label: str, logger=log, tail_chars: int = 500) -> bool:
+    """Warn if a vLLM RequestOutput was cut off by max_tokens. Returns True if so."""
+    completion = output.outputs[0]
+    if completion.finish_reason != "length":
+        return False
+    logger.warning(
+        f"{label}: response cut off at max_tokens "
+        f"({len(completion.token_ids)} tokens generated). "
+        f"Response tail:\n...{completion.text[-tail_chars:]}"
+    )
+    logger.debug(f"{label}: full truncated response:\n{completion.text}")
+    return True
+
 
 def atomic_write_text(path: Path, text: str, encoding: str = "utf-8") -> None:
     """Write text to ``path`` atomically (temp file then replace)."""

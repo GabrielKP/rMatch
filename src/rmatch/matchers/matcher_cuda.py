@@ -1,8 +1,14 @@
 import os
-from typing import cast
+from typing import Callable, cast
 
 from rmatch import get_logger, matchlist_type, parser_type, prompts_responses_type
 from rmatch.matchers.matcher_base import DEFAULT_PARSER, MatcherBase
+from rmatch.utils import (
+    get_model_family,
+    get_model_sampling_params,
+    log_if_truncated,
+    params_for_attempt,
+)
 
 log = get_logger(__name__)
 
@@ -22,24 +28,38 @@ class MatcherCuda(MatcherBase):
         # gpu params, see https://docs.vllm.ai/en/v0.8.0/api/offline_inference/llm.html#vllm.LLM
         tensor_parallel_size: int | None = None,  # number of GPUs to shard across
         gpu_memory_utilization: float = 0.90,
+        enable_thinking: bool = True,
+        seed: int | None = 42,
     ):
         super().__init__()
         assert window_size >= 0, "window_size must be non-negative"
         self.window_size = window_size
-        self.max_new_tokens = max_new_tokens or 1024
+        self.max_new_tokens = max_new_tokens or 8192
         self.max_retries = max_retries or 10
         self.model_name = model_name or "google/gemma-4-31B-it"
+        self.model_family = get_model_family(self.model_name)
+        self.enable_thinking = enable_thinking
 
         log.info(f"Initializing vLLM model with CUDA: {self.model_name}")
         log.info(f"Recall context window size: {self.window_size}")
         log.info(f"Max new tokens: {self.max_new_tokens}")
         log.info(f"Max retries: {self.max_retries}")
+        log.info(f"Thinking enabled: {self.enable_thinking}")
+        self.seed = seed
+        log.info(f"Seed: {self.seed}")
 
         try:
             from vllm import (  # pyright: ignore[reportMissingImports]
                 LLM,
                 SamplingParams,
             )
+
+            if self.model_family == "gemma-4":
+                from vllm.reasoning.gemma4_utils import (  # pyright: ignore[reportMissingImports]
+                    parse_thinking_output,
+                )
+
+                self.parse_thinking_output: Callable = parse_thinking_output
         except ImportError:
             raise ImportError(
                 "vllm is required for MatcherCuda. "
@@ -79,9 +99,14 @@ class MatcherCuda(MatcherBase):
         if self.tokenizer.pad_token_id is None:
             self.tokenizer.pad_token_id = self.tokenizer.eos_token_id  # type: ignore
 
+        model_sampling_params = get_model_sampling_params(
+            model_family=self.model_family
+        )
+
         self.sampling_params = SamplingParams(
             max_tokens=self.max_new_tokens,
-            temperature=0.0,
+            **model_sampling_params,
+            seed=self.seed,
         )
 
         self.total_prompt_tokens = 0
@@ -102,8 +127,15 @@ class MatcherCuda(MatcherBase):
                 messages,  # type: ignore[arg-type]
                 tokenize=False,
                 add_generation_prompt=True,
+                enable_thinking=self.enable_thinking,
             ),
         )
+
+    def _preparse_model_output(self, text: str) -> str:
+        """Strip thinking for specific model_families"""
+        if self.model_family == "gemma-4":
+            return self.parse_thinking_output(text)["answer"]
+        return text
 
     def match_return_prompts_and_responses(
         self,
@@ -142,12 +174,22 @@ class MatcherCuda(MatcherBase):
             pending_prompts = [formatted_prompts[i] for i in pending]
 
             # vLLM batches everything in one call — no manual chunking needed
-            outputs = self.llm.generate(pending_prompts, self.sampling_params)
+
+            # the reason to add this is to allow for determinism given a specific seed:
+            # however seed needs to be reselected to avoid always generating under the
+            # same seed.
+            params = params_for_attempt(self.sampling_params, self.seed, attempt - 1)
+            outputs = self.llm.generate(pending_prompts, params)
 
             still_pending: list[int] = []
             for idx, output in zip(pending, outputs):
                 gen_text = output.outputs[0].text
-                parsed = parser(gen_text)
+                log_if_truncated(
+                    output, f"Recall segment {idx} (attempt {attempt})", log
+                )
+                # strip thinking tags if supported by function
+                answer = self._preparse_model_output(gen_text)
+                parsed = parser(answer)
                 self.total_prompt_tokens += len(output.prompt_token_ids or [])
                 self.total_generation_tokens += len(output.outputs[0].token_ids)
                 self.total_cached_tokens += output.num_cached_tokens or 0

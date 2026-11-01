@@ -12,7 +12,9 @@ from rmatch.utils import (
     binary_f1,
     binary_precision,
     binary_recall,
+    log_if_truncated,
     match_list_to_matrix,
+    params_for_attempt,
     pearsonr,
 )
 
@@ -260,3 +262,50 @@ def test_atomic_write_text_creates_parent_dirs(tmp_path):
     path = tmp_path / "nested" / "deep" / "out.txt"
     atomic_write_text(path, "content")
     assert path.read_text() == "content"
+
+
+# ── log_if_truncated / params_for_attempt ─────────────────────────────────────
+
+
+class TestLogIfTruncated:
+    @staticmethod
+    def _output(finish_reason: str):
+        from unittest.mock import MagicMock
+
+        output = MagicMock()
+        output.outputs[0].text = "x" * 1000 + "END"
+        output.outputs[0].token_ids = [0] * 42
+        output.outputs[0].finish_reason = finish_reason
+        return output
+
+    def test_logs_on_length(self):
+        from unittest.mock import MagicMock
+
+        logger = MagicMock()
+        assert log_if_truncated(self._output("length"), "seg 1", logger)
+        msg = logger.warning.call_args[0][0]
+        assert "seg 1" in msg and "42 tokens" in msg and msg.endswith("END")
+
+    def test_silent_on_stop(self):
+        from unittest.mock import MagicMock
+
+        logger = MagicMock()
+        assert not log_if_truncated(self._output("stop"), "seg 1", logger)
+        logger.warning.assert_not_called()
+
+
+class TestParamsForAttempt:
+    def test_offsets_seed_by_attempt(self):
+        from unittest.mock import MagicMock
+
+        base = MagicMock()
+        params = params_for_attempt(base, 42, 3)
+        assert params is base.clone.return_value
+        assert params.seed == 45
+
+    def test_no_seed_returns_base(self):
+        from unittest.mock import MagicMock
+
+        base = MagicMock()
+        assert params_for_attempt(base, None, 3) is base
+        base.clone.assert_not_called()

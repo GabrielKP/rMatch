@@ -544,6 +544,106 @@ class TestCudaMatch:
         assert sorted(x - 1 for x in parsed1) == story_indices_1
 
 
+# ── MatcherCuda: thinking & sampling ──────────────────────────────────────────
+
+
+def _fake_parse_thinking_output(text: str) -> dict:
+    """Stand-in for vllm.reasoning.gemma4_utils.parse_thinking_output."""
+    if "<channel|>" in text:
+        thinking, answer = text.split("<channel|>", 1)
+        return {"thinking": thinking, "answer": answer}
+    return {"thinking": None, "answer": text}
+
+
+def _make_cuda_matcher(mock_cuda_llm, model_name: str, gemma4_utils=None, **kwargs):
+    """Build a MatcherCuda with a mocked vllm. Returns (matcher, mock_vllm).
+
+    gemma4_utils=None makes `import vllm.reasoning.gemma4_utils` raise
+    ImportError, like a vLLM version without Gemma 4 support.
+    """
+    mock_vllm = MagicMock()
+    mock_vllm.LLM.return_value = mock_cuda_llm
+    modules = {
+        "vllm": mock_vllm,
+        "vllm.reasoning": MagicMock(),
+        "vllm.reasoning.gemma4_utils": gemma4_utils,
+    }
+    with patch.dict("sys.modules", modules):
+        from rmatch.matchers.matcher_cuda import MatcherCuda
+
+        m = MatcherCuda(model_name=model_name, max_retries=3, **kwargs)
+    return m, mock_vllm
+
+
+class TestCudaThinking:
+    GEMMA = "google/gemma-4-31B-it"
+    # the thought mentions a valid-but-wrong index; only the answer counts
+    THINKING_RESPONSE = "<|channel>thought\nMaybe <3>? No, it is <1>.<channel|><1>"
+
+    @pytest.fixture
+    def gemma_matcher(self, mock_cuda_llm):
+        utils = MagicMock(parse_thinking_output=_fake_parse_thinking_output)
+        return _make_cuda_matcher(mock_cuda_llm, self.GEMMA, gemma4_utils=utils)
+
+    def test_answer_parsed_not_thinking(self, gemma_matcher, mock_cuda_llm):
+        # If thinking is not stripped (e.g. the model family is not detected from
+        # the full HF name), the parser picks up indices from the thought block.
+        matcher, mock_vllm = gemma_matcher
+        mock_cuda_llm.generate.return_value = [make_cuda_output(self.THINKING_RESPONSE)]
+        assert matcher.match(STORY_SEGMENTS, ["recall"]) == [(0, [0])]
+
+        # The split above relies on the delimiters, which are special tokens and
+        # are dropped from the output text unless skip_special_tokens=False.
+        sp_kwargs = mock_vllm.SamplingParams.call_args.kwargs
+        assert sp_kwargs.get("skip_special_tokens") is False
+
+    def test_prompts_responses_keeps_raw_thinking(self, gemma_matcher, mock_cuda_llm):
+        matcher, _ = gemma_matcher
+        mock_cuda_llm.generate.return_value = [make_cuda_output(self.THINKING_RESPONSE)]
+        _, log = matcher.match_return_prompts_and_responses(STORY_SEGMENTS, ["r"])
+        _, response, parsed = log[0][0]
+        assert response == self.THINKING_RESPONSE
+        assert parsed == {1}
+
+    def test_enable_thinking_reaches_chat_template(self, mock_cuda_llm):
+        utils = MagicMock(parse_thinking_output=_fake_parse_thinking_output)
+        matcher, _ = _make_cuda_matcher(
+            mock_cuda_llm, self.GEMMA, gemma4_utils=utils, enable_thinking=False
+        )
+        mock_cuda_llm.generate.return_value = [make_cuda_output("<1>")]
+        matcher.match(STORY_SEGMENTS, ["recall"])
+        template_kwargs = mock_cuda_llm.get_tokenizer().apply_chat_template.call_args
+        assert template_kwargs.kwargs["enable_thinking"] is False
+
+    def test_non_gemma_does_not_need_gemma4_utils(self, mock_cuda_llm):
+        # Gemma-specific imports must not break other models on vLLM versions
+        # that lack them.
+        matcher, mock_vllm = _make_cuda_matcher(
+            mock_cuda_llm, "mistralai/Mistral-7B-Instruct-v0.3"
+        )
+        sp_kwargs = mock_vllm.SamplingParams.call_args.kwargs
+        assert "skip_special_tokens" not in sp_kwargs
+        assert "top_k" not in sp_kwargs
+
+        mock_cuda_llm.generate.return_value = [make_cuda_output("<2>")]
+        assert matcher.match(STORY_SEGMENTS, ["recall"]) == [(0, [1])]
+
+    def test_retries_resample_with_new_seed(self, gemma_matcher, mock_cuda_llm):
+        # With a fixed seed, retrying with the same seed regenerates the same
+        # malformed output, so every retry would be wasted.
+        matcher, _ = gemma_matcher
+        seeds = []
+
+        def generate(prompts, params):
+            seeds.append(params.seed)  # read at call time; params may be mutated
+            return [make_cuda_output("unparseable")]
+
+        mock_cuda_llm.generate.side_effect = generate
+        matcher.match(STORY_SEGMENTS, ["recall"])
+        assert len(seeds) == 3
+        assert len(set(seeds)) == 3
+
+
 # ── MatcherMac ────────────────────────────────────────────────────────────────
 
 

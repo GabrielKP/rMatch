@@ -81,7 +81,12 @@ class TestSegmenterCudaInit:
 
         with patch.dict(
             "sys.modules",
-            {"vllm": mock_vllm, "torch": _make_torch_module()},
+            {
+                "vllm": mock_vllm,
+                "vllm.reasoning": MagicMock(),
+                "vllm.reasoning.gemma4_utils": MagicMock(),
+                "torch": _make_torch_module(),
+            },
         ):
             from rmatch.segmenters import SegmenterCuda
 
@@ -100,7 +105,7 @@ class TestSegmenterCudaInit:
         assert seg.model_name == "mistralai/Mistral-7B-Instruct-v0.3"
 
     def test_max_new_tokens_default(self):
-        assert _make_segmenter().max_new_tokens == 4096
+        assert _make_segmenter().max_new_tokens == 16384
 
     def test_max_retries_default(self):
         mock_vllm = _make_vllm_module()
