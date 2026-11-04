@@ -26,8 +26,8 @@ class MatcherCuda(MatcherBase):
         super().__init__()
         assert window_size >= 0, "window_size must be non-negative"
         self.window_size = window_size
-        self.max_new_tokens = max_new_tokens or 1024
-        self.max_retries = max_retries or 10
+        self.max_new_tokens = max_new_tokens or 8096
+        self.max_retries = max_retries or 3
         self.model_name = model_name or "google/gemma-4-31B-it"
 
         log.info(f"Initializing vLLM model with CUDA: {self.model_name}")
