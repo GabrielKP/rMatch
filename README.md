@@ -315,7 +315,7 @@ BENCHMARK_ROOT="path/to/rBench"
 Run:
 
 ```sh
-uv run src/rmatch/evaluate.py {alice,monthiversary,memsearch}
+uv run src/rmatch/evaluate.py --matcher cuda {alice,monthiversary,memsearch}
 ```
 
 ## CLI
