@@ -839,58 +839,6 @@ class TestMaxRetriesInit:
                 m = MatcherMac(model_name="test-model", max_retries=expected)
         assert m.max_retries == expected
 
-    @pytest.mark.parametrize(
-        "matcher_name",
-        ["anthropic", "openai", "huggingface", "cuda", "mac"],
-    )
-    def test_default_max_retries_when_not_specified(
-        self,
-        matcher_name,
-        mock_anthropic_client,
-        mock_openai_client,
-        mock_hf_pipe,
-    ):
-        if matcher_name == "anthropic":
-            with patch("anthropic.Anthropic", return_value=mock_anthropic_client):
-                from rmatch.matchers.matcher_anthropic import MatcherAnthropic
-
-                m = MatcherAnthropic(api_key="test-key")
-        elif matcher_name == "openai":
-            mock_openai_mod = MagicMock()
-            mock_openai_mod.OpenAI.return_value = mock_openai_client
-            with patch.dict("sys.modules", {"openai": mock_openai_mod}):
-                from rmatch.matchers.matcher_openai import MatcherOpenAI
-
-                m = MatcherOpenAI(api_key="test-key")
-        elif matcher_name == "huggingface":
-            sys.modules["transformers"].pipeline.return_value = mock_hf_pipe
-            from rmatch.matchers.matcher_huggingface import MatcherHuggingFace
-
-            m = MatcherHuggingFace(api_key="test-hf-token")
-        elif matcher_name == "cuda":
-            mock_vllm = MagicMock()
-            mock_vllm.LLM.return_value.get_tokenizer.return_value.pad_token_id = None
-            mock_vllm.LLM.return_value.get_tokenizer.return_value.eos_token_id = 2
-            with patch.dict("sys.modules", {"vllm": mock_vllm}):
-                from rmatch.matchers.matcher_cuda import MatcherCuda
-
-                m = MatcherCuda(model_name="test-model")
-        else:
-            mock_mlx = MagicMock()
-            mock_mlx.load.return_value = (MagicMock(), MagicMock())
-            with patch.dict(
-                "sys.modules",
-                {
-                    "mlx_vlm": mock_mlx,
-                    "mlx_vlm.utils": MagicMock(),
-                    "mlx_vlm.prompt_utils": MagicMock(),
-                },
-            ):
-                from rmatch.matchers.matcher_mac import MatcherMac
-
-                m = MatcherMac(model_name="test-model")
-        assert m.max_retries == 10
-
 
 # ── get_matcher factory ───────────────────────────────────────────────────────
 

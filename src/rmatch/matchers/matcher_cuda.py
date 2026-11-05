@@ -35,7 +35,7 @@ class MatcherCuda(MatcherBase):
         assert window_size >= 0, "window_size must be non-negative"
         self.window_size = window_size
         self.max_new_tokens = max_new_tokens or 8192
-        self.max_retries = max_retries or 10
+        self.max_retries = max_retries or 3
         self.model_name = model_name or "google/gemma-4-31B-it"
         self.model_family = get_model_family(self.model_name)
         self.enable_thinking = enable_thinking

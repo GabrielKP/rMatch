@@ -13,7 +13,7 @@ rMatch matches each segment of a participant's recall to the corresponding segme
 
 | Model                 | short text (N=21) | long text (N=19) | movie transcripts (N=138) |
 | --------------------- | :---------------: | :--------------: | :-----------------------: |
-| google/gemma-4-31B-it |      _0.84_       |      _0.78_      |          _0.67_           |
+| google/gemma-4-31B-it |      _0.82_       |      _0.79_      |          _0.65_           |
 | Claude Opus 4.6       |      _0.87_       |      _0.8_       |           _0.7_           |
 
 Pearson *r* with human ratings.
@@ -291,9 +291,9 @@ Each subject maps to a list of `[recall_segment_id, [matched_story_segment_ids..
 
 | Matcher                           | Testset       |  F1   | Precision | Recall | Pearson R |
 | --------------------------------- | ------------- | :---: | :-------: | :----: | :-------: |
-| MatcherCuda:google/gemma-4-31B-it | alice         |  .84  |    .8     |  .89   |    .83    |
-| MatcherCuda:google/gemma-4-31B-it | monthiversary |  .79  |    .72    |  .86   |    .78    |
-| MatcherCuda:google/gemma-4-31B-it | memsearch     |  .67  |    .56    |  .84   |    .64    |
+| MatcherCuda:google/gemma-4-31B-it | alice         |  .83  |    .78    |  .89   |    .82    |
+| MatcherCuda:google/gemma-4-31B-it | monthiversary |  .80  |    .73    |  .85   |    .79    |
+| MatcherCuda:google/gemma-4-31B-it | memsearch     |  .67  |    .54    |  .90   |    .65    |
 
 * `alice` (medium text) are 21 recalls with a length of ~200 words, and a story length of ~700 words.
 * `monthiversary` (long text) are 19 recalls with a length of ~1000 words, and a story length of ~4700.
@@ -315,15 +315,17 @@ BENCHMARK_ROOT="path/to/rBench"
 Run:
 
 ```sh
-uv run src/rmatch/evaluate.py {alice,monthiversary,memsearch}
+uv run src/rmatch/evaluate.py --matcher cuda {alice,monthiversary,memsearch}
 ```
+
+With two RTX6000 47GB VRAM evaluatin runs took ~10 mins for alice, ~10 mins for monthiversary , and ~35 mins for memsearch.
 
 ## CLI
 
 If you prefer the command line over a Python script:
 
 ```sh
-rmatch story.txt recalls/ --matcher anthropic
+rmatch story.txt recalls/ --matcher cuda
 ```
 
 See `rmatch --help` for all options (model, window size, etc.).
