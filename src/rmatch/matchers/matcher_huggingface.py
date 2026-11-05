@@ -1,8 +1,6 @@
 import os
-from collections import Counter
 from typing import Literal
 
-from rich.table import Table
 from tqdm import tqdm
 
 from rmatch import (
@@ -11,7 +9,12 @@ from rmatch import (
     parser_type,
     prompts_responses_type,
 )
-from rmatch.matchers.matcher_base import DEFAULT_PARSER, MatcherBase
+from rmatch.matchers.matcher_base import (
+    DEFAULT_PARSER,
+    MatcherBase,
+    parse_response,
+    print_parse_summary,
+)
 
 
 class MatcherHuggingFace(MatcherBase):
@@ -148,6 +151,7 @@ class MatcherHuggingFace(MatcherBase):
         n_matches = 0
         failure_reasons: list[str] = []
 
+        tokenizer = self.pipe.tokenizer
         for attempt in range(1, self.max_retries + 1):
             if not pending:
                 break
@@ -171,22 +175,25 @@ class MatcherHuggingFace(MatcherBase):
             ):
                 gen_text = str(response[0]["generated_text"])  # type: ignore[index]
                 model_prompt = prompts[idx][0]["content"]
-                parsed, failure_reason = parser(gen_text)
+                # the pipeline does not expose a finish reason, so re-tokenize the
+                # output to check whether generation hit max_new_tokens
+                n_gen_tokens = len(
+                    tokenizer(gen_text, add_special_tokens=False)["input_ids"]  # type: ignore
+                )
+                parsed, failure_reason = parse_response(
+                    parser,
+                    gen_text,
+                    n_story_segments,
+                    truncated=n_gen_tokens >= self.max_new_tokens,
+                )
                 n_matches += 1
 
                 prompts_responses_ls[idx].append((model_prompt, gen_text, parsed))
-
-                if parsed is not None and not all(
-                    1 <= i <= n_story_segments for i in parsed
-                ):
-                    parsed = None
-                    failure_reason = "Index out of range."
 
                 if parsed is not None:
                     results[idx] = parsed
                 else:
                     failure_reasons.append(failure_reason)
-                    console.log(f"Parse failure ({failure_reason}):\n{gen_text}")
                     still_pending.append(idx)
 
             if still_pending:
@@ -210,15 +217,6 @@ class MatcherHuggingFace(MatcherBase):
             story_indices = sorted(i - 1 for i in results[idx])
             ratings.append((idx, story_indices))
 
-        if n_matches > 0:
-            n_success = n_matches - len(failure_reasons)
-            table = Table(title=f"Parse results ({n_matches} matches)")
-            table.add_column("Outcome")
-            table.add_column("Count", justify="right")
-            table.add_column("Proportion", justify="right")
-            table.add_row("success", str(n_success), f"{n_success / n_matches:.1%}")
-            for reason, count in Counter(failure_reasons).most_common():
-                table.add_row(reason, str(count), f"{count / n_matches:.1%}")
-            console.print(table)
+        print_parse_summary(n_matches, failure_reasons)
 
         return ratings, prompts_responses_ls

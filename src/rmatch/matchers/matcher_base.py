@@ -1,6 +1,9 @@
 import re
+from collections import Counter
 
-from rmatch import matchlist_type, parser_type, prompts_responses_type
+from rich.table import Table
+
+from rmatch import console, matchlist_type, parser_type, prompts_responses_type
 from rmatch.utils import build_recall_window, format_story_segments
 
 DEFAULT_PROMPT = """This is the original story:
@@ -50,6 +53,49 @@ def _parse_output(raw: str) -> tuple[set[int] | None, str]:
 
 
 DEFAULT_PARSER: parser_type = _parse_output
+
+TRUNCATED_REASON = "Response cut off at max tokens."
+
+
+def parse_response(
+    parser: parser_type,
+    raw: str,
+    n_story_segments: int,
+    truncated: bool = False,
+) -> tuple[set[int] | None, str]:
+    """Parse a raw model response and validate it.
+
+    Returns (parsed, failure_reason). ``parsed`` is None if the response was
+    truncated, could not be parsed, or contains out-of-range indices. Failures
+    are logged with the last lines of the raw response.
+    """
+    if truncated:
+        parsed, failure_reason = None, TRUNCATED_REASON
+    else:
+        parsed, failure_reason = parser(raw)
+        if parsed is not None and not all(1 <= i <= n_story_segments for i in parsed):
+            parsed, failure_reason = None, "Index out of range."
+
+    if parsed is None:
+        tail = "\n".join(raw.strip().splitlines()[-2:])
+        console.log(f"Parse failure ({failure_reason}), response ends with:\n{tail}")
+
+    return parsed, failure_reason
+
+
+def print_parse_summary(n_matches: int, failure_reasons: list[str]) -> None:
+    """Print a table with the proportion of successful parses and failure reasons."""
+    if n_matches == 0:
+        return
+    n_success = n_matches - len(failure_reasons)
+    table = Table(title=f"Parse results ({n_matches} matches)")
+    table.add_column("Outcome")
+    table.add_column("Count", justify="right")
+    table.add_column("Proportion", justify="right")
+    table.add_row("success", str(n_success), f"{n_success / n_matches:.1%}")
+    for reason, count in Counter(failure_reasons).most_common():
+        table.add_row(reason, str(count), f"{count / n_matches:.1%}")
+    console.print(table)
 
 
 class MatcherBase:

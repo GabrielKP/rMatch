@@ -2,7 +2,13 @@
 
 import pytest
 
-from rmatch.matchers.matcher_base import DEFAULT_PARSER, MatcherBase
+from rmatch.matchers.matcher_base import (
+    DEFAULT_PARSER,
+    TRUNCATED_REASON,
+    MatcherBase,
+    parse_response,
+    print_parse_summary,
+)
 from rmatch.utils import build_recall_window, format_story_segments
 from tests.conftest import make_anthropic_response
 
@@ -108,6 +114,50 @@ def test_parser_edge_cases(raw, expected):
 )
 def test_parser_failure_reasons(raw, expected_reason):
     assert DEFAULT_PARSER(raw)[1] == expected_reason
+
+
+# ── parse_response / print_parse_summary ──────────────────────────────────────
+
+
+def test_parse_response_valid():
+    assert parse_response(DEFAULT_PARSER, "<1, 2>", 3) == ({1, 2}, "")
+
+
+def test_parse_response_out_of_range():
+    assert parse_response(DEFAULT_PARSER, "<4>", 3) == (None, "Index out of range.")
+
+
+def test_parse_response_truncated_ignores_parseable_text():
+    assert parse_response(DEFAULT_PARSER, "<1>", 3, truncated=True) == (
+        None,
+        TRUNCATED_REASON,
+    )
+
+
+def test_parse_response_failure_logs_only_last_two_lines(capsys):
+    raw = "line one\nline two\nline three\nline four"
+    parse_response(DEFAULT_PARSER, raw, 3)
+    out = capsys.readouterr().out
+    assert "line three" in out and "line four" in out
+    assert "line one" not in out and "line two" not in out
+
+
+def test_parse_response_success_does_not_log(capsys):
+    parse_response(DEFAULT_PARSER, "<1>", 3)
+    assert capsys.readouterr().out == ""
+
+
+def test_print_parse_summary(capsys):
+    print_parse_summary(4, ["No <...> found.", "No <...> found.", TRUNCATED_REASON])
+    out = capsys.readouterr().out
+    assert "4 matches" in out
+    assert "25.0%" in out  # success and truncated
+    assert "50.0%" in out  # No <...> found.
+
+
+def test_print_parse_summary_no_matches_prints_nothing(capsys):
+    print_parse_summary(0, [])
+    assert capsys.readouterr().out == ""
 
 
 # ── Prompt content ────────────────────────────────────────────────────────────

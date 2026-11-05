@@ -1,10 +1,8 @@
 import contextlib
 import io
 import os
-from collections import Counter
 from typing import Callable
 
-from rich.table import Table
 from tqdm import tqdm
 
 from rmatch import (
@@ -13,7 +11,12 @@ from rmatch import (
     parser_type,
     prompts_responses_type,
 )
-from rmatch.matchers.matcher_base import DEFAULT_PARSER, MatcherBase
+from rmatch.matchers.matcher_base import (
+    DEFAULT_PARSER,
+    MatcherBase,
+    parse_response,
+    print_parse_summary,
+)
 
 
 class MatcherMac(MatcherBase):
@@ -136,21 +139,20 @@ class MatcherMac(MatcherBase):
                 self.peak_memory = max(self.peak_memory, response.peak_memory)
 
                 # parse response
-                parsed_response_, failure_reason = parser(gen_text)
+                parsed_response_, failure_reason = parse_response(
+                    parser,
+                    gen_text,
+                    n_story_segments,
+                    truncated=response.generation_tokens >= self.max_new_tokens,
+                )
                 n_matches += 1
                 prompts_responses_ls[idx].append(
                     (model_prompt, gen_text, parsed_response_)
                 )
-                if parsed_response_ is not None and not all(
-                    1 <= i <= n_story_segments for i in parsed_response_
-                ):
-                    parsed_response_ = None
-                    failure_reason = "Index out of range."
                 if parsed_response_ is not None:
                     parsed_response = parsed_response_
                     break
                 failure_reasons.append(failure_reason)
-                console.log(f"Parse failure ({failure_reason}):\n{gen_text}")
                 console.log(
                     f"Attempt {attempt}/{self.max_retries}:"
                     f" segment needs retry for segment {idx}",
@@ -162,15 +164,6 @@ class MatcherMac(MatcherBase):
             story_indices = sorted(i - 1 for i in parsed_response)
             matches.append((idx, story_indices))
 
-        if n_matches > 0:
-            n_success = n_matches - len(failure_reasons)
-            table = Table(title=f"Parse results ({n_matches} matches)")
-            table.add_column("Outcome")
-            table.add_column("Count", justify="right")
-            table.add_column("Proportion", justify="right")
-            table.add_row("success", str(n_success), f"{n_success / n_matches:.1%}")
-            for reason, count in Counter(failure_reasons).most_common():
-                table.add_row(reason, str(count), f"{count / n_matches:.1%}")
-            console.print(table)
+        print_parse_summary(n_matches, failure_reasons)
 
         return matches, prompts_responses_ls

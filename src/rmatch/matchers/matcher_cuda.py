@@ -1,8 +1,5 @@
 import os
-from collections import Counter
 from typing import cast
-
-from rich.table import Table
 
 from rmatch import (
     console,
@@ -10,7 +7,12 @@ from rmatch import (
     parser_type,
     prompts_responses_type,
 )
-from rmatch.matchers.matcher_base import DEFAULT_PARSER, MatcherBase
+from rmatch.matchers.matcher_base import (
+    DEFAULT_PARSER,
+    MatcherBase,
+    parse_response,
+    print_parse_summary,
+)
 
 
 class MatcherCuda(MatcherBase):
@@ -156,27 +158,21 @@ class MatcherCuda(MatcherBase):
             for idx, output in zip(pending, outputs):
                 gen_text = output.outputs[0].text
                 n_matches += 1
-                if output.outputs[0].finish_reason != "length":
-                    parsed, failure_reason = parser(gen_text)
-                else:
-                    parsed = None
-                    failure_reason = "Response cut off at max_tokens"
+                parsed, failure_reason = parse_response(
+                    parser,
+                    gen_text,
+                    n_story_segments,
+                    truncated=output.outputs[0].finish_reason == "length",
+                )
 
                 prompts_responses_ls[idx].append(
                     (raw_prompts[idx][0]["content"], gen_text, parsed)
                 )
 
-                if parsed is not None and not all(
-                    1 <= i <= n_story_segments for i in parsed
-                ):
-                    parsed = None
-                    failure_reason = "Index out of range."
-
                 if parsed is not None:
                     results[idx] = parsed
                 else:
                     failure_reasons.append(failure_reason)
-                    console.log(f"Parse failure ({failure_reason}):\n{gen_text}")
                     still_pending.append(idx)
 
                 self.total_prompt_tokens += len(output.prompt_token_ids or [])
@@ -197,16 +193,7 @@ class MatcherCuda(MatcherBase):
             )
             results[idx] = set()
 
-        if n_matches > 0:
-            n_success = n_matches - len(failure_reasons)
-            table = Table(title=f"Parse results ({n_matches} matches)")
-            table.add_column("Outcome")
-            table.add_column("Count", justify="right")
-            table.add_column("Proportion", justify="right")
-            table.add_row("success", str(n_success), f"{n_success / n_matches:.1%}")
-            for reason, count in Counter(failure_reasons).most_common():
-                table.add_row(reason, str(count), f"{count / n_matches:.1%}")
-            console.print(table)
+        print_parse_summary(n_matches, failure_reasons)
 
         return (
             [
