@@ -153,11 +153,12 @@ class MatcherMac(MatcherBase):
                     parsed_response = parsed_response_
                     break
                 failure_reasons.append(failure_reason)
-                console.log(
-                    f"Attempt {attempt}/{self.max_retries}:"
-                    f" segment needs retry for segment {idx}",
-                    style="orange1",
-                )
+                if attempt < self.max_retries:
+                    console.log(
+                        f"Attempt {attempt}/{self.max_retries}:"
+                        f" segment needs retry for segment {idx}",
+                        style="orange1",
+                    )
             else:
                 console.log(f"All attempts failed for segment {idx}", style="orange1")
 

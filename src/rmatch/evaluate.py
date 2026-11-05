@@ -821,7 +821,7 @@ if __name__ == "__main__":
         "--max-new-tokens",
         type=int,
         default=None,
-        help="[huggingface, cuda] max_new_tokens for the matcher.",
+        help="[huggingface, cuda, mac, anthropic] max_new_tokens for the matcher.",
     )
     parser.add_argument(
         "--max-model-len",

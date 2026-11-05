@@ -196,7 +196,7 @@ class MatcherHuggingFace(MatcherBase):
                     failure_reasons.append(failure_reason)
                     still_pending.append(idx)
 
-            if still_pending:
+            if still_pending and attempt < self.max_retries:
                 console.log(
                     f"Attempt {attempt}/{self.max_retries}: "
                     f"{len(still_pending)}/{len(pending)} segments need retry"

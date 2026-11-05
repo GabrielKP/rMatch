@@ -34,7 +34,7 @@ class MatcherCuda(MatcherBase):
         super().__init__()
         assert window_size >= 0, "window_size must be non-negative"
         self.window_size = window_size
-        self.max_new_tokens = max_new_tokens or 8096
+        self.max_new_tokens = max_new_tokens or 8192
         self.max_retries = max_retries or 1
         self.model_name = model_name or "google/gemma-4-31B-it"
 
@@ -179,7 +179,7 @@ class MatcherCuda(MatcherBase):
                 self.total_generation_tokens += len(output.outputs[0].token_ids)
                 self.total_cached_tokens += output.num_cached_tokens or 0
 
-            if still_pending:
+            if still_pending and attempt < self.max_retries:
                 console.log(
                     f"Attempt {attempt}/{self.max_retries}: "
                     f"{len(still_pending)}/{len(pending)} segments need retry"

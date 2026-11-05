@@ -112,7 +112,7 @@ matches = matcher.match(
 | `max_retries`            | `1`                | Retries when the model output cannot be parsed*                                                                   |
 | `api_key`                | from `.env` / env  | See [API keys](#api-keys)                                                                                         |
 | `window_size`            | `5`                | Recall context window                                                                                             |
-| `max_new_tokens`         | `8096`             | Max tokens generated per segment                                                                                  |
+| `max_new_tokens`         | `8192`             | Max tokens generated per segment                                                                                  |
 | `max_model_len`          | `90000`            | Max sequence length (prompt + generation); lower to save GPU memory                                               |
 | `tensor_parallel_size`   | auto               | Number of GPUs to use. Auto will use all of them.                                                                 |
 | `gpu_memory_utilization` | `0.90`             | Fraction of GPU memory to use, see [vLLM](https://docs.vllm.ai/en/v0.8.0/api/offline_inference/llm.html#vllm.LLM) |
@@ -137,13 +137,14 @@ matches = matcher.match(
 
 You can also put your API key in a `.env` file instead of passing it directly (see [API keys](#api-keys)).
 
-| Argument      | Default                           | Notes                                          |
-| ------------- | --------------------------------- | ---------------------------------------------- |
-| `model_name`  | `"claude-opus-4-6"` / `"gpt-4.1"` | Override the default model                     |
-| `max_retries` | `10`                              | Retries when the model output cannot be parsed |
-| `api_key`     | from `.env` / env                 | See [API keys](#api-keys)                      |
-| `window_size` | `5`                               | Recall context window                          |
-| `dry_run`     | `False`                           | Estimate API cost without calling the API      |
+| Argument         | Default                           | Notes                                             |
+| ---------------- | --------------------------------- | ------------------------------------------------- |
+| `model_name`     | `"claude-opus-4-6"` / `"gpt-4.1"` | Override the default model                        |
+| `max_retries`    | `10`                              | Retries when the model output cannot be parsed    |
+| `api_key`        | from `.env` / env                 | See [API keys](#api-keys)                         |
+| `window_size`    | `5`                               | Recall context window                             |
+| `dry_run`        | `False`                           | Estimate API cost without calling the API         |
+| `max_new_tokens` | `8192`                            | Max tokens generated per segment (Anthropic only) |
 
 
 ### MatcherMac

@@ -32,6 +32,7 @@ class MatcherAnthropic(MatcherBase):
         dry_run: bool = False,
         api_key: str | None = None,
         max_retries: int | None = None,
+        max_new_tokens: int | None = None,
     ):
         super().__init__()
 
@@ -47,6 +48,9 @@ class MatcherAnthropic(MatcherBase):
             console.log(f"Set max retries to {self.max_retries}")
         else:
             self.max_retries = max_retries
+
+        self.max_new_tokens = max_new_tokens or 8192
+        console.log(f"Max new tokens: {self.max_new_tokens}")
 
         if api_key is None:
             api_key = os.environ.get("ANTHROPIC_API_KEY")
@@ -157,7 +161,7 @@ class MatcherAnthropic(MatcherBase):
                 else:
                     response = self.client.messages.create(
                         model=self.model_name,
-                        max_tokens=1024,
+                        max_tokens=self.max_new_tokens,
                         messages=[{"role": "user", "content": model_prompt}],
                     )
 
@@ -183,11 +187,12 @@ class MatcherAnthropic(MatcherBase):
                         parsed_response = parsed_response_
                         break
                     failure_reasons.append(failure_reason)
-                console.log(
-                    f"Attempt {attempt}/{self.max_retries}:"
-                    f" segment needs retry for segment {idx}",
-                    style="orange1",
-                )
+                if attempt < self.max_retries:
+                    console.log(
+                        f"Attempt {attempt}/{self.max_retries}:"
+                        f" segment needs retry for segment {idx}",
+                        style="orange1",
+                    )
             else:
                 console.log(
                     f"All attempts failed for segment {idx}",
