@@ -5,9 +5,7 @@ from typing import Any
 
 import numpy as np
 
-from rmatch import get_logger, matchlist_type
-
-log = get_logger(__name__)
+from rmatch import matchlist_type
 
 
 def atomic_write_text(path: Path, text: str, encoding: str = "utf-8") -> None:

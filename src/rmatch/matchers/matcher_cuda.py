@@ -1,10 +1,18 @@
 import os
 from typing import cast
 
-from rmatch import get_logger, matchlist_type, parser_type, prompts_responses_type
-from rmatch.matchers.matcher_base import DEFAULT_PARSER, MatcherBase
-
-log = get_logger(__name__)
+from rmatch import (
+    console,
+    matchlist_type,
+    parser_type,
+    prompts_responses_type,
+)
+from rmatch.matchers.matcher_base import (
+    DEFAULT_PARSER,
+    MatcherBase,
+    parse_response,
+    print_parse_summary,
+)
 
 
 class MatcherCuda(MatcherBase):
@@ -26,14 +34,14 @@ class MatcherCuda(MatcherBase):
         super().__init__()
         assert window_size >= 0, "window_size must be non-negative"
         self.window_size = window_size
-        self.max_new_tokens = max_new_tokens or 8096
-        self.max_retries = max_retries or 3
+        self.max_new_tokens = max_new_tokens or 8192
+        self.max_retries = max_retries or 1
         self.model_name = model_name or "google/gemma-4-31B-it"
 
-        log.info(f"Initializing vLLM model with CUDA: {self.model_name}")
-        log.info(f"Recall context window size: {self.window_size}")
-        log.info(f"Max new tokens: {self.max_new_tokens}")
-        log.info(f"Max retries: {self.max_retries}")
+        console.log(f"Initializing vLLM model with CUDA: {self.model_name}")
+        console.log(f"Recall context window size: {self.window_size}")
+        console.log(f"Max new tokens: {self.max_new_tokens}")
+        console.log(f"Max retries: {self.max_retries}")
 
         try:
             from vllm import (  # pyright: ignore[reportMissingImports]
@@ -50,18 +58,18 @@ class MatcherCuda(MatcherBase):
             import torch
 
             tensor_parallel_size = max(1, torch.cuda.device_count())
-            log.info(
+            console.log(
                 f"GPUs (tensor_parallel_size): {tensor_parallel_size} (Auto-detected)"
             )
         else:
-            log.info(f"GPUs (tensor_parallel_size): {tensor_parallel_size}")
+            console.log(f"GPUs (tensor_parallel_size): {tensor_parallel_size}")
 
-        log.info(f"GPU memory utilization: {gpu_memory_utilization}")
+        console.log(f"GPU memory utilization: {gpu_memory_utilization}")
         if max_model_len == "auto":
             self.max_model_len = None
         else:
             self.max_model_len = max_model_len or 90000
-        log.info(f"Max model length: {self.max_model_len}")
+        console.log(f"Max model length: {self.max_model_len}")
 
         hf_token = api_key or os.environ.get("HF_TOKEN")
         if hf_token:
@@ -134,6 +142,8 @@ class MatcherCuda(MatcherBase):
         results: dict[int, set[int]] = {}
         pending = list(range(len(recall_segments)))
         prompts_responses_ls: prompts_responses_type = [[] for _ in recall_segments]
+        n_matches = 0
+        failure_reasons: list[str] = []
 
         for attempt in range(1, self.max_retries + 1):
             if not pending:
@@ -147,32 +157,43 @@ class MatcherCuda(MatcherBase):
             still_pending: list[int] = []
             for idx, output in zip(pending, outputs):
                 gen_text = output.outputs[0].text
-                parsed = parser(gen_text)
-                self.total_prompt_tokens += len(output.prompt_token_ids or [])
-                self.total_generation_tokens += len(output.outputs[0].token_ids)
-                self.total_cached_tokens += output.num_cached_tokens or 0
+                n_matches += 1
+                parsed, failure_reason = parse_response(
+                    parser,
+                    gen_text,
+                    n_story_segments,
+                    truncated=output.outputs[0].finish_reason == "length",
+                )
 
                 prompts_responses_ls[idx].append(
                     (raw_prompts[idx][0]["content"], gen_text, parsed)
                 )
 
-                if parsed is not None and all(
-                    1 <= i <= n_story_segments for i in parsed
-                ):
+                if parsed is not None:
                     results[idx] = parsed
                 else:
+                    failure_reasons.append(failure_reason)
                     still_pending.append(idx)
 
-            if still_pending:
-                log.info(
+                self.total_prompt_tokens += len(output.prompt_token_ids or [])
+                self.total_generation_tokens += len(output.outputs[0].token_ids)
+                self.total_cached_tokens += output.num_cached_tokens or 0
+
+            if still_pending and attempt < self.max_retries:
+                console.log(
                     f"Attempt {attempt}/{self.max_retries}: "
                     f"{len(still_pending)}/{len(pending)} segments need retry"
                 )
             pending = still_pending
 
         for idx in pending:
-            log.warning(f"All {self.max_retries} attempts failed for segment {idx}")
+            console.log(
+                f"All {self.max_retries} attempts failed for segment {idx}",
+                style="orange1",
+            )
             results[idx] = set()
+
+        print_parse_summary(n_matches, failure_reasons)
 
         return (
             [

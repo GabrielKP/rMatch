@@ -109,14 +109,15 @@ matches = matcher.match(
 | Argument                 | Default            | Notes                                                                                                             |
 | ------------------------ | ------------------ | ----------------------------------------------------------------------------------------------------------------- |
 | `model_name`             | `"gemma-4-31B-it"` | Override the default model                                                                                        |
-| `max_retries`            | `10`               | Retries when the model output cannot be parsed                                                                    |
+| `max_retries`            | `1`                | Retries when the model output cannot be parsed*                                                                   |
 | `api_key`                | from `.env` / env  | See [API keys](#api-keys)                                                                                         |
 | `window_size`            | `5`                | Recall context window                                                                                             |
-| `max_new_tokens`         | `1024`             | Max tokens generated per segment                                                                                  |
+| `max_new_tokens`         | `8192`             | Max tokens generated per segment                                                                                  |
 | `max_model_len`          | `90000`            | Max sequence length (prompt + generation); lower to save GPU memory                                               |
 | `tensor_parallel_size`   | auto               | Number of GPUs to use. Auto will use all of them.                                                                 |
 | `gpu_memory_utilization` | `0.90`             | Fraction of GPU memory to use, see [vLLM](https://docs.vllm.ai/en/v0.8.0/api/offline_inference/llm.html#vllm.LLM) |
 
+*Because MatcherCuda's output is deterministic retries are of no use.
 
 ### MatcherAnthropic / MatcherOpenai
 
@@ -136,13 +137,14 @@ matches = matcher.match(
 
 You can also put your API key in a `.env` file instead of passing it directly (see [API keys](#api-keys)).
 
-| Argument      | Default                           | Notes                                          |
-| ------------- | --------------------------------- | ---------------------------------------------- |
-| `model_name`  | `"claude-opus-4-6"` / `"gpt-4.1"` | Override the default model                     |
-| `max_retries` | `10`                              | Retries when the model output cannot be parsed |
-| `api_key`     | from `.env` / env                 | See [API keys](#api-keys)                      |
-| `window_size` | `5`                               | Recall context window                          |
-| `dry_run`     | `False`                           | Estimate API cost without calling the API      |
+| Argument         | Default                           | Notes                                             |
+| ---------------- | --------------------------------- | ------------------------------------------------- |
+| `model_name`     | `"claude-opus-4-6"` / `"gpt-4.1"` | Override the default model                        |
+| `max_retries`    | `10`                              | Retries when the model output cannot be parsed    |
+| `api_key`        | from `.env` / env                 | See [API keys](#api-keys)                         |
+| `window_size`    | `5`                               | Recall context window                             |
+| `dry_run`        | `False`                           | Estimate API cost without calling the API         |
+| `max_new_tokens` | `8192`                            | Max tokens generated per segment (Anthropic only) |
 
 
 ### MatcherMac
@@ -167,7 +169,7 @@ matches = matcher.match(
 | `max_retries`    | `10`                                | Retries when the model output cannot be parsed |
 | `api_key`        | from `.env` / env                   | See [API keys](#api-keys)                      |
 | `window_size`    | `5`                                 | Recall context window                          |
-| `max_new_tokens` | `300`                               | Max tokens generated per segment               |
+| `max_new_tokens` | `4096`                              | Max tokens generated per segment               |
 
 
 ### MatcherHuggingface
@@ -194,7 +196,7 @@ matches = matcher.match(
 | `window_size`    | `5`               | Recall context window                          |
 | `quantization`   | none              | `"4bit"` or `"8bit"` to reduce memory          |
 | `batch_size`     | `64`              | Inference batch size                           |
-| `max_new_tokens` | `300`             | Max tokens generated per segment               |
+| `max_new_tokens` | `4096`            | Max tokens generated per segment               |
 
 
 ## API keys
@@ -239,11 +241,14 @@ Answer with numbers in angle brackets, e.g. <1, 4>, or <NONE>."""
 matches = matcher.match(story_segments, recall_segments, prompt=my_prompt)
 ```
 
-The default parser (`DEFAULT_PARSER`) extracts numbers in angle brackets such as `<3, 7, 12>`, or `<NONE>`. If your prompt asks for a different output format, also pass a `parser`: a function that takes the raw model output and returns a set of 1-based story segment numbers, or `None` if the output cannot be parsed (the matcher then retries).
+The default parser (`DEFAULT_PARSER`) extracts numbers in angle brackets such as `<3, 7, 12>`, or `<NONE>`. If your prompt asks for a different output format, also pass a `parser`: a function that takes the raw model output and returns a tuple `(parsed, failure_reason)`: `parsed` is a set of 1-based story segment numbers, or `None` if the output cannot be parsed (the matcher then retries), and `failure_reason` is a short string describing why parsing failed (`""` on success). Responses cut off at the token limit and indices outside the story also count as failures. After matching, a table summarizing successes and failure reasons is printed.
 
 ```python
-def my_parser(raw: str) -> set[int] | None:
-    ...
+def my_parser(raw: str) -> tuple[set[int] | None, str]:
+    answer = raw.strip().rsplit("ANSWER:", 1)
+    if len(answer) != 2:
+        return None, "No ANSWER: found."
+    return {int(x) for x in answer[1].split(",") if x.strip().isdigit()}, ""
 
 matches = matcher.match(story_segments, recall_segments, prompt=my_prompt, parser=my_parser)
 ```

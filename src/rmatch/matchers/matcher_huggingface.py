@@ -3,10 +3,18 @@ from typing import Literal
 
 from tqdm import tqdm
 
-from rmatch import get_logger, matchlist_type, parser_type, prompts_responses_type
-from rmatch.matchers.matcher_base import DEFAULT_PARSER, MatcherBase
-
-log = get_logger(__name__)
+from rmatch import (
+    console,
+    matchlist_type,
+    parser_type,
+    prompts_responses_type,
+)
+from rmatch.matchers.matcher_base import (
+    DEFAULT_PARSER,
+    MatcherBase,
+    parse_response,
+    print_parse_summary,
+)
 
 
 class MatcherHuggingFace(MatcherBase):
@@ -30,19 +38,19 @@ class MatcherHuggingFace(MatcherBase):
 
         if max_retries is None:
             self.max_retries = 10
-            log.info(f"Set max retries to {self.max_retries}")
+            console.log(f"Set max retries to {self.max_retries}")
         else:
             self.max_retries = max_retries
-        log.info(f"Batch size: {self.batch_size}")
-        self.max_new_tokens = max_new_tokens or 300
-        log.info(f"Max new tokens: {self.max_new_tokens}")
+        console.log(f"Batch size: {self.batch_size}")
+        self.max_new_tokens = max_new_tokens or 4096
+        console.log(f"Max new tokens: {self.max_new_tokens}")
 
         if model_name is None:
             self.model_name = "google/gemma-4-31B-it"
-            log.info(f"Initializing model to default: {self.model_name}")
+            console.log(f"Initializing model to default: {self.model_name}")
         else:
             self.model_name = model_name
-            log.info(f"Initializing model: {self.model_name}")
+            console.log(f"Initializing model: {self.model_name}")
 
         if api_key is None:
             api_key = os.environ.get("HF_TOKEN")
@@ -56,7 +64,7 @@ class MatcherHuggingFace(MatcherBase):
         model_kwargs: dict = {}
 
         if quantization == "4bit":
-            log.info("Using 4-bit quantization (NF4)")
+            console.log("Using 4-bit quantization (NF4)")
             model_kwargs["quantization_config"] = BitsAndBytesConfig(
                 load_in_4bit=True,
                 bnb_4bit_compute_dtype=torch.bfloat16,
@@ -64,7 +72,7 @@ class MatcherHuggingFace(MatcherBase):
                 bnb_4bit_use_double_quant=True,
             )
         elif quantization == "8bit":
-            log.info("Using 8-bit quantization")
+            console.log("Using 8-bit quantization")
             model_kwargs["quantization_config"] = BitsAndBytesConfig(
                 load_in_8bit=True,
             )
@@ -100,7 +108,7 @@ class MatcherHuggingFace(MatcherBase):
             device_map = getattr(self.pipe.model, "hf_device_map", {})
             used_devices = set(v for v in device_map.values() if isinstance(v, int))
             if len(used_devices) > 1:
-                log.info(
+                console.log(
                     f"Model sharded across GPUs {sorted(used_devices)}; "
                     "skipping torch.compile"
                 )
@@ -140,7 +148,10 @@ class MatcherHuggingFace(MatcherBase):
         results: dict[int, set[int]] = {}
         pending = list(range(len(recall_segments)))
         prompts_responses_ls: prompts_responses_type = [[] for _ in recall_segments]
+        n_matches = 0
+        failure_reasons: list[str] = []
 
+        tokenizer = self.pipe.tokenizer
         for attempt in range(1, self.max_retries + 1):
             if not pending:
                 break
@@ -164,19 +175,29 @@ class MatcherHuggingFace(MatcherBase):
             ):
                 gen_text = str(response[0]["generated_text"])  # type: ignore[index]
                 model_prompt = prompts[idx][0]["content"]
-                parsed = parser(gen_text)
+                # the pipeline does not expose a finish reason, so re-tokenize the
+                # output to check whether generation hit max_new_tokens
+                n_gen_tokens = len(
+                    tokenizer(gen_text, add_special_tokens=False)["input_ids"]  # type: ignore
+                )
+                parsed, failure_reason = parse_response(
+                    parser,
+                    gen_text,
+                    n_story_segments,
+                    truncated=n_gen_tokens >= self.max_new_tokens,
+                )
+                n_matches += 1
 
                 prompts_responses_ls[idx].append((model_prompt, gen_text, parsed))
 
-                if parsed is not None and all(
-                    1 <= i <= n_story_segments for i in parsed
-                ):
+                if parsed is not None:
                     results[idx] = parsed
                 else:
+                    failure_reasons.append(failure_reason)
                     still_pending.append(idx)
 
-            if still_pending:
-                log.info(
+            if still_pending and attempt < self.max_retries:
+                console.log(
                     f"Attempt {attempt}/{self.max_retries}: "
                     f"{len(still_pending)}/{len(pending)} segments need retry"
                 )
@@ -184,9 +205,10 @@ class MatcherHuggingFace(MatcherBase):
             pending = still_pending
 
         for idx in pending:
-            log.warning(
+            console.log(
                 f"All {self.max_retries} attempts failed for segment {idx}, "
-                "defaulting to no matches"
+                "defaulting to no matches",
+                style="orange1",
             )
             results[idx] = set()
 
@@ -194,5 +216,7 @@ class MatcherHuggingFace(MatcherBase):
         for idx in range(len(recall_segments)):
             story_indices = sorted(i - 1 for i in results[idx])
             ratings.append((idx, story_indices))
+
+        print_parse_summary(n_matches, failure_reasons)
 
         return ratings, prompts_responses_ls

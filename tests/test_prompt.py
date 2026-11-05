@@ -2,7 +2,13 @@
 
 import pytest
 
-from rmatch.matchers.matcher_base import DEFAULT_PARSER, MatcherBase
+from rmatch.matchers.matcher_base import (
+    DEFAULT_PARSER,
+    TRUNCATED_REASON,
+    MatcherBase,
+    parse_response,
+    print_parse_summary,
+)
 from rmatch.utils import build_recall_window, format_story_segments
 from tests.conftest import make_anthropic_response
 
@@ -31,50 +37,50 @@ def _build_prompt(target_idx: int, prompt: str | None = None) -> str:
 
 def test_parser_single_index():
     parser = DEFAULT_PARSER
-    assert parser("<2>") == {2}
+    assert parser("<2>")[0] == {2}
 
 
 def test_parser_multiple_indices():
     parser = DEFAULT_PARSER
-    assert parser("<1, 3>") == {1, 3}
+    assert parser("<1, 3>")[0] == {1, 3}
 
 
 def test_parser_none_response_returns_empty_set():
     parser = DEFAULT_PARSER
-    result = parser("<NONE>")
+    result = parser("<NONE>")[0]
     assert result == set()
 
 
 def test_parser_malformed_response_returns_none():
     parser = DEFAULT_PARSER
-    assert parser("I cannot determine the answer from the given text.") is None
+    assert parser("I cannot determine the answer from the given text.")[0] is None
 
 
 def test_parser_empty_string_returns_none():
     parser = DEFAULT_PARSER
-    assert parser("") is None
+    assert parser("")[0] is None
 
 
 def test_parser_strips_surrounding_whitespace():
     parser = DEFAULT_PARSER
-    result = parser("  <2>  ")
+    result = parser("  <2>  ")[0]
     assert result == {2}
 
 
 def test_parser_handles_extra_whitespace_inside_brackets():
     parser = DEFAULT_PARSER
-    result = parser("<1,  2,  3>")
+    result = parser("<1,  2,  3>")[0]
     assert result == {1, 2, 3}
 
 
 def test_parser_returns_none_for_text_without_angle_brackets():
     parser = DEFAULT_PARSER
-    assert parser("The answer is segment 2.") is None
+    assert parser("The answer is segment 2.")[0] is None
 
 
 def test_parser_finds_match_in_longer_text():
     parser = DEFAULT_PARSER
-    result = parser("After careful consideration, I think <1, 2> match.")
+    result = parser("After careful consideration, I think <1, 2> match.")[0]
     assert result == {1, 2}
 
 
@@ -83,7 +89,7 @@ def test_parser_finds_match_in_longer_text():
     [
         ("<0>", {0}),
         ("<NONE> <2>", set()),
-        ("<1> and <2>", {1}),
+        ("<1> and <2>", None),
         ("<>", None),
         ("<   >", set()),
         ("<1 2 3>", set()),
@@ -94,7 +100,64 @@ def test_parser_finds_match_in_longer_text():
 )
 def test_parser_edge_cases(raw, expected):
     parser = DEFAULT_PARSER
-    assert parser(raw) == expected
+    assert parser(raw)[0] == expected
+
+
+@pytest.mark.parametrize(
+    "raw,expected_reason",
+    [
+        ("<2>", ""),
+        ("<NONE>", ""),
+        ("no brackets here", "No <...> found."),
+        ("<1> and <2>", "Multiple <...> found."),
+    ],
+)
+def test_parser_failure_reasons(raw, expected_reason):
+    assert DEFAULT_PARSER(raw)[1] == expected_reason
+
+
+# ── parse_response / print_parse_summary ──────────────────────────────────────
+
+
+def test_parse_response_valid():
+    assert parse_response(DEFAULT_PARSER, "<1, 2>", 3) == ({1, 2}, "")
+
+
+def test_parse_response_out_of_range():
+    assert parse_response(DEFAULT_PARSER, "<4>", 3) == (None, "Index out of range.")
+
+
+def test_parse_response_truncated_ignores_parseable_text():
+    assert parse_response(DEFAULT_PARSER, "<1>", 3, truncated=True) == (
+        None,
+        TRUNCATED_REASON,
+    )
+
+
+def test_parse_response_failure_logs_only_last_two_lines(capsys):
+    raw = "line one\nline two\nline three\nline four"
+    parse_response(DEFAULT_PARSER, raw, 3)
+    out = capsys.readouterr().out
+    assert "line three" in out and "line four" in out
+    assert "line one" not in out and "line two" not in out
+
+
+def test_parse_response_success_does_not_log(capsys):
+    parse_response(DEFAULT_PARSER, "<1>", 3)
+    assert capsys.readouterr().out == ""
+
+
+def test_print_parse_summary(capsys):
+    print_parse_summary(4, ["No <...> found.", "No <...> found.", TRUNCATED_REASON])
+    out = capsys.readouterr().out
+    assert "4 attempts" in out
+    assert "25.0%" in out  # success and truncated
+    assert "50.0%" in out  # No <...> found.
+
+
+def test_print_parse_summary_no_matches_prints_nothing(capsys):
+    print_parse_summary(0, [])
+    assert capsys.readouterr().out == ""
 
 
 # ── Prompt content ────────────────────────────────────────────────────────────
@@ -150,8 +213,8 @@ def test_custom_parser_passed_to_match(anthropic_matcher, mock_anthropic_client)
         "ANSWER: 3"
     )
 
-    def parser(raw: str) -> set[int] | None:
-        return {int(raw.split(":")[1])}
+    def parser(raw: str) -> tuple[set[int] | None, str]:
+        return {int(raw.split(":")[1])}, ""
 
     result = anthropic_matcher.match(
         STORY_SEGMENTS, ["recall"], prompt="{recall_window}", parser=parser

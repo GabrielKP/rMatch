@@ -821,3 +821,77 @@ class TestGetMatcher:
 
         with pytest.raises(TypeError):
             get_matcher()
+
+
+# ── Truncated responses ───────────────────────────────────────────────────────
+# A response cut off at the token limit counts as a failure even if it happens
+# to contain a parseable answer, and triggers a retry.
+
+
+class TestTruncatedResponsesRetry:
+    def test_anthropic(self, anthropic_matcher, mock_anthropic_client):
+        truncated = make_anthropic_response("<2>")
+        truncated.stop_reason = "max_tokens"
+        mock_anthropic_client.messages.create.side_effect = [
+            truncated,
+            make_anthropic_response("<1>"),
+        ]
+        result = anthropic_matcher.match(STORY_SEGMENTS, ["recall"])
+        assert mock_anthropic_client.messages.create.call_count == 2
+        assert result == [(0, [0])]
+
+    def test_openai(self, openai_matcher, mock_openai_client):
+        truncated = make_openai_response("<2>")
+        truncated.status = "incomplete"
+        truncated.incomplete_details.reason = "max_output_tokens"
+        mock_openai_client.responses.create.side_effect = [
+            truncated,
+            make_openai_response("<1>"),
+        ]
+        result = openai_matcher.match(STORY_SEGMENTS, ["recall"])
+        assert mock_openai_client.responses.create.call_count == 2
+        assert result == [(0, [0])]
+
+    def test_openai_incomplete_for_other_reason_is_not_truncation(
+        self, openai_matcher, mock_openai_client
+    ):
+        resp = make_openai_response("<2>")
+        resp.status = "incomplete"
+        resp.incomplete_details.reason = "content_filter"
+        mock_openai_client.responses.create.side_effect = [resp]
+        result = openai_matcher.match(STORY_SEGMENTS, ["recall"])
+        assert result == [(0, [1])]
+
+    def test_huggingface(self, huggingface_matcher, mock_hf_pipe):
+        mock_hf_pipe.side_effect = [
+            [[{"generated_text": "<2>"}]],
+            [[{"generated_text": "<1>"}]],
+        ]
+        n = huggingface_matcher.max_new_tokens
+        mock_hf_pipe.tokenizer.side_effect = [
+            {"input_ids": [0] * n},
+            {"input_ids": [0] * 3},
+        ]
+        result = huggingface_matcher.match(STORY_SEGMENTS, ["recall"])
+        assert mock_hf_pipe.call_count == 2
+        assert result == [(0, [0])]
+
+    def test_cuda(self, cuda_matcher, mock_cuda_llm):
+        truncated = make_cuda_output("<2>")
+        truncated.outputs[0].finish_reason = "length"
+        mock_cuda_llm.generate.side_effect = [
+            [truncated],
+            [make_cuda_output("<1>")],
+        ]
+        result = cuda_matcher.match(STORY_SEGMENTS, ["recall"])
+        assert mock_cuda_llm.generate.call_count == 2
+        assert result == [(0, [0])]
+
+    def test_mac(self, mac_matcher, mock_mac_generate):
+        mock_mac_generate.side_effect = [
+            make_mac_response("<2>", generation_tokens=mac_matcher.max_new_tokens),
+            make_mac_response("<1>"),
+        ]
+        result = mac_matcher.match(STORY_SEGMENTS, ["recall"])
+        assert mock_mac_generate.call_count == 2
+        assert result == [(0, [0])]

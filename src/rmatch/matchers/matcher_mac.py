@@ -5,10 +5,18 @@ from typing import Callable
 
 from tqdm import tqdm
 
-from rmatch import get_logger, matchlist_type, parser_type, prompts_responses_type
-from rmatch.matchers.matcher_base import DEFAULT_PARSER, MatcherBase
-
-log = get_logger(__name__)
+from rmatch import (
+    console,
+    matchlist_type,
+    parser_type,
+    prompts_responses_type,
+)
+from rmatch.matchers.matcher_base import (
+    DEFAULT_PARSER,
+    MatcherBase,
+    parse_response,
+    print_parse_summary,
+)
 
 
 class MatcherMac(MatcherBase):
@@ -27,22 +35,22 @@ class MatcherMac(MatcherBase):
 
         assert window_size >= 0, "window_size must be non-negative"
         self.window_size = window_size
-        self.max_new_tokens = max_new_tokens or 300
+        self.max_new_tokens = max_new_tokens or 4096
         self.max_retries = max_retries or 10
 
-        log.info(f"Max new tokens: {self.max_new_tokens}")
-        log.info(f"Max retries: {self.max_retries}")
+        console.log(f"Max new tokens: {self.max_new_tokens}")
+        console.log(f"Max retries: {self.max_retries}")
 
         self.model_name = model_name or "unsloth/gemma-4-E4B-it-MLX-8bit"
         # unsloth/gemma-4-31B-it-MLX-8bit
-        log.info(f"Initializing MLX model: {self.model_name}")
+        console.log(f"Initializing MLX model: {self.model_name}")
 
         if api_key is None:
             api_key = os.environ.get("HF_TOKEN")
 
         try:
             import mlx_vlm.utils as mlx_vlm_utils  # pyright: ignore[reportMissingImports]
-            from mlx_vlm import generate, load  # pyright: ignore[reportMissingImports]
+            from mlx_vlm import generate, load  # type: ignore
             from mlx_vlm.prompt_utils import (  # pyright: ignore[reportMissingImports]
                 apply_chat_template,
             )
@@ -89,6 +97,8 @@ class MatcherMac(MatcherBase):
         parser = parser or DEFAULT_PARSER
         matches: list[tuple[int, list[int]]] = []
         prompts_responses_ls: prompts_responses_type = [[] for _ in recall_segments]
+        n_matches = 0
+        failure_reasons: list[str] = []
 
         for idx, _ in enumerate(
             tqdm(
@@ -129,23 +139,32 @@ class MatcherMac(MatcherBase):
                 self.peak_memory = max(self.peak_memory, response.peak_memory)
 
                 # parse response
-                parsed_response_ = parser(gen_text)
+                parsed_response_, failure_reason = parse_response(
+                    parser,
+                    gen_text,
+                    n_story_segments,
+                    truncated=response.generation_tokens >= self.max_new_tokens,
+                )
+                n_matches += 1
                 prompts_responses_ls[idx].append(
                     (model_prompt, gen_text, parsed_response_)
                 )
-                if parsed_response_ is not None and all(
-                    1 <= i <= n_story_segments for i in parsed_response_
-                ):
+                if parsed_response_ is not None:
                     parsed_response = parsed_response_
                     break
-                log.warning(
-                    f"Attempt {attempt}/{self.max_retries}:"
-                    f" segment needs retry for segment {idx}"
-                )
+                failure_reasons.append(failure_reason)
+                if attempt < self.max_retries:
+                    console.log(
+                        f"Attempt {attempt}/{self.max_retries}:"
+                        f" segment needs retry for segment {idx}",
+                        style="orange1",
+                    )
             else:
-                log.warning(f"All attempts failed for segment {idx}")
+                console.log(f"All attempts failed for segment {idx}", style="orange1")
 
             story_indices = sorted(i - 1 for i in parsed_response)
             matches.append((idx, story_indices))
+
+        print_parse_summary(n_matches, failure_reasons)
 
         return matches, prompts_responses_ls
