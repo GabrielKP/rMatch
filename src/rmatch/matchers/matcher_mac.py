@@ -35,7 +35,7 @@ class MatcherMac(MatcherBase):
 
         assert window_size >= 0, "window_size must be non-negative"
         self.window_size = window_size
-        self.max_new_tokens = max_new_tokens or 300
+        self.max_new_tokens = max_new_tokens or 4096
         self.max_retries = max_retries or 10
 
         console.log(f"Max new tokens: {self.max_new_tokens}")

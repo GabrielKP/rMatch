@@ -88,7 +88,7 @@ def print_parse_summary(n_matches: int, failure_reasons: list[str]) -> None:
     if n_matches == 0:
         return
     n_success = n_matches - len(failure_reasons)
-    table = Table(title=f"Parse results ({n_matches} matches)")
+    table = Table(title=f"Parse results ({n_matches} attempts)")
     table.add_column("Outcome")
     table.add_column("Count", justify="right")
     table.add_column("Proportion", justify="right")

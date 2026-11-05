@@ -42,7 +42,7 @@ class MatcherHuggingFace(MatcherBase):
         else:
             self.max_retries = max_retries
         console.log(f"Batch size: {self.batch_size}")
-        self.max_new_tokens = max_new_tokens or 300
+        self.max_new_tokens = max_new_tokens or 4096
         console.log(f"Max new tokens: {self.max_new_tokens}")
 
         if model_name is None:

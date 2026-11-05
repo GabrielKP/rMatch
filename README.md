@@ -169,7 +169,7 @@ matches = matcher.match(
 | `max_retries`    | `10`                                | Retries when the model output cannot be parsed |
 | `api_key`        | from `.env` / env                   | See [API keys](#api-keys)                      |
 | `window_size`    | `5`                                 | Recall context window                          |
-| `max_new_tokens` | `300`                               | Max tokens generated per segment               |
+| `max_new_tokens` | `4096`                              | Max tokens generated per segment               |
 
 
 ### MatcherHuggingface
@@ -196,7 +196,7 @@ matches = matcher.match(
 | `window_size`    | `5`               | Recall context window                          |
 | `quantization`   | none              | `"4bit"` or `"8bit"` to reduce memory          |
 | `batch_size`     | `64`              | Inference batch size                           |
-| `max_new_tokens` | `300`             | Max tokens generated per segment               |
+| `max_new_tokens` | `4096`            | Max tokens generated per segment               |
 
 
 ## API keys

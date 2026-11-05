@@ -150,7 +150,7 @@ def test_parse_response_success_does_not_log(capsys):
 def test_print_parse_summary(capsys):
     print_parse_summary(4, ["No <...> found.", "No <...> found.", TRUNCATED_REASON])
     out = capsys.readouterr().out
-    assert "4 matches" in out
+    assert "4 attempts" in out
     assert "25.0%" in out  # success and truncated
     assert "50.0%" in out  # No <...> found.
 
