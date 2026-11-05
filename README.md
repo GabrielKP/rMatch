@@ -13,7 +13,7 @@ rMatch matches each segment of a participant's recall to the corresponding segme
 
 | Model                 | short text (N=21) | long text (N=19) | movie transcripts (N=138) |
 | --------------------- | :---------------: | :--------------: | :-----------------------: |
-| google/gemma-4-31B-it |      _0.83_       |      _0.80_      |          _0.67_           |
+| google/gemma-4-31B-it |      _0.82_       |      _0.79_      |          _0.65_           |
 | Claude Opus 4.6       |      _0.87_       |      _0.8_       |           _0.7_           |
 
 Pearson *r* with human ratings.
