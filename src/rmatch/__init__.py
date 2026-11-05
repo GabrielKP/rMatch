@@ -15,7 +15,7 @@ logging.basicConfig(format=FORMAT)
 console = Console()
 
 matchlist_type = list[tuple[int, list[int]]]
-parser_type = Callable[[str], set[int] | None]
+parser_type = Callable[[str], tuple[set[int] | None, str]]
 #  prompt_response[recall_idx][attempt] -> (prompt, raw_response, parsed_response)
 prompts_responses_type = list[list[tuple[str, str, set[int] | None]]]
 

@@ -31,50 +31,50 @@ def _build_prompt(target_idx: int, prompt: str | None = None) -> str:
 
 def test_parser_single_index():
     parser = DEFAULT_PARSER
-    assert parser("<2>") == {2}
+    assert parser("<2>")[0] == {2}
 
 
 def test_parser_multiple_indices():
     parser = DEFAULT_PARSER
-    assert parser("<1, 3>") == {1, 3}
+    assert parser("<1, 3>")[0] == {1, 3}
 
 
 def test_parser_none_response_returns_empty_set():
     parser = DEFAULT_PARSER
-    result = parser("<NONE>")
+    result = parser("<NONE>")[0]
     assert result == set()
 
 
 def test_parser_malformed_response_returns_none():
     parser = DEFAULT_PARSER
-    assert parser("I cannot determine the answer from the given text.") is None
+    assert parser("I cannot determine the answer from the given text.")[0] is None
 
 
 def test_parser_empty_string_returns_none():
     parser = DEFAULT_PARSER
-    assert parser("") is None
+    assert parser("")[0] is None
 
 
 def test_parser_strips_surrounding_whitespace():
     parser = DEFAULT_PARSER
-    result = parser("  <2>  ")
+    result = parser("  <2>  ")[0]
     assert result == {2}
 
 
 def test_parser_handles_extra_whitespace_inside_brackets():
     parser = DEFAULT_PARSER
-    result = parser("<1,  2,  3>")
+    result = parser("<1,  2,  3>")[0]
     assert result == {1, 2, 3}
 
 
 def test_parser_returns_none_for_text_without_angle_brackets():
     parser = DEFAULT_PARSER
-    assert parser("The answer is segment 2.") is None
+    assert parser("The answer is segment 2.")[0] is None
 
 
 def test_parser_finds_match_in_longer_text():
     parser = DEFAULT_PARSER
-    result = parser("After careful consideration, I think <1, 2> match.")
+    result = parser("After careful consideration, I think <1, 2> match.")[0]
     assert result == {1, 2}
 
 
@@ -83,7 +83,7 @@ def test_parser_finds_match_in_longer_text():
     [
         ("<0>", {0}),
         ("<NONE> <2>", set()),
-        ("<1> and <2>", {1}),
+        ("<1> and <2>", None),
         ("<>", None),
         ("<   >", set()),
         ("<1 2 3>", set()),
@@ -94,7 +94,20 @@ def test_parser_finds_match_in_longer_text():
 )
 def test_parser_edge_cases(raw, expected):
     parser = DEFAULT_PARSER
-    assert parser(raw) == expected
+    assert parser(raw)[0] == expected
+
+
+@pytest.mark.parametrize(
+    "raw,expected_reason",
+    [
+        ("<2>", ""),
+        ("<NONE>", ""),
+        ("no brackets here", "No <...> found."),
+        ("<1> and <2>", "Multiple <...> found."),
+    ],
+)
+def test_parser_failure_reasons(raw, expected_reason):
+    assert DEFAULT_PARSER(raw)[1] == expected_reason
 
 
 # ── Prompt content ────────────────────────────────────────────────────────────
@@ -150,8 +163,8 @@ def test_custom_parser_passed_to_match(anthropic_matcher, mock_anthropic_client)
         "ANSWER: 3"
     )
 
-    def parser(raw: str) -> set[int] | None:
-        return {int(raw.split(":")[1])}
+    def parser(raw: str) -> tuple[set[int] | None, str]:
+        return {int(raw.split(":")[1])}, ""
 
     result = anthropic_matcher.match(
         STORY_SEGMENTS, ["recall"], prompt="{recall_window}", parser=parser

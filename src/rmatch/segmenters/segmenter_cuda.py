@@ -5,12 +5,7 @@ from typing import cast
 
 import pandas as pd
 
-from rmatch import get_logger
-
-log = get_logger(__name__)
-RED = "\033[91m"
-YELLOW = "\033[93m"
-RESET = "\033[0m"
+from rmatch import console
 
 
 class SegmenterCuda:
@@ -31,17 +26,17 @@ class SegmenterCuda:
         else:
             self.model_name = model_name
 
-        log.info(f"Initializing vLLM model with CUDA: {self.model_name}")
+        console.log(f"Initializing vLLM model with CUDA: {self.model_name}")
         self.max_new_tokens = max_new_tokens or 4096
         self.max_retries = max_retries or 10
-        log.info(f"Max new tokens: {self.max_new_tokens}")
-        log.info(f"Max retries: {self.max_retries}")
+        console.log(f"Max new tokens: {self.max_new_tokens}")
+        console.log(f"Max retries: {self.max_retries}")
 
         if granularity == "idea" or granularity == "event":
             self.granularity = granularity
         else:
             raise ValueError("Granularity must be 'idea' or 'event'")
-        log.info(f"Setting granularity: {self.granularity}")
+        console.log(f"Setting granularity: {self.granularity}")
 
         try:
             from vllm import LLM, SamplingParams
@@ -55,18 +50,18 @@ class SegmenterCuda:
             import torch
 
             tensor_parallel_size = max(1, torch.cuda.device_count())
-            log.info(
+            console.log(
                 f"GPUs (tensor_parallel_size): {tensor_parallel_size} (Auto-detected)"
             )
         else:
-            log.info(f"GPUs (tensor_parallel_size): {tensor_parallel_size}")
+            console.log(f"GPUs (tensor_parallel_size): {tensor_parallel_size}")
 
-        log.info(f"GPU memory utilization: {gpu_memory_utilization}")
+        console.log(f"GPU memory utilization: {gpu_memory_utilization}")
         if max_model_len == "auto":
             self.max_model_len = None
         else:
             self.max_model_len = max_model_len or 90000
-        log.info(f"Max model length: {self.max_model_len}")
+        console.log(f"Max model length: {self.max_model_len}")
 
         hf_token = api_key or os.environ.get("HF_TOKEN")
         if hf_token:
@@ -269,13 +264,15 @@ Here is the transcript to segment:
     def segment_batch(
         self, texts: list[str], labels: list[str] | None = None
     ) -> list[pd.DataFrame | None]:
-        log.info(f"Prepping {len(texts)} text(s)")
+        console.log(f"Prepping {len(texts)} text(s)")
         if labels is not None and len(labels) != len(texts):
-            log.warning("Sufficient labels not provided, defaulting to indices")
+            console.log(
+                "Sufficient labels not provided, defaulting to indices", style="orange1"
+            )
             labels = None
 
         labels_processed = [
-            labels[i] if labels is not None else f"Text #{i+1}"
+            labels[i] if labels is not None else f"Text #{i + 1}"
             for i in range(len(texts))
         ]
 
@@ -294,7 +291,7 @@ Here is the transcript to segment:
                 )
                 prompts.append(formatted_prompt)
 
-            log.info(f"Segmenting {len(indices_pending)} text(s)")
+            console.log(f"Segmenting {len(indices_pending)} text(s)")
             outputs = self.llm.generate(prompts, self.sampling_params)
 
             still_pending: list[int] = []
@@ -313,8 +310,9 @@ Here is the transcript to segment:
                     segments = json.loads(cleaned)
 
                     if not isinstance(segments, list):
-                        log.warning(
-                            f"{labels_processed[idx_pending]}: Output was not a JSON array"  # noqa: E501
+                        console.log(
+                            f"{labels_processed[idx_pending]}: Output was not a JSON array",  # noqa: E501
+                            style="orange1",
                         )
                         still_pending.append(idx_pending)
                         continue
@@ -355,21 +353,25 @@ Here is the transcript to segment:
 
                     if not valid:
                         # validation failed
-                        log.warning(
-                            f"{RED}[VALIDATION FAILED]{RESET} {labels_processed[idx_pending]}\n"  # noqa: E501
+                        console.log(
+                            f"[VALIDATION FAILED] {labels_processed[idx_pending]}",
+                            style="red",
                         )
                         for _, error_msg in failures.items():
-                            log.warning(f"{YELLOW}{error_msg}{RESET}")
+                            console.log(error_msg, style="orange1")
                         still_pending.append(idx_pending)
                         continue
 
                 except (json.JSONDecodeError, ValueError) as e:
-                    log.error(f"{labels_processed[idx_pending]}: Failed to parse - {e}")
+                    console.log(
+                        f"{labels_processed[idx_pending]}: Failed to parse - {e}",
+                        style="red",
+                    )
                     still_pending.append(idx_pending)
                     continue
 
             if len(still_pending) > 0:
-                log.info(
+                console.log(
                     f"Attempt {attempt + 1}/{self.max_retries}: "
                     f"{len(still_pending)}/{len(indices_pending)}"
                     " text(s) need retry"
@@ -377,7 +379,8 @@ Here is the transcript to segment:
             indices_pending = still_pending
 
         for idx_pending in indices_pending:
-            log.warning(
-                f"All {self.max_retries} attempts failed for text #{idx_pending}"
+            console.log(
+                f"All {self.max_retries} attempts failed for text #{idx_pending}",
+                style="orange1",
             )
         return results

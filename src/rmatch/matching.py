@@ -7,11 +7,8 @@ from rmatch import console, parser_type
 from rmatch.matchers import MATCHERS, MatcherBase, get_matcher
 from rmatch.utils import (
     atomic_write_json,
-    get_logger,
     get_param_str,
 )
-
-log = get_logger(__name__)
 
 
 def remove_empty_lines(text: str) -> list[str]:
@@ -98,8 +95,9 @@ def _merge_recall_json_files(
             method = m
         elif method != m:
             if not warned_mismatch:
-                log.warning(
-                    f"At least two json have a recall method mismatch: {method} != {m}"
+                console.log(
+                    f"At least two json have a recall method mismatch: {method} != {m}",
+                    style="orange1",
                 )
                 warned_mismatch = True
 
@@ -241,7 +239,7 @@ def match(
             },
         }
         atomic_write_json(checkpoint_path, checkpoint_data, indent=2)
-        log.info(f"Saved checkpoint to {checkpoint_path}")
+        console.log(f"Saved checkpoint to {checkpoint_path}")
 
     matches_dict: dict[str, list[tuple[int, list[int]]]] = {}
     try:
@@ -265,11 +263,11 @@ def match(
     output_dict["matches"] = matches_dict
 
     atomic_write_json(out_path, output_dict)
-    log.info(f"Saved matches to {out_path}")
+    console.log(f"Saved matches to {out_path}")
 
     if checkpoint_path.exists():
         checkpoint_path.unlink()
-        log.info(f"Removed checkpoint {checkpoint_path}")
+        console.log(f"Removed checkpoint {checkpoint_path}")
 
     return output_dict
 

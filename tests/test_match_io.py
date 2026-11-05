@@ -232,9 +232,7 @@ class TestLoadRecallSegments:
         with pytest.raises(ValueError, match="no .json or .txt"):
             load_recall_segments(d)
 
-    def test_directory_json_method_mismatch_logs_warning(self, tmp_path, caplog):
-        import logging
-
+    def test_directory_json_method_mismatch_logs_warning(self, tmp_path, capsys):
         d = tmp_path / "recalls"
         d.mkdir()
         (d / "a.json").write_text(
@@ -247,14 +245,10 @@ class TestLoadRecallSegments:
                 {"recalls": {"sub02": ["seg2"]}, "segmentation_method": "method_b"}
             )
         )
-        with caplog.at_level(logging.WARNING):
-            load_recall_segments(d)
-        warnings = [
-            r.message
-            for r in caplog.records
-            if "recall method mismatch" in r.message.lower()
-        ]
-        assert len(warnings) == 1
+        load_recall_segments(d)
+        # rich may wrap long lines, so normalize whitespace before matching
+        out = " ".join(capsys.readouterr().out.split()).lower()
+        assert out.count("recall method mismatch") == 1
 
 
 # ── match ─────────────────────────────────────────────────────────────────────

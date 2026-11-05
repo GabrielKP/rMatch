@@ -4,10 +4,8 @@ from pathlib import Path
 
 import pandas as pd
 
-from rmatch import get_logger
+from rmatch import console
 from rmatch.segmenters import SegmenterCuda
-
-log = get_logger(__name__)
 
 
 def segs_to_df(segments: list[str]) -> pd.DataFrame:
@@ -37,15 +35,15 @@ def segment(
         raise ValueError(f"Input path is not a directory: {input_dir}")
 
     output_path.mkdir(parents=True, exist_ok=True)
-    log.info(f"Output directory: {output_path}")
+    console.log(f"Output directory: {output_path}")
 
     transcript_files = list(input_path.glob("*.txt"))
 
     if not transcript_files:
-        log.warning("No transcripts found")
+        console.log("No transcripts found", style="orange1")
         return
 
-    log.info(f"Found {len(transcript_files)} transcript files")
+    console.log(f"Found {len(transcript_files)} transcript files")
 
     segmenter = SegmenterCuda(
         model_name=model_name,
@@ -54,7 +52,7 @@ def segment(
     )
 
     if use_batch:
-        log.info("Using batch mode")
+        console.log("Using batch mode")
         transcripts = []
         for file_path in transcript_files:
             with open(file_path, "r", encoding="utf-8") as f:
@@ -67,26 +65,26 @@ def segment(
             output_file = output_path / f"{file_path.stem}.csv"
             df = segs_to_df(segments)
             df.to_csv(output_file, index=False, encoding="utf-8")
-            log.info(f"Saved: {output_file} ({len(segments)} segments)")
+            console.log(f"Saved: {output_file} ({len(segments)} segments)")
     else:
-        log.info("Using sequential mode")
+        console.log("Using sequential mode")
         for i, file_path in enumerate(transcript_files, 1):
-            log.info(f"Processing {i}/{len(transcript_files)}: {file_path.name}")
+            console.log(f"Processing {i}/{len(transcript_files)}: {file_path.name}")
             with open(file_path, "r", encoding="utf-8") as f:
                 transcript = f.read()
 
             try:
                 segments = segmenter.segment(transcript)
             except Exception as e:
-                log.error(f"Failed to segment {file_path.name}: {e}")
+                console.log(f"Failed to segment {file_path.name}: {e}", style="red")
                 segments = []
 
             output_file = output_path / f"{file_path.stem}.csv"
             df = segs_to_df(segments)
             df.to_csv(output_file, index=False, encoding="utf-8")
-            log.info(f"Saved: {output_file} ({len(segments)} segments)")
+            console.log(f"Saved: {output_file} ({len(segments)} segments)")
 
-    log.info("Done!")
+    console.log("Done!")
 
 
 if __name__ == "__main__":

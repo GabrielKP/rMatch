@@ -1,10 +1,7 @@
 import re
 
-from rmatch import get_logger, matchlist_type, parser_type, prompts_responses_type
+from rmatch import matchlist_type, parser_type, prompts_responses_type
 from rmatch.utils import build_recall_window, format_story_segments
-
-log = get_logger(__name__)
-
 
 DEFAULT_PROMPT = """This is the original story:
 {story_full}
@@ -35,22 +32,21 @@ Then return a set of numbers in angle brackets, for example:
 <3, 7, 12>"""
 
 
-def _parse_output(raw: str) -> set[int] | None:
+def _parse_output(raw: str) -> tuple[set[int] | None, str]:
     raw = raw.strip()
 
     if "<NONE>" in raw:
-        return set()
+        return set(), ""
 
-    match = re.search(r"<([0-9,\s]+)>", raw)
-    if not match:
-        log.debug(f"failed to parse model output:\n{raw}")
-        return None
+    matches = re.findall(r"<([0-9,\s]+)>", raw)
+    if not matches:
+        return None, "No <...> found."
+    if len(matches) > 1:
+        return None, "Multiple <...> found."
 
-    parsed_set = {
-        int(x.strip()) for x in match.group(1).split(",") if x.strip().isdigit()
-    }
+    parsed_set = {int(x.strip()) for x in matches[0].split(",") if x.strip().isdigit()}
 
-    return parsed_set
+    return parsed_set, ""
 
 
 DEFAULT_PARSER: parser_type = _parse_output
@@ -144,7 +140,8 @@ class MatcherBase:
             Prompt template, see ``build_model_prompt``. Defaults to DEFAULT_PROMPT.
         parser: parser_type | None
             Function extracting the set of (1-based) story segment numbers from the
-            raw model output, or None if parsing fails (triggers a retry).
+            raw model output, or None if parsing fails (triggers a retry), together
+            with a failure reason string ("" on success).
             Defaults to DEFAULT_PARSER.
 
         Returns
@@ -183,7 +180,8 @@ class MatcherBase:
             Prompt template, see ``build_model_prompt``. Defaults to DEFAULT_PROMPT.
         parser: parser_type | None
             Function extracting the set of (1-based) story segment numbers from the
-            raw model output, or None if parsing fails (triggers a retry).
+            raw model output, or None if parsing fails (triggers a retry), together
+            with a failure reason string ("" on success).
             Defaults to DEFAULT_PARSER.
 
         Returns

@@ -239,7 +239,7 @@ Answer with numbers in angle brackets, e.g. <1, 4>, or <NONE>."""
 matches = matcher.match(story_segments, recall_segments, prompt=my_prompt)
 ```
 
-The default parser (`DEFAULT_PARSER`) extracts numbers in angle brackets such as `<3, 7, 12>`, or `<NONE>`. If your prompt asks for a different output format, also pass a `parser`: a function that takes the raw model output and returns a set of 1-based story segment numbers, or `None` if the output cannot be parsed (the matcher then retries).
+The default parser (`DEFAULT_PARSER`) extracts numbers in angle brackets such as `<3, 7, 12>`, or `<NONE>`. If your prompt asks for a different output format, also pass a `parser`: a function that takes the raw model output and returns a tuple `(parsed, failure_reason)`: `parsed` is a set of 1-based story segment numbers, or `None` if the output cannot be parsed (the matcher then retries), and `failure_reason` is a short string describing why parsing failed (`""` on success).
 
 ```python
 def my_parser(raw: str) -> set[int] | None:

@@ -1,12 +1,16 @@
 import os
+from collections import Counter
 
+from rich.table import Table
 from tqdm import trange
 
-from rmatch import get_logger, matchlist_type, parser_type, prompts_responses_type
+from rmatch import (
+    console,
+    matchlist_type,
+    parser_type,
+    prompts_responses_type,
+)
 from rmatch.matchers.matcher_base import DEFAULT_PARSER, MatcherBase
-
-log = get_logger(__name__)
-
 
 ANTHROPIC_PRICES: dict[str, tuple[float, float]] = {
     "claude-opus-4-6": (5, 25),
@@ -30,14 +34,14 @@ class MatcherAnthropic(MatcherBase):
 
         if model_name is None:
             self.model_name = "claude-opus-4-6"
-            log.info(f"Initializing model to default: {self.model_name}")
+            console.log(f"Initializing model to default: {self.model_name}")
         else:
             self.model_name = model_name
-            log.info(f"Initializing model: {self.model_name}")
+            console.log(f"Initializing model: {self.model_name}")
 
         if max_retries is None:
             self.max_retries = 10
-            log.info(f"Set max retries to {self.max_retries}")
+            console.log(f"Set max retries to {self.max_retries}")
         else:
             self.max_retries = max_retries
 
@@ -60,7 +64,7 @@ class MatcherAnthropic(MatcherBase):
         }
         self.dry_run = dry_run
         if self.dry_run:
-            log.info("RUNNING IN DRY RUN MODE")
+            console.log("RUNNING IN DRY RUN MODE")
 
     def get_usage(self) -> dict | None:
         if self.dry_run:
@@ -69,7 +73,7 @@ class MatcherAnthropic(MatcherBase):
 
     def _calculate_cost(self, in_tokens: int, out_tokens: int) -> float:
         if self.model_name not in ANTHROPIC_PRICES:
-            log.warning(f"No pricing found for {self.model_name}, cost set to 0")
+            console.log(f"No pricing found for {self.model_name}, cost set to 0")
             return 0.0
         prices = ANTHROPIC_PRICES[self.model_name]
         return (in_tokens * prices[0] + out_tokens * prices[1]) / 1_000_000
@@ -118,6 +122,8 @@ class MatcherAnthropic(MatcherBase):
         parser = parser or DEFAULT_PARSER
         matches: list[tuple[int, list[int]]] = list()
         prompts_responses_ls: prompts_responses_type = [[] for _ in recall_segments]
+        n_matches = 0
+        failure_reasons: list[str] = []
 
         for idx in trange(
             len(recall_segments),
@@ -160,23 +166,44 @@ class MatcherAnthropic(MatcherBase):
                         in_tokens, out_tokens
                     )
                     raw_text = response.content[0].text  # type: ignore
-                    parsed_response_ = parser(raw_text)
+                    parsed_response_, failure_reason = parser(raw_text)
+                    n_matches += 1
                     prompts_responses_ls[idx].append(
                         (model_prompt, raw_text, parsed_response_)
                     )
-                    if parsed_response_ is not None and all(
+                    if parsed_response_ is not None and not all(
                         1 <= i <= n_story_segments for i in parsed_response_
                     ):
+                        parsed_response_ = None
+                        failure_reason = "Index out of range."
+                    if parsed_response_ is not None:
                         parsed_response = parsed_response_
                         break
-                log.warning(
+                    failure_reasons.append(failure_reason)
+                    console.log(f"Parse failure ({failure_reason}):\n{raw_text}")
+                console.log(
                     f"Attempt {attempt}/{self.max_retries}:"
-                    f" segmeent needs retry for segment {idx}"
+                    f" segmeent needs retry for segment {idx}",
+                    style="orange1",
                 )
             else:
-                log.warning(f"All attempts failed for segment {idx}")
+                console.log(
+                    f"All attempts failed for segment {idx}",
+                    style="orange1",
+                )
 
             story_indices = sorted(i - 1 for i in parsed_response)
             matches.append((idx, story_indices))
+
+        if n_matches > 0:
+            n_success = n_matches - len(failure_reasons)
+            table = Table(title=f"Parse results ({n_matches} matches)")
+            table.add_column("Outcome")
+            table.add_column("Count", justify="right")
+            table.add_column("Proportion", justify="right")
+            table.add_row("success", str(n_success), f"{n_success / n_matches:.1%}")
+            for reason, count in Counter(failure_reasons).most_common():
+                table.add_row(reason, str(count), f"{count / n_matches:.1%}")
+            console.print(table)
 
         return matches, prompts_responses_ls
