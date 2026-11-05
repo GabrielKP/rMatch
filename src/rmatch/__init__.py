@@ -1,5 +1,4 @@
 import json
-import logging
 import signal
 from copy import deepcopy
 from typing import Callable
@@ -9,9 +8,6 @@ from rich.console import Console
 
 load_dotenv()
 
-FORMAT = "[%(levelname)s] %(name)s.%(funcName)s - %(message)s"
-
-logging.basicConfig(format=FORMAT)
 console = Console()
 
 matchlist_type = list[tuple[int, list[int]]]
@@ -28,28 +24,6 @@ try:
     signal.signal(signal.SIGTERM, _sigterm_handler)
 except ValueError:
     pass
-
-
-def get_logger(
-    name=__name__,
-    log_level=logging.INFO,
-    log_file: str | None = None,
-) -> logging.Logger:
-    """Initialize a logger"""
-
-    logger = logging.getLogger(name)
-    logger.setLevel(log_level)
-
-    # create formatter
-    formatter = logging.Formatter(FORMAT)
-
-    if log_file is not None:
-        fh = logging.FileHandler(log_file, encoding="utf-8")
-        fh.setLevel(log_level)
-        fh.setFormatter(formatter)
-        logger.addHandler(fh)
-
-    return logger
 
 
 def print_config(config: dict, **kwargs: dict):
